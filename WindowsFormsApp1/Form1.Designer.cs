@@ -1,0 +1,286 @@
+﻿// Класс для инициализации компонентов интерфейса Windows Forms
+namespace WindowsFormsApp1
+{
+    partial class Form1
+    {
+        /// <summary>
+        /// Обязательная переменная конструктора.
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary>
+        /// Освободить все используемые ресурсы.
+        /// </summary>
+        /// <param name="disposing">истинно, если управляемый ресурс должен быть удален; иначе ложно.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+    }
+}
+
+// Класс для инициализации интерфейса формы
+namespace WindowsFormsApp1
+{
+    partial class Form1
+    {
+        #region Код, автоматически созданный конструктором форм Windows
+
+        /// <summary>
+        /// Требуемый метод для поддержки конструктора — не изменяйте 
+        /// содержимое этого метода с помощью редактора кода.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            this.components = new System.ComponentModel.Container();
+            this.buttonConnect = new System.Windows.Forms.Button();
+            this.buttonUpdatePort = new System.Windows.Forms.Button();
+            this.comboBoxPorts = new System.Windows.Forms.ComboBox();
+            this.MyserialPort = new System.IO.Ports.SerialPort(this.components);
+            this.buttonMoveUp = new System.Windows.Forms.Button();
+            this.buttonMoveDown = new System.Windows.Forms.Button();
+            this.buttonMoveLeft = new System.Windows.Forms.Button();
+            this.buttonMoveRight = new System.Windows.Forms.Button();
+            this.SizeX = new System.Windows.Forms.MaskedTextBox();
+            this.SizeY = new System.Windows.Forms.MaskedTextBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.label5 = new System.Windows.Forms.Label();
+            this.WaferDiameter = new System.Windows.Forms.MaskedTextBox();
+            this.labelTotalCrystals = new System.Windows.Forms.Label();
+            this.labelSelectedCrystal = new System.Windows.Forms.Label();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.SuspendLayout();
+            // 
+            // buttonConnect
+            // 
+            this.buttonConnect.Location = new System.Drawing.Point(1119, 78);
+            this.buttonConnect.Margin = new System.Windows.Forms.Padding(4);
+            this.buttonConnect.Name = "buttonConnect";
+            this.buttonConnect.Size = new System.Drawing.Size(137, 28);
+            this.buttonConnect.TabIndex = 0;
+            this.buttonConnect.Text = "Подключить";
+            this.buttonConnect.UseVisualStyleBackColor = true;
+            this.buttonConnect.Click += new System.EventHandler(this.buttonConnect_Click);
+            // 
+            // buttonUpdatePort
+            // 
+            this.buttonUpdatePort.Location = new System.Drawing.Point(1119, 114);
+            this.buttonUpdatePort.Margin = new System.Windows.Forms.Padding(4);
+            this.buttonUpdatePort.Name = "buttonUpdatePort";
+            this.buttonUpdatePort.Size = new System.Drawing.Size(137, 28);
+            this.buttonUpdatePort.TabIndex = 1;
+            this.buttonUpdatePort.Text = "Список портов";
+            this.buttonUpdatePort.UseVisualStyleBackColor = true;
+            this.buttonUpdatePort.Click += new System.EventHandler(this.buttonUpdatePort_Click);
+            // 
+            // comboBoxPorts
+            // 
+            this.comboBoxPorts.FormattingEnabled = true;
+            this.comboBoxPorts.Location = new System.Drawing.Point(950, 82);
+            this.comboBoxPorts.Margin = new System.Windows.Forms.Padding(4);
+            this.comboBoxPorts.Name = "comboBoxPorts";
+            this.comboBoxPorts.Size = new System.Drawing.Size(160, 24);
+            this.comboBoxPorts.TabIndex = 2;
+            // 
+            // MyserialPort
+            // 
+            this.MyserialPort.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(this.MyserialPort_DataReceived);
+            // 
+            // buttonMoveUp
+            // 
+            this.buttonMoveUp.Location = new System.Drawing.Point(1021, 266);
+            this.buttonMoveUp.Margin = new System.Windows.Forms.Padding(4);
+            this.buttonMoveUp.Name = "buttonMoveUp";
+            this.buttonMoveUp.Size = new System.Drawing.Size(100, 28);
+            this.buttonMoveUp.TabIndex = 3;
+            this.buttonMoveUp.Text = "Вверх";
+            this.buttonMoveUp.UseVisualStyleBackColor = true;
+            this.buttonMoveUp.Click += new System.EventHandler(this.buttonMoveUp_Click);
+            // 
+            // buttonMoveDown
+            // 
+            this.buttonMoveDown.Location = new System.Drawing.Point(1021, 302);
+            this.buttonMoveDown.Margin = new System.Windows.Forms.Padding(4);
+            this.buttonMoveDown.Name = "buttonMoveDown";
+            this.buttonMoveDown.Size = new System.Drawing.Size(100, 28);
+            this.buttonMoveDown.TabIndex = 4;
+            this.buttonMoveDown.Text = "Вниз";
+            this.buttonMoveDown.UseVisualStyleBackColor = true;
+            this.buttonMoveDown.Click += new System.EventHandler(this.buttonMoveDown_Click);
+            // 
+            // buttonMoveLeft
+            // 
+            this.buttonMoveLeft.Location = new System.Drawing.Point(913, 301);
+            this.buttonMoveLeft.Margin = new System.Windows.Forms.Padding(4);
+            this.buttonMoveLeft.Name = "buttonMoveLeft";
+            this.buttonMoveLeft.Size = new System.Drawing.Size(100, 28);
+            this.buttonMoveLeft.TabIndex = 5;
+            this.buttonMoveLeft.Text = "Влево";
+            this.buttonMoveLeft.UseVisualStyleBackColor = true;
+            this.buttonMoveLeft.Click += new System.EventHandler(this.buttonMoveLeft_Click);
+            // 
+            // buttonMoveRight
+            // 
+            this.buttonMoveRight.Location = new System.Drawing.Point(1129, 301);
+            this.buttonMoveRight.Margin = new System.Windows.Forms.Padding(4);
+            this.buttonMoveRight.Name = "buttonMoveRight";
+            this.buttonMoveRight.Size = new System.Drawing.Size(100, 28);
+            this.buttonMoveRight.TabIndex = 6;
+            this.buttonMoveRight.Text = "Вправо";
+            this.buttonMoveRight.UseVisualStyleBackColor = true;
+            this.buttonMoveRight.Click += new System.EventHandler(this.buttonMoveRight_Click);
+            // 
+            // SizeX
+            // 
+            this.SizeX.BeepOnError = true;
+            this.SizeX.Location = new System.Drawing.Point(1123, 360);
+            this.SizeX.Margin = new System.Windows.Forms.Padding(4);
+            this.SizeX.Mask = "00000";
+            this.SizeX.Name = "SizeX";
+            this.SizeX.PromptChar = ' ';
+            this.SizeX.Size = new System.Drawing.Size(132, 22);
+            this.SizeX.TabIndex = 7;
+            this.SizeX.ValidatingType = typeof(int);
+            this.SizeX.MouseClick += new System.Windows.Forms.MouseEventHandler(this.SizeX_MouseClick);
+            // 
+            // SizeY
+            // 
+            this.SizeY.BeepOnError = true;
+            this.SizeY.Location = new System.Drawing.Point(1123, 392);
+            this.SizeY.Margin = new System.Windows.Forms.Padding(4);
+            this.SizeY.Mask = "00000";
+            this.SizeY.Name = "SizeY";
+            this.SizeY.PromptChar = ' ';
+            this.SizeY.Size = new System.Drawing.Size(132, 22);
+            this.SizeY.TabIndex = 8;
+            this.SizeY.ValidatingType = typeof(int);
+            this.SizeY.MouseClick += new System.Windows.Forms.MouseEventHandler(this.SizeY_MouseClick);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(1041, 360);
+            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(62, 16);
+            this.label1.TabIndex = 9;
+            this.label1.Text = "Шаг по Х";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(1045, 399);
+            this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(63, 16);
+            this.label2.TabIndex = 10;
+            this.label2.Text = "Шаг по У";
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.BackColor = System.Drawing.Color.Transparent;
+            this.pictureBox1.Location = new System.Drawing.Point(41, 82);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(811, 534);
+            this.pictureBox1.TabIndex = 11;
+            this.pictureBox1.TabStop = false;
+            this.pictureBox1.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureBox1_Paint);
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(985, 426);
+            this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(130, 16);
+            this.label5.TabIndex = 15;
+            this.label5.Text = "Диаметр пластины";
+            // 
+            // WaferDiameter
+            // 
+            this.WaferDiameter.BeepOnError = true;
+            this.WaferDiameter.Location = new System.Drawing.Point(1123, 420);
+            this.WaferDiameter.Margin = new System.Windows.Forms.Padding(4);
+            this.WaferDiameter.Mask = "00000";
+            this.WaferDiameter.Name = "WaferDiameter";
+            this.WaferDiameter.PromptChar = ' ';
+            this.WaferDiameter.Size = new System.Drawing.Size(132, 22);
+            this.WaferDiameter.TabIndex = 14;
+            this.WaferDiameter.ValidatingType = typeof(int);
+            this.WaferDiameter.MouseClick += new System.Windows.Forms.MouseEventHandler(this.WaferDiameter_MouseClick);
+            // 
+            // labelTotalCrystals
+            // 
+            this.labelTotalCrystals.AutoSize = true;
+            this.labelTotalCrystals.Location = new System.Drawing.Point(227, 22);
+            this.labelTotalCrystals.Name = "labelTotalCrystals";
+            this.labelTotalCrystals.Size = new System.Drawing.Size(137, 16);
+            this.labelTotalCrystals.TabIndex = 13;
+            this.labelTotalCrystals.Text = "Общее количество кристаллов";
+            // 
+            // labelSelectedCrystal
+            // 
+            this.labelSelectedCrystal.AutoSize = true;
+            this.labelSelectedCrystal.Location = new System.Drawing.Point(561, 22);
+            this.labelSelectedCrystal.Name = "labelSelectedCrystal";
+            this.labelSelectedCrystal.Size = new System.Drawing.Size(134, 16);
+            this.labelSelectedCrystal.TabIndex = 16;
+            this.labelSelectedCrystal.Text = "Текущий индекс кристалла";
+            // 
+            // Form1
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(1274, 754);
+            this.Controls.Add(this.labelSelectedCrystal);
+            this.Controls.Add(this.label5);
+            this.Controls.Add(this.WaferDiameter);
+            this.Controls.Add(this.labelTotalCrystals);
+            this.Controls.Add(this.pictureBox1);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.SizeY);
+            this.Controls.Add(this.SizeX);
+            this.Controls.Add(this.buttonMoveRight);
+            this.Controls.Add(this.buttonMoveLeft);
+            this.Controls.Add(this.buttonMoveDown);
+            this.Controls.Add(this.buttonMoveUp);
+            this.Controls.Add(this.comboBoxPorts);
+            this.Controls.Add(this.buttonUpdatePort);
+            this.Controls.Add(this.buttonConnect);
+            this.Margin = new System.Windows.Forms.Padding(4);
+            this.Name = "Form1";
+            this.Text = "Form1";
+            this.Resize += new System.EventHandler(this.Form1_Resize);
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            this.ResumeLayout(false);
+            this.PerformLayout();
+        }
+
+        #endregion
+
+        private System.Windows.Forms.Button buttonConnect;
+        private System.Windows.Forms.Button buttonUpdatePort;
+        private System.Windows.Forms.ComboBox comboBoxPorts;
+        private System.IO.Ports.SerialPort MyserialPort;
+        private System.Windows.Forms.Button buttonMoveUp;
+        private System.Windows.Forms.Button buttonMoveDown;
+        private System.Windows.Forms.Button buttonMoveLeft;
+        private System.Windows.Forms.Button buttonMoveRight;
+        private System.Windows.Forms.MaskedTextBox SizeX;
+        private System.Windows.Forms.MaskedTextBox SizeY;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.MaskedTextBox WaferDiameter;
+        private System.Windows.Forms.Label labelTotalCrystals;
+        private System.Windows.Forms.Label labelSelectedCrystal;
+    }
+}
