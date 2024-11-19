@@ -59,6 +59,7 @@ namespace WindowsFormsApp1
             // 
             // buttonConnect
             // 
+            this.buttonConnect.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.buttonConnect.Location = new System.Drawing.Point(1119, 78);
             this.buttonConnect.Margin = new System.Windows.Forms.Padding(4);
             this.buttonConnect.Name = "buttonConnect";
@@ -70,6 +71,7 @@ namespace WindowsFormsApp1
             // 
             // buttonUpdatePort
             // 
+            this.buttonUpdatePort.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.buttonUpdatePort.Location = new System.Drawing.Point(1119, 114);
             this.buttonUpdatePort.Margin = new System.Windows.Forms.Padding(4);
             this.buttonUpdatePort.Name = "buttonUpdatePort";
@@ -81,6 +83,7 @@ namespace WindowsFormsApp1
             // 
             // comboBoxPorts
             // 
+            this.comboBoxPorts.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.comboBoxPorts.FormattingEnabled = true;
             this.comboBoxPorts.Location = new System.Drawing.Point(950, 82);
             this.comboBoxPorts.Margin = new System.Windows.Forms.Padding(4);
@@ -94,6 +97,7 @@ namespace WindowsFormsApp1
             // 
             // buttonMoveUp
             // 
+            this.buttonMoveUp.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.buttonMoveUp.Location = new System.Drawing.Point(1021, 266);
             this.buttonMoveUp.Margin = new System.Windows.Forms.Padding(4);
             this.buttonMoveUp.Name = "buttonMoveUp";
@@ -105,6 +109,7 @@ namespace WindowsFormsApp1
             // 
             // buttonMoveDown
             // 
+            this.buttonMoveDown.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.buttonMoveDown.Location = new System.Drawing.Point(1021, 302);
             this.buttonMoveDown.Margin = new System.Windows.Forms.Padding(4);
             this.buttonMoveDown.Name = "buttonMoveDown";
@@ -116,6 +121,7 @@ namespace WindowsFormsApp1
             // 
             // buttonMoveLeft
             // 
+            this.buttonMoveLeft.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.buttonMoveLeft.Location = new System.Drawing.Point(913, 301);
             this.buttonMoveLeft.Margin = new System.Windows.Forms.Padding(4);
             this.buttonMoveLeft.Name = "buttonMoveLeft";
@@ -127,6 +133,7 @@ namespace WindowsFormsApp1
             // 
             // buttonMoveRight
             // 
+            this.buttonMoveRight.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.buttonMoveRight.Location = new System.Drawing.Point(1129, 301);
             this.buttonMoveRight.Margin = new System.Windows.Forms.Padding(4);
             this.buttonMoveRight.Name = "buttonMoveRight";
@@ -138,6 +145,7 @@ namespace WindowsFormsApp1
             // 
             // SizeX
             // 
+            this.SizeX.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.SizeX.BeepOnError = true;
             this.SizeX.Location = new System.Drawing.Point(1123, 360);
             this.SizeX.Margin = new System.Windows.Forms.Padding(4);
@@ -151,6 +159,7 @@ namespace WindowsFormsApp1
             // 
             // SizeY
             // 
+            this.SizeY.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.SizeY.BeepOnError = true;
             this.SizeY.Location = new System.Drawing.Point(1123, 392);
             this.SizeY.Margin = new System.Windows.Forms.Padding(4);
@@ -164,6 +173,7 @@ namespace WindowsFormsApp1
             // 
             // label1
             // 
+            this.label1.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(1041, 360);
             this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
@@ -174,6 +184,7 @@ namespace WindowsFormsApp1
             // 
             // label2
             // 
+            this.label2.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(1045, 399);
             this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
@@ -184,6 +195,9 @@ namespace WindowsFormsApp1
             // 
             // pictureBox1
             // 
+            this.pictureBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.pictureBox1.BackColor = System.Drawing.Color.Transparent;
             this.pictureBox1.Location = new System.Drawing.Point(41, 82);
             this.pictureBox1.Name = "pictureBox1";
@@ -194,6 +208,7 @@ namespace WindowsFormsApp1
             // 
             // label5
             // 
+            this.label5.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label5.AutoSize = true;
             this.label5.Location = new System.Drawing.Point(985, 426);
             this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
@@ -204,6 +219,7 @@ namespace WindowsFormsApp1
             // 
             // WaferDiameter
             // 
+            this.WaferDiameter.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.WaferDiameter.BeepOnError = true;
             this.WaferDiameter.Location = new System.Drawing.Point(1123, 420);
             this.WaferDiameter.Margin = new System.Windows.Forms.Padding(4);
@@ -220,7 +236,7 @@ namespace WindowsFormsApp1
             this.labelTotalCrystals.AutoSize = true;
             this.labelTotalCrystals.Location = new System.Drawing.Point(227, 22);
             this.labelTotalCrystals.Name = "labelTotalCrystals";
-            this.labelTotalCrystals.Size = new System.Drawing.Size(137, 16);
+            this.labelTotalCrystals.Size = new System.Drawing.Size(210, 16);
             this.labelTotalCrystals.TabIndex = 13;
             this.labelTotalCrystals.Text = "Общее количество кристаллов";
             // 
@@ -229,7 +245,7 @@ namespace WindowsFormsApp1
             this.labelSelectedCrystal.AutoSize = true;
             this.labelSelectedCrystal.Location = new System.Drawing.Point(561, 22);
             this.labelSelectedCrystal.Name = "labelSelectedCrystal";
-            this.labelSelectedCrystal.Size = new System.Drawing.Size(134, 16);
+            this.labelSelectedCrystal.Size = new System.Drawing.Size(185, 16);
             this.labelSelectedCrystal.TabIndex = 16;
             this.labelSelectedCrystal.Text = "Текущий индекс кристалла";
             // 
@@ -261,6 +277,7 @@ namespace WindowsFormsApp1
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
+
         }
 
         #endregion
