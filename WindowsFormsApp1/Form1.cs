@@ -2,6 +2,7 @@
 
 using System.Windows.Forms;
 using System;
+using System.Collections.Generic;
 
 namespace WindowsFormsApp1
 {
@@ -12,6 +13,10 @@ namespace WindowsFormsApp1
         private float scaleFactor = 4.0f;   // Коэффициент увеличения масштаба отображения
         private const float MinWaferDiameter = 50f;  // Минимальный диаметр пластины
         private const float MaxWaferDiameter = 300f; // Максимальный диаметр пластины
+        private int selectedCrystalIndex = -1; // Индекс выбранного кристалла (-1 значит, что ничего не выбрано)
+
+         
+
 
         public Form1()
         {
@@ -31,5 +36,9 @@ namespace WindowsFormsApp1
         {
             pictureBox1.Refresh(); // Обновляем содержимое PictureBox
         }
+
+        
+
+       
     }
 }

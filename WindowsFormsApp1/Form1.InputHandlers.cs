@@ -46,5 +46,10 @@ namespace WindowsFormsApp1
         {
             pictureBox1.Invalidate(); // Перерисовка при изменении текста
         }
+
+        private void Create_Click(object sender, EventArgs e)
+        {
+            pictureBox1.Invalidate();
+        }
     }
 }

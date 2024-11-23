@@ -54,6 +54,7 @@ namespace WindowsFormsApp1
             this.WaferDiameter = new System.Windows.Forms.MaskedTextBox();
             this.labelTotalCrystals = new System.Windows.Forms.Label();
             this.labelSelectedCrystal = new System.Windows.Forms.Label();
+            this.Create = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -249,11 +250,24 @@ namespace WindowsFormsApp1
             this.labelSelectedCrystal.TabIndex = 16;
             this.labelSelectedCrystal.Text = "Текущий индекс кристалла";
             // 
+            // Create
+            // 
+            this.Create.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.Create.Location = new System.Drawing.Point(1129, 464);
+            this.Create.Margin = new System.Windows.Forms.Padding(4);
+            this.Create.Name = "Create";
+            this.Create.Size = new System.Drawing.Size(100, 28);
+            this.Create.TabIndex = 17;
+            this.Create.Text = "Создать";
+            this.Create.UseVisualStyleBackColor = true;
+            this.Create.Click += new System.EventHandler(this.Create_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1274, 754);
+            this.Controls.Add(this.Create);
             this.Controls.Add(this.labelSelectedCrystal);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.WaferDiameter);
@@ -299,5 +313,6 @@ namespace WindowsFormsApp1
         private System.Windows.Forms.MaskedTextBox WaferDiameter;
         private System.Windows.Forms.Label labelTotalCrystals;
         private System.Windows.Forms.Label labelSelectedCrystal;
+        private System.Windows.Forms.Button Create;
     }
 }
