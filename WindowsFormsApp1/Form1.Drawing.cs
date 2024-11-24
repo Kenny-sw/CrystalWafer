@@ -66,43 +66,54 @@ namespace WindowsFormsApp1
 
             // Цикл по координате X
             for (int i = 0; i < numCrystalsX; i++)
+    {
+        // Цикл по координате Y
+        for (int j = 0; j < numCrystalsY; j++)
+        {
+            // Рассчитываем координаты центра текущего кристалла
+            float crystalX = startX + i * crystalWidth + crystalWidth / 2;
+            float crystalY = startY + j * crystalHeight + crystalHeight / 2;
+
+            // Рассчитываем расстояние от центра пластины до текущего кристалла
+            float distanceFromCenter = (float)Math.Sqrt(Math.Pow(crystalX - centerX, 2) + Math.Pow(crystalY - centerY, 2));
+
+            // Проверяем, находится ли кристалл внутри окружности пластины
+            if (distanceFromCenter <= radius)
             {
-                // Цикл по координате Y
-                for (int j = 0; j < numCrystalsY; j++)
+                // Создаем новый кристалл с присвоением индекса
+                Crystal crystal = new Crystal
                 {
-                    // Рассчитываем координаты центра текущего кристалла
-                    float crystalX = startX + i * crystalWidth + crystalWidth / 2;
-                    float crystalY = startY + j * crystalHeight + crystalHeight / 2;
+                    Index = nextCrystalIndex++, // Присваиваем индекс и увеличиваем счетчик
+                    X = crystalX,
+                    Y = crystalY,
+                    Color = Color.Blue // Можно также добавить случайный или фиксированный цвет
+                };
 
-                    // Рассчитываем расстояние от центра пластины до текущего кристалла
-                    float distanceFromCenter = (float)Math.Sqrt(Math.Pow(crystalX - centerX, 2) + Math.Pow(crystalY - centerY, 2));
+                // Добавляем кристалл в коллекцию
+                crystals.Add(crystal);
 
-                    // Проверяем, находится ли кристалл внутри окружности пластины
-                    if (distanceFromCenter <= radius)
+                // Масштабируем координаты кристалла для отображения на экране
+                float scaledCrystalX = (crystalX - centerX) * scaleFactor + centerX;
+                float scaledCrystalY = (crystalY - centerY) * scaleFactor + centerY;
+
+                // Рисуем кристалл
+                g.DrawRectangle(Pens.Blue, scaledCrystalX - displayCrystalWidth / 2, scaledCrystalY - displayCrystalHeight / 2, displayCrystalWidth, displayCrystalHeight);
+
+                // Проверяем, является ли текущий кристалл выбранным
+                if (selectedCrystalIndex == crystal.Index)
+                {
+                    using (Pen selectionPen = new Pen(Color.Yellow, 2))
                     {
-                        // Масштабируем координаты кристалла для отображения на экране
-                        float scaledCrystalX = (crystalX - centerX) * scaleFactor + centerX;
-                        float scaledCrystalY = (crystalY - centerY) * scaleFactor + centerY;
-
-                        // Рисуем кристалл в виде синего прямоугольника
-                        g.DrawRectangle(Pens.Blue, scaledCrystalX - displayCrystalWidth / 2, scaledCrystalY - displayCrystalHeight / 2, displayCrystalWidth, displayCrystalHeight);
-
-                        // Проверяем, является ли текущий кристалл выбранным
-                        if (selectedCrystalIndex == totalCrystals) // Индекс totalCrystals будет равен текущему количеству кристаллов
-                        {
-                            using (Pen selectionPen = new Pen(Color.Yellow, 2))
-                            {
-                                g.DrawRectangle(selectionPen, scaledCrystalX - displayCrystalWidth / 2, scaledCrystalY - displayCrystalHeight / 2, displayCrystalWidth, displayCrystalHeight);
-                            }
-                        }
-
-                        // Увеличиваем количество размещенных кристаллов
-                        totalCrystals++;
+                        g.DrawRectangle(selectionPen, scaledCrystalX - displayCrystalWidth / 2, scaledCrystalY - displayCrystalHeight / 2, displayCrystalWidth, displayCrystalHeight);
                     }
                 }
-            }
 
-            labelTotalCrystals.Text = $"Общее количество кристаллов: {totalCrystals}";
+                totalCrystals++;
+            }
         }
+    }
+
+    labelTotalCrystals.Text = $"Общее количество кристаллов: {totalCrystals}";
+}
     }
 }

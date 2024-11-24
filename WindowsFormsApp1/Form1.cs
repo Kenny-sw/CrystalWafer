@@ -3,6 +3,7 @@
 using System.Windows.Forms;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 
 namespace WindowsFormsApp1
 {
@@ -14,8 +15,8 @@ namespace WindowsFormsApp1
         private const float MinWaferDiameter = 50f;  // Минимальный диаметр пластины
         private const float MaxWaferDiameter = 300f; // Максимальный диаметр пластины
         private int selectedCrystalIndex = -1; // Индекс выбранного кристалла (-1 значит, что ничего не выбрано)
+        private int nextCrystalIndex = 1; // Счетчик для отслеживания индексации кристаллов
 
-         
 
 
         public Form1()
