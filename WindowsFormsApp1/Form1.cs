@@ -1,9 +1,7 @@
 ﻿// Главный файл формы Form1, в котором содержатся основные параметры и обработка событий Resize и инициализация компонента
 
-using System.Windows.Forms;
 using System;
-using System.Collections.Generic;
-using System.Drawing;
+using System.Windows.Forms;
 
 namespace WindowsFormsApp1
 {
@@ -38,8 +36,8 @@ namespace WindowsFormsApp1
             pictureBox1.Refresh(); // Обновляем содержимое PictureBox
         }
 
-        
 
-       
+
+
     }
 }

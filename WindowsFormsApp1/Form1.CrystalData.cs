@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace WindowsFormsApp1
 {
@@ -17,7 +13,7 @@ namespace WindowsFormsApp1
             public int Index { get; set; }            // Индекс кристалла
             public Color Color { get; set; }          // Цвет кристалла для PictureBox
             public float ContactHeight { get; set; }  // Высота контактирования
-        //  public DateTime TimeOnCrystal { get; set; } // Время, когда было произведено измерение
+                                                      //  public DateTime TimeOnCrystal { get; set; } // Время, когда было произведено измерение
             public float X { get; set; }              // Координата X кристалла на PictureBox
             public float Y { get; set; }              // Координата Y кристалла на PictureBox
         }
