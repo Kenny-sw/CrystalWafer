@@ -11,11 +11,11 @@ namespace WindowsFormsApp1
         public class Crystal
         {
             public int Index { get; set; }            // Индекс кристалла
-            public Color Color { get; set; }          // Цвет кристалла для PictureBox
-            public float ContactHeight { get; set; }  // Высота контактирования
-                                                      //  public DateTime TimeOnCrystal { get; set; } // Время, когда было произведено измерение
-            public float X { get; set; }              // Координата X кристалла на PictureBox
-            public float Y { get; set; }              // Координата Y кристалла на PictureBox
+            public Color Color { get; set; }           // Цвет кристалла для PictureBox
+            public float RealX { get; set; }           // Реальная координата X (в физическом масштабе)
+            public float RealY { get; set; }           // Реальная координата Y (в физическом масштабе)
+            public float DisplayX { get; set; }        // Масштабированная координата X (для отображения)
+            public float DisplayY { get; set; }        // Масштабированная координата Y (для отображения)
         }
 
         public void SelectCrystal(int index)

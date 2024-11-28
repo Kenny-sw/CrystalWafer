@@ -14,7 +14,8 @@ namespace WindowsFormsApp1
         private const float MaxWaferDiameter = 300f; // Максимальный диаметр пластины
         private int selectedCrystalIndex = -1; // Индекс выбранного кристалла (-1 значит, что ничего не выбрано)
         private int nextCrystalIndex = 1; // Счетчик для отслеживания индексации кристаллов
-
+        private float crystalWidthRaw;
+        private float crystalHeightRaw;
 
 
         public Form1()
@@ -23,6 +24,7 @@ namespace WindowsFormsApp1
             pictureBox1.Paint += pictureBox1_Paint; // Привязываем событие Paint к обработчику pictureBox1_Paint для отрисовки
             this.Resize += new EventHandler(Form1_Resize); // Привязываем событие Resize для обновления визуализации при изменении размеров формы
         }
+
 
         // Обработчик события изменения размеров формы
         private void Form1_Resize(object sender, EventArgs e)
@@ -36,8 +38,6 @@ namespace WindowsFormsApp1
             pictureBox1.Refresh(); // Обновляем содержимое PictureBox
         }
 
-
-
-
+        
     }
 }

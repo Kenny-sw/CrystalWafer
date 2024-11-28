@@ -55,6 +55,9 @@ namespace WindowsFormsApp1
             this.labelTotalCrystals = new System.Windows.Forms.Label();
             this.labelSelectedCrystal = new System.Windows.Forms.Label();
             this.Create = new System.Windows.Forms.Button();
+            this.label3 = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
+            this.labelIndex = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -206,6 +209,7 @@ namespace WindowsFormsApp1
             this.pictureBox1.TabIndex = 11;
             this.pictureBox1.TabStop = false;
             this.pictureBox1.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureBox1_Paint);
+            this.pictureBox1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseMove);
             // 
             // label5
             // 
@@ -262,11 +266,45 @@ namespace WindowsFormsApp1
             this.Create.UseVisualStyleBackColor = true;
             this.Create.Click += new System.EventHandler(this.Create_Click);
             // 
+            // label3
+            // 
+            this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(950, 475);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(44, 16);
+            this.label3.TabIndex = 18;
+            this.label3.Text = "label3";
+            this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label4
+            // 
+            this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(953, 508);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(44, 16);
+            this.label4.TabIndex = 19;
+            this.label4.Text = "label4";
+            this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // labelIndex
+            // 
+            this.labelIndex.AutoSize = true;
+            this.labelIndex.Location = new System.Drawing.Point(953, 537);
+            this.labelIndex.Name = "labelIndex";
+            this.labelIndex.Size = new System.Drawing.Size(69, 16);
+            this.labelIndex.TabIndex = 20;
+            this.labelIndex.Text = "labelIndex";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1274, 754);
+            this.Controls.Add(this.labelIndex);
+            this.Controls.Add(this.label4);
+            this.Controls.Add(this.label3);
             this.Controls.Add(this.Create);
             this.Controls.Add(this.labelSelectedCrystal);
             this.Controls.Add(this.label5);
@@ -314,5 +352,8 @@ namespace WindowsFormsApp1
         private System.Windows.Forms.Label labelTotalCrystals;
         private System.Windows.Forms.Label labelSelectedCrystal;
         private System.Windows.Forms.Button Create;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label labelIndex;
     }
 }
