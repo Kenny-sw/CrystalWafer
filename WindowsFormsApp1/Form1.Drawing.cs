@@ -1,5 +1,6 @@
 ﻿// Form1.Drawing.cs - Методы для отрисовки пластины и кристаллов
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -12,19 +13,25 @@ namespace WindowsFormsApp1
         {
             // Получаем объект Graphics для выполнения операций рисования на PictureBox
             Graphics g = e.Graphics;
+            // Очищаем область рисования белым цветом
             g.Clear(Color.White);
 
+            // Проверяем корректность введенных пользователем размеров
             if (float.TryParse(SizeX.Text, out crystalWidthRaw) &&
                 float.TryParse(SizeY.Text, out crystalHeightRaw) &&
                 float.TryParse(WaferDiameter.Text, out float waferDiameterRaw) &&
                 crystalWidthRaw > 0 && crystalHeightRaw > 0 && waferDiameterRaw >= MinWaferDiameter && waferDiameterRaw <= MaxWaferDiameter)
             {
+                // Если размеры корректны, сохраняем диаметр пластины
                 waferDiameter = waferDiameterRaw;
+                // Отрисовываем пластину
                 DrawWafer(g);
+                // Отрисовываем кристаллы
                 DrawCrystals(g, crystalWidthRaw, crystalHeightRaw);
             }
             else
             {
+                // Если размеры некорректны, выводим сообщение об ошибке
                 labelTotalCrystals.Text = "Введите корректные размеры кристаллов и пластины";
             }
         }
@@ -32,26 +39,31 @@ namespace WindowsFormsApp1
         // Метод для отрисовки кремниевой пластины в виде круга в центре PictureBox
         private void DrawWafer(Graphics g)
         {
+            // Вычисляем координаты центра PictureBox
             float centerX = pictureBox1.Width / 2;
             float centerY = pictureBox1.Height / 2;
+            // Вычисляем радиус пластины
             float radius = waferDiameter / 2;
+            // Масштабируем радиус для отображения
             float displayRadius = radius * scaleFactor;
 
+            // Рисуем окружность, представляющую пластину
             g.DrawEllipse(Pens.Black, centerX - displayRadius, centerY - displayRadius, displayRadius * 2, displayRadius * 2);
         }
 
         // Метод для отрисовки всех кристаллов на пластине
         private void DrawCrystals(Graphics g, float crystalWidthRaw, float crystalHeightRaw)
         {
-            crystals.Clear(); // Очищаем текущую коллекцию кристаллов
-            nextCrystalIndex = 1; // Сбрасываем индекс
+            crystals.Clear();
+            nextCrystalIndex = 1;
 
             float centerX = pictureBox1.Width / 2;
             float centerY = pictureBox1.Height / 2;
             float radius = waferDiameter / 2;
-            float radiusSquared = radius * radius; // Избегаем повторного вычисления Math.Sqrt
+            float radiusSquared = radius * radius;
             int totalCrystals = 0;
 
+            // Преобразуем размеры кристаллов из микрометров в миллиметры
             float crystalWidth = crystalWidthRaw / 1000;
             float crystalHeight = crystalHeightRaw / 1000;
             float displayCrystalWidth = crystalWidth * scaleFactor;
@@ -65,9 +77,16 @@ namespace WindowsFormsApp1
             int numCrystalsX = (int)((endX - startX) / crystalWidth);
             int numCrystalsY = (int)((endY - startY) / crystalHeight);
 
-            for (int i = 0; i <= numCrystalsX; i++)
+            bool isReversed = false; // флаг для определения направления строки
+            List<Crystal> rowCrystals = new List<Crystal>(); // временный список для строки
+
+            // Перебираем строки сверху вниз
+            for (int j = 0; j <= numCrystalsY; j++)
             {
-                for (int j = 0; j <= numCrystalsY; j++)
+                rowCrystals.Clear();
+
+                // Перебираем все возможные позиции кристаллов в строке
+                for (int i = 0; i <= numCrystalsX; i++)
                 {
                     float crystalX = startX + i * crystalWidth + crystalWidth / 2;
                     float crystalY = startY + j * crystalHeight + crystalHeight / 2;
@@ -85,25 +104,54 @@ namespace WindowsFormsApp1
                             Color = Color.Blue
                         };
 
-                        crystals.Add(crystal);
-
+                        // Масштабируем координаты для отображения
                         float scaledCrystalX = (crystal.RealX - centerX) * scaleFactor + centerX;
                         float scaledCrystalY = (crystal.RealY - centerY) * scaleFactor + centerY;
 
                         crystal.DisplayX = scaledCrystalX;
                         crystal.DisplayY = scaledCrystalY;
 
-                        g.DrawRectangle(Pens.Blue, crystal.DisplayX - displayCrystalWidth / 2, crystal.DisplayY - displayCrystalHeight / 2, displayCrystalWidth, displayCrystalHeight);
-
-                        if (selectedCrystalIndex == crystal.Index)
-                        {
-                            using (Pen selectionPen = new Pen(Color.Yellow, 2))
-                            {
-                                g.DrawRectangle(selectionPen, crystal.DisplayX - displayCrystalWidth / 2, crystal.DisplayY - displayCrystalHeight / 2, displayCrystalWidth, displayCrystalHeight);
-                            }
-                        }
-
+                        rowCrystals.Add(crystal);
                         totalCrystals++;
+                    }
+                }
+
+                // Если это четная строка, разворачиваем порядок кристаллов
+                if (isReversed)
+                {
+                    rowCrystals.Reverse();
+                    // Переназначаем индексы после разворота
+                    for (int i = 0; i < rowCrystals.Count; i++)
+                    {
+                        rowCrystals[i].Index = nextCrystalIndex - rowCrystals.Count + i;
+                    }
+                }
+
+                // Добавляем кристаллы из текущей строки в основной список
+                crystals.AddRange(rowCrystals);
+
+                // Меняем направление для следующей строки
+                isReversed = !isReversed;
+            }
+
+            // Отрисовка всех кристаллов
+            foreach (var crystal in crystals)
+            {
+                g.DrawRectangle(Pens.Blue,
+                    crystal.DisplayX - displayCrystalWidth / 2,
+                    crystal.DisplayY - displayCrystalHeight / 2,
+                    displayCrystalWidth,
+                    displayCrystalHeight);
+
+                if (selectedCrystalIndex == crystal.Index)
+                {
+                    using (Pen selectionPen = new Pen(Color.Yellow, 2))
+                    {
+                        g.DrawRectangle(selectionPen,
+                            crystal.DisplayX - displayCrystalWidth / 2,
+                            crystal.DisplayY - displayCrystalHeight / 2,
+                            displayCrystalWidth,
+                            displayCrystalHeight);
                     }
                 }
             }
@@ -116,12 +164,10 @@ namespace WindowsFormsApp1
             labelTotalCrystals.Text = $"Общее количество кристаллов: {totalCrystals}";
         }
 
-
-
-
         // Метод, вызываемый при движении мыши над PictureBox. Используется для определения, над каким кристаллом находится курсор.
         private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
         {
+            // Отображаем текущие координаты курсора
             label3.Text = $"X: {e.X}";
             label4.Text = $"Y: {e.Y}";
             float centerX = pictureBox1.Width / 2;
@@ -153,7 +199,7 @@ namespace WindowsFormsApp1
                 }
             }
 
-            // Если ни один кристалл не найден, очищаем текст
+            // Если курсор не находится над кристаллом, очищаем текст
             labelIndex.Text = "Индекс кристалла: -";
         }
     }
