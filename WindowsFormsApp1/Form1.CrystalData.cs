@@ -5,17 +5,18 @@ namespace WindowsFormsApp1
 {
     public partial class Form1
     {
-        private List<Crystal> crystals = new List<Crystal>(); // Создание объекта коллекции
+        // Коллекция для хранения всех кристаллов на пластине
+        private List<Crystal> crystals = new List<Crystal>();
 
-        // Структура для представления данных о кристалле
+        // Класс для хранения информации о каждом кристалле
         public class Crystal
         {
-            public int Index { get; set; }            // Индекс кристалла
-            public Color Color { get; set; }           // Цвет кристалла для PictureBox
-            public float RealX { get; set; }           // Реальная координата X (в физическом масштабе)
-            public float RealY { get; set; }           // Реальная координата Y (в физическом масштабе)
-            public float DisplayX { get; set; }        // Масштабированная координата X (для отображения)
-            public float DisplayY { get; set; }        // Масштабированная координата Y (для отображения)
+            public int Index { get; set; }            // Уникальный номер кристалла
+            public Color Color { get; set; }          // Цвет для отрисовки
+            public float RealX { get; set; }          // Реальная X координата в мм
+            public float RealY { get; set; }          // Реальная Y координата в мм
+            public float DisplayX { get; set; }       // X координата на экране
+            public float DisplayY { get; set; }       // Y координата на экране
         }
 
         public void SelectCrystal(int index)

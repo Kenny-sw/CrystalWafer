@@ -8,14 +8,14 @@ namespace WindowsFormsApp1
     public partial class Form1 : Form
     {
         // Основные параметры формы
-        private float waferDiameter = 100f; // Диаметр пластины в мм
-        private float scaleFactor = 4.0f;   // Коэффициент увеличения масштаба отображения
-        private const float MinWaferDiameter = 50f;  // Минимальный диаметр пластины
-        private const float MaxWaferDiameter = 300f; // Максимальный диаметр пластины
-        private int selectedCrystalIndex = -1; // Индекс выбранного кристалла (-1 значит, что ничего не выбрано)
-        private int nextCrystalIndex = 1; // Счетчик для отслеживания индексации кристаллов
-        private float crystalWidthRaw;
-        private float crystalHeightRaw;
+        private float waferDiameter = 100f;     // Диаметр пластины в миллиметрах
+        private float scaleFactor = 4.0f;       // Коэффициент масштабирования для отображения
+        private const float MinWaferDiameter = 50f;  // Минимально допустимый диаметр пластины
+        private const float MaxWaferDiameter = 300f; // Максимально допустимый диаметр пластины
+        private int selectedCrystalIndex = -1;   // Индекс выбранного кристалла (-1 = не выбран)
+        private int nextCrystalIndex = 1;        // Счетчик для нумерации кристаллов
+        private float crystalWidthRaw;           // Ширина кристалла в микрометрах
+        private float crystalHeightRaw;          // Высота кристалла в микрометрах
 
 
         public Form1()

@@ -6,13 +6,14 @@ namespace WindowsFormsApp1
 {
     public partial class Form1
     {
+        // Обработчики кнопок движения
         private void buttonMoveLeft_Click(object sender, EventArgs e)
         {
             int stepSizeX;
             if (int.TryParse(SizeX.Text, out stepSizeX))
             {
-                SendCommand(1, stepSizeX); // Команда движения влево
-                Thread.Sleep(300);
+                SendCommand(1, stepSizeX); // 1 - команда движения влево
+                Thread.Sleep(300);         // Пауза для завершения движения
             }
             else
             {
@@ -78,17 +79,19 @@ namespace WindowsFormsApp1
         }
       
 
+        // Метод отправки команды на контроллер движения
         private void SendCommand(byte commandByte, int stepSize)
         {
-            if (stepSize >= 0 && stepSize <= 65535)
+            if (stepSize >= 0 && stepSize <= 65535) // Проверка диапазона значений
             {
-                byte firstByte = (byte)(stepSize / 256); // Старший байт
-                byte secondByte = (byte)(stepSize % 256); // Младший байт
+                byte firstByte = (byte)(stepSize / 256);  // Старший байт
+                byte secondByte = (byte)(stepSize % 256);  // Младший байт
 
                 try
                 {
+                    // Отправка 3 байт: команда + старший байт + младший байт
                     MyserialPort.Write(new byte[] { commandByte, firstByte, secondByte }, 0, 3);
-                    UpdateWaferVisualization(); // Обновляем визуализацию после отправки команды
+                    UpdateWaferVisualization(); // Обновление отображения
                 }
                 catch
                 {

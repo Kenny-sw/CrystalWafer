@@ -1,6 +1,5 @@
 ﻿// Form1.Drawing.cs - Методы для отрисовки пластины и кристаллов
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -129,7 +128,7 @@ namespace WindowsFormsApp1
 
                 // Добавляем кристаллы из текущей строки в основной список
                 crystals.AddRange(rowCrystals);
-
+                
                 // Меняем направление для следующей строки
                 isReversed = !isReversed;
             }
@@ -137,20 +136,20 @@ namespace WindowsFormsApp1
             // Отрисовка всех кристаллов
             foreach (var crystal in crystals)
             {
-                g.DrawRectangle(Pens.Blue,
-                    crystal.DisplayX - displayCrystalWidth / 2,
-                    crystal.DisplayY - displayCrystalHeight / 2,
-                    displayCrystalWidth,
+                g.DrawRectangle(Pens.Blue, 
+                    crystal.DisplayX - displayCrystalWidth / 2, 
+                    crystal.DisplayY - displayCrystalHeight / 2, 
+                    displayCrystalWidth, 
                     displayCrystalHeight);
 
                 if (selectedCrystalIndex == crystal.Index)
                 {
                     using (Pen selectionPen = new Pen(Color.Yellow, 2))
                     {
-                        g.DrawRectangle(selectionPen,
-                            crystal.DisplayX - displayCrystalWidth / 2,
-                            crystal.DisplayY - displayCrystalHeight / 2,
-                            displayCrystalWidth,
+                        g.DrawRectangle(selectionPen, 
+                            crystal.DisplayX - displayCrystalWidth / 2, 
+                            crystal.DisplayY - displayCrystalHeight / 2, 
+                            displayCrystalWidth, 
                             displayCrystalHeight);
                     }
                 }

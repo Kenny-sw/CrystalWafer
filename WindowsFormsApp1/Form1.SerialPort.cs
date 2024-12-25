@@ -8,39 +8,38 @@ namespace WindowsFormsApp1
 {
     public partial class Form1
     {
-        // Обработчик кнопки подключения/отключения к COM-порту
+        // Обработчик подключения/отключения COM-порта
         private void buttonConnect_Click(object sender, EventArgs e)
         {
             try
             {
                 if (!MyserialPort.IsOpen)
                 {
-                    // Проверяем, выбран ли порт для подключения
+                    // Проверка выбора порта
                     if (string.IsNullOrEmpty(comboBoxPorts.Text))
                     {
                         MessageBox.Show("Выберите порт для подключения.");
                         return;
                     }
 
-                    // Устанавливаем имя порта и открываем соединение
+                    // Подключение к порту
                     MyserialPort.PortName = comboBoxPorts.Text;
                     MyserialPort.Open();
-                    comboBoxPorts.Enabled = false; // Блокируем выбор порта после подключения
+                    comboBoxPorts.Enabled = false;
                     buttonConnect.Text = "Отключиться";
-                    buttonConnect.BackColor = Color.LightGreen; // Меняем цвет кнопки на зеленый при успешном подключении
+                    buttonConnect.BackColor = Color.LightGreen;
                 }
                 else
                 {
-                    // Закрываем соединение при повторном нажатии кнопки
+                    // Отключение от порта
                     MyserialPort.Close();
-                    comboBoxPorts.Enabled = true; // Разрешаем выбор порта после отключения
+                    comboBoxPorts.Enabled = true;
                     buttonConnect.Text = "Подключить";
-                    buttonConnect.BackColor = Color.LightCoral; // Меняем цвет кнопки на красный при отключении
+                    buttonConnect.BackColor = Color.LightCoral;
                 }
             }
             catch (Exception ex)
             {
-                // Выводим сообщение об ошибке при попытке подключения/отключения
                 MessageBox.Show("Ошибка подключения: " + ex.Message);
             }
         }
@@ -63,14 +62,13 @@ namespace WindowsFormsApp1
             }
         }
 
-        // Обработчик приема данных с COM-порта
+        // Обработчик приема данных с порта
         private void MyserialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            // Считываем данные, поступившие с COM-порта
+            // Чтение данных с порта
             string data = MyserialPort.ReadExisting();
             this.Invoke(new MethodInvoker(delegate
             {
-                // Отображаем полученные данные в сообщении
                 MessageBox.Show("Получены данные: " + data);
             }));
         }
