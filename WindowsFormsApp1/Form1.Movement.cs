@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
+using System.Threading;
 
 namespace WindowsFormsApp1
 {
@@ -11,6 +12,7 @@ namespace WindowsFormsApp1
             if (int.TryParse(SizeX.Text, out stepSizeX))
             {
                 SendCommand(1, stepSizeX); // Команда движения влево
+                Thread.Sleep(300);
             }
             else
             {
@@ -24,6 +26,7 @@ namespace WindowsFormsApp1
             if (int.TryParse(SizeX.Text, out stepSizeX))
             {
                 SendCommand(2, stepSizeX); // Команда движения вправо
+                Thread.Sleep(300);
             }
             else
             {
@@ -37,6 +40,7 @@ namespace WindowsFormsApp1
             if (int.TryParse(SizeY.Text, out stepSizeY))
             {
                 SendCommand(3, stepSizeY); // Команда движения вверх
+                Thread.Sleep(300);
             }
             else
             {
@@ -50,12 +54,29 @@ namespace WindowsFormsApp1
             if (int.TryParse(SizeY.Text, out stepSizeY))
             {
                 SendCommand(4, stepSizeY); // Команда движения вниз
+                Thread.Sleep(300);
             }
             else
             {
                 MessageBox.Show("Введите корректное значение для Y.");
             }
         }
+
+        private void scan_Click(object sender, EventArgs e)
+        {
+            int scanSizeX, scanSizeY;
+            if (int.TryParse(SizeX.Text, out scanSizeX) && (int.TryParse(SizeY.Text, out scanSizeY)))
+            {
+                SendCommand(1, scanSizeX * 10);
+                Thread.Sleep(300);
+                
+                SendCommand(3, scanSizeY * 10);
+                Thread.Sleep(300);
+
+
+            }
+        }
+      
 
         private void SendCommand(byte commandByte, int stepSize)
         {

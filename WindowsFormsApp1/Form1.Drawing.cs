@@ -44,11 +44,12 @@ namespace WindowsFormsApp1
         private void DrawCrystals(Graphics g, float crystalWidthRaw, float crystalHeightRaw)
         {
             crystals.Clear(); // Очищаем текущую коллекцию кристаллов
-            nextCrystalIndex = 1; // Сбрасываем индекс, чтобы начать нумерацию заново
+            nextCrystalIndex = 1; // Сбрасываем индекс
 
             float centerX = pictureBox1.Width / 2;
             float centerY = pictureBox1.Height / 2;
             float radius = waferDiameter / 2;
+            float radiusSquared = radius * radius; // Избегаем повторного вычисления Math.Sqrt
             int totalCrystals = 0;
 
             float crystalWidth = crystalWidthRaw / 1000;
@@ -56,44 +57,42 @@ namespace WindowsFormsApp1
             float displayCrystalWidth = crystalWidth * scaleFactor;
             float displayCrystalHeight = crystalHeight * scaleFactor;
 
-            int numCrystalsX = (int)(2 * radius / crystalWidth);
-            int numCrystalsY = (int)(2 * radius / crystalHeight);
-
             float startX = centerX - radius;
+            float endX = centerX + radius;
             float startY = centerY - radius;
+            float endY = centerY + radius;
 
-            for (int i = 0; i < numCrystalsX; i++)
+            int numCrystalsX = (int)((endX - startX) / crystalWidth);
+            int numCrystalsY = (int)((endY - startY) / crystalHeight);
+
+            for (int i = 0; i <= numCrystalsX; i++)
             {
-                for (int j = 0; j < numCrystalsY; j++)
+                for (int j = 0; j <= numCrystalsY; j++)
                 {
                     float crystalX = startX + i * crystalWidth + crystalWidth / 2;
                     float crystalY = startY + j * crystalHeight + crystalHeight / 2;
 
-                    float distanceFromCenter = (float)Math.Sqrt(Math.Pow(crystalX - centerX, 2) + Math.Pow(crystalY - centerY, 2));
+                    float dx = crystalX - centerX;
+                    float dy = crystalY - centerY;
 
-                    if (distanceFromCenter <= radius)
+                    if (dx * dx + dy * dy <= radiusSquared)
                     {
-                        // Создаем новый объект кристалла с реальными координатами
                         Crystal crystal = new Crystal
                         {
-                            Index = nextCrystalIndex++, // Присваиваем индекс и увеличиваем счетчик
-                            RealX = crystalX,           // Реальная координата X
-                            RealY = crystalY,           // Реальная координата Y
-                            Color = Color.Blue          // Цвет кристалла
+                            Index = nextCrystalIndex++,
+                            RealX = crystalX,
+                            RealY = crystalY,
+                            Color = Color.Blue
                         };
 
-                        // Добавляем кристалл в коллекцию
                         crystals.Add(crystal);
 
-                        // Пересчет масштабированных координат для отображения на экране
                         float scaledCrystalX = (crystal.RealX - centerX) * scaleFactor + centerX;
                         float scaledCrystalY = (crystal.RealY - centerY) * scaleFactor + centerY;
 
-                        // Сохраняем масштабированные координаты для отображения
                         crystal.DisplayX = scaledCrystalX;
                         crystal.DisplayY = scaledCrystalY;
 
-                        // Рисуем кристалл как прямоугольник синего цвета на PictureBox
                         g.DrawRectangle(Pens.Blue, crystal.DisplayX - displayCrystalWidth / 2, crystal.DisplayY - displayCrystalHeight / 2, displayCrystalWidth, displayCrystalHeight);
 
                         if (selectedCrystalIndex == crystal.Index)
@@ -111,11 +110,12 @@ namespace WindowsFormsApp1
 
             if (selectedCrystalIndex > crystals.Count)
             {
-                selectedCrystalIndex = -1; // Сбрасываем выбранный индекс, если он больше не валиден
+                selectedCrystalIndex = -1;
             }
 
             labelTotalCrystals.Text = $"Общее количество кристаллов: {totalCrystals}";
         }
+
 
 
 

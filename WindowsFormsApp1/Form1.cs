@@ -38,6 +38,6 @@ namespace WindowsFormsApp1
             pictureBox1.Refresh(); // Обновляем содержимое PictureBox
         }
 
-        
+       
     }
 }

@@ -58,13 +58,17 @@ namespace WindowsFormsApp1
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.labelIndex = new System.Windows.Forms.Label();
+            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+            this.scan = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonConnect
             // 
             this.buttonConnect.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.buttonConnect.Location = new System.Drawing.Point(1119, 78);
+            this.buttonConnect.Location = new System.Drawing.Point(1271, 98);
             this.buttonConnect.Margin = new System.Windows.Forms.Padding(4);
             this.buttonConnect.Name = "buttonConnect";
             this.buttonConnect.Size = new System.Drawing.Size(137, 28);
@@ -76,7 +80,7 @@ namespace WindowsFormsApp1
             // buttonUpdatePort
             // 
             this.buttonUpdatePort.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.buttonUpdatePort.Location = new System.Drawing.Point(1119, 114);
+            this.buttonUpdatePort.Location = new System.Drawing.Point(1271, 134);
             this.buttonUpdatePort.Margin = new System.Windows.Forms.Padding(4);
             this.buttonUpdatePort.Name = "buttonUpdatePort";
             this.buttonUpdatePort.Size = new System.Drawing.Size(137, 28);
@@ -89,7 +93,7 @@ namespace WindowsFormsApp1
             // 
             this.comboBoxPorts.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.comboBoxPorts.FormattingEnabled = true;
-            this.comboBoxPorts.Location = new System.Drawing.Point(950, 82);
+            this.comboBoxPorts.Location = new System.Drawing.Point(1102, 102);
             this.comboBoxPorts.Margin = new System.Windows.Forms.Padding(4);
             this.comboBoxPorts.Name = "comboBoxPorts";
             this.comboBoxPorts.Size = new System.Drawing.Size(160, 24);
@@ -102,7 +106,7 @@ namespace WindowsFormsApp1
             // buttonMoveUp
             // 
             this.buttonMoveUp.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.buttonMoveUp.Location = new System.Drawing.Point(1021, 266);
+            this.buttonMoveUp.Location = new System.Drawing.Point(1173, 286);
             this.buttonMoveUp.Margin = new System.Windows.Forms.Padding(4);
             this.buttonMoveUp.Name = "buttonMoveUp";
             this.buttonMoveUp.Size = new System.Drawing.Size(100, 28);
@@ -114,7 +118,7 @@ namespace WindowsFormsApp1
             // buttonMoveDown
             // 
             this.buttonMoveDown.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.buttonMoveDown.Location = new System.Drawing.Point(1021, 302);
+            this.buttonMoveDown.Location = new System.Drawing.Point(1173, 322);
             this.buttonMoveDown.Margin = new System.Windows.Forms.Padding(4);
             this.buttonMoveDown.Name = "buttonMoveDown";
             this.buttonMoveDown.Size = new System.Drawing.Size(100, 28);
@@ -126,7 +130,7 @@ namespace WindowsFormsApp1
             // buttonMoveLeft
             // 
             this.buttonMoveLeft.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.buttonMoveLeft.Location = new System.Drawing.Point(913, 301);
+            this.buttonMoveLeft.Location = new System.Drawing.Point(1065, 321);
             this.buttonMoveLeft.Margin = new System.Windows.Forms.Padding(4);
             this.buttonMoveLeft.Name = "buttonMoveLeft";
             this.buttonMoveLeft.Size = new System.Drawing.Size(100, 28);
@@ -138,7 +142,7 @@ namespace WindowsFormsApp1
             // buttonMoveRight
             // 
             this.buttonMoveRight.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.buttonMoveRight.Location = new System.Drawing.Point(1129, 301);
+            this.buttonMoveRight.Location = new System.Drawing.Point(1281, 321);
             this.buttonMoveRight.Margin = new System.Windows.Forms.Padding(4);
             this.buttonMoveRight.Name = "buttonMoveRight";
             this.buttonMoveRight.Size = new System.Drawing.Size(100, 28);
@@ -151,7 +155,7 @@ namespace WindowsFormsApp1
             // 
             this.SizeX.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.SizeX.BeepOnError = true;
-            this.SizeX.Location = new System.Drawing.Point(1123, 360);
+            this.SizeX.Location = new System.Drawing.Point(1275, 380);
             this.SizeX.Margin = new System.Windows.Forms.Padding(4);
             this.SizeX.Mask = "00000";
             this.SizeX.Name = "SizeX";
@@ -165,7 +169,7 @@ namespace WindowsFormsApp1
             // 
             this.SizeY.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.SizeY.BeepOnError = true;
-            this.SizeY.Location = new System.Drawing.Point(1123, 392);
+            this.SizeY.Location = new System.Drawing.Point(1275, 412);
             this.SizeY.Margin = new System.Windows.Forms.Padding(4);
             this.SizeY.Mask = "00000";
             this.SizeY.Name = "SizeY";
@@ -179,7 +183,7 @@ namespace WindowsFormsApp1
             // 
             this.label1.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(1041, 360);
+            this.label1.Location = new System.Drawing.Point(1193, 380);
             this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(62, 16);
@@ -190,7 +194,7 @@ namespace WindowsFormsApp1
             // 
             this.label2.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(1045, 399);
+            this.label2.Location = new System.Drawing.Point(1197, 419);
             this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(63, 16);
@@ -205,7 +209,7 @@ namespace WindowsFormsApp1
             this.pictureBox1.BackColor = System.Drawing.Color.Transparent;
             this.pictureBox1.Location = new System.Drawing.Point(41, 82);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(811, 534);
+            this.pictureBox1.Size = new System.Drawing.Size(963, 575);
             this.pictureBox1.TabIndex = 11;
             this.pictureBox1.TabStop = false;
             this.pictureBox1.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureBox1_Paint);
@@ -215,7 +219,7 @@ namespace WindowsFormsApp1
             // 
             this.label5.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(985, 426);
+            this.label5.Location = new System.Drawing.Point(1130, 446);
             this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(130, 16);
@@ -226,7 +230,7 @@ namespace WindowsFormsApp1
             // 
             this.WaferDiameter.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.WaferDiameter.BeepOnError = true;
-            this.WaferDiameter.Location = new System.Drawing.Point(1123, 420);
+            this.WaferDiameter.Location = new System.Drawing.Point(1275, 440);
             this.WaferDiameter.Margin = new System.Windows.Forms.Padding(4);
             this.WaferDiameter.Mask = "00000";
             this.WaferDiameter.Name = "WaferDiameter";
@@ -257,7 +261,7 @@ namespace WindowsFormsApp1
             // Create
             // 
             this.Create.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.Create.Location = new System.Drawing.Point(1129, 464);
+            this.Create.Location = new System.Drawing.Point(1271, 653);
             this.Create.Margin = new System.Windows.Forms.Padding(4);
             this.Create.Name = "Create";
             this.Create.Size = new System.Drawing.Size(100, 28);
@@ -270,7 +274,7 @@ namespace WindowsFormsApp1
             // 
             this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(950, 475);
+            this.label3.Location = new System.Drawing.Point(1092, 685);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(44, 16);
             this.label3.TabIndex = 18;
@@ -281,7 +285,7 @@ namespace WindowsFormsApp1
             // 
             this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(953, 508);
+            this.label4.Location = new System.Drawing.Point(1095, 718);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(44, 16);
             this.label4.TabIndex = 19;
@@ -290,18 +294,51 @@ namespace WindowsFormsApp1
             // 
             // labelIndex
             // 
+            this.labelIndex.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.labelIndex.AutoSize = true;
-            this.labelIndex.Location = new System.Drawing.Point(953, 537);
+            this.labelIndex.Location = new System.Drawing.Point(1070, 751);
             this.labelIndex.Name = "labelIndex";
             this.labelIndex.Size = new System.Drawing.Size(69, 16);
             this.labelIndex.TabIndex = 20;
             this.labelIndex.Text = "labelIndex";
             // 
+            // comboBox1
+            // 
+            this.comboBox1.FormattingEnabled = true;
+            this.comboBox1.Location = new System.Drawing.Point(1275, 478);
+            this.comboBox1.Name = "comboBox1";
+            this.comboBox1.Size = new System.Drawing.Size(133, 24);
+            this.comboBox1.TabIndex = 21;
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(1165, 486);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(90, 16);
+            this.label6.TabIndex = 22;
+            this.label6.Text = "Тип изделия";
+            // 
+            // scan
+            // 
+            this.scan.Location = new System.Drawing.Point(1255, 685);
+            this.scan.Name = "scan";
+            this.scan.Size = new System.Drawing.Size(126, 57);
+            this.scan.TabIndex = 23;
+            this.scan.Text = "Сканирование";
+            this.scan.UseVisualStyleBackColor = true;
+            this.scan.Click += new System.EventHandler(this.scan_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1274, 754);
+            this.ClientSize = new System.Drawing.Size(1426, 795);
+            this.Controls.Add(this.scan);
+            this.Controls.Add(this.label6);
+            this.Controls.Add(this.comboBox1);
             this.Controls.Add(this.labelIndex);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
@@ -355,5 +392,9 @@ namespace WindowsFormsApp1
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label labelIndex;
+        private System.Windows.Forms.ComboBox comboBox1;
+        private System.Windows.Forms.Label label6;
+        private System.ComponentModel.BackgroundWorker backgroundWorker1;
+        private System.Windows.Forms.Button scan;
     }
 }
