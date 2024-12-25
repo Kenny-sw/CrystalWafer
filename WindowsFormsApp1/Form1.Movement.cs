@@ -9,89 +9,120 @@ namespace WindowsFormsApp1
         // Обработчики кнопок движения
         private void buttonMoveLeft_Click(object sender, EventArgs e)
         {
-            int stepSizeX;
-            if (int.TryParse(SizeX.Text, out stepSizeX))
+            if (uint.TryParse(SizeX.Text, out uint stepSizeX))
             {
-                SendCommand(1, stepSizeX); // 1 - команда движения влево
-                Thread.Sleep(300);         // Пауза для завершения движения
+                // Команда 1 = движение влево
+                SendCommand(1, stepSizeX);
+                Thread.Sleep(300);
             }
             else
             {
-                MessageBox.Show("Введите корректное значение для X.");
+                MessageBox.Show("Введите положительное число для X.");
             }
         }
 
         private void buttonMoveRight_Click(object sender, EventArgs e)
         {
-            int stepSizeX;
-            if (int.TryParse(SizeX.Text, out stepSizeX))
+            if (uint.TryParse(SizeX.Text, out uint stepSizeX))
             {
-                SendCommand(2, stepSizeX); // Команда движения вправо
+                // Команда 2 = движение вправо
+                SendCommand(2, stepSizeX);
                 Thread.Sleep(300);
             }
             else
             {
-                MessageBox.Show("Введите корректное значение для X.");
+                MessageBox.Show("Введите положительное число для X.");
             }
         }
 
         private void buttonMoveUp_Click(object sender, EventArgs e)
         {
-            int stepSizeY;
-            if (int.TryParse(SizeY.Text, out stepSizeY))
+            if (uint.TryParse(SizeY.Text, out uint stepSizeY))
             {
-                SendCommand(3, stepSizeY); // Команда движения вверх
+                // Команда 3 = движение вверх
+                SendCommand(3, stepSizeY);
                 Thread.Sleep(300);
             }
             else
             {
-                MessageBox.Show("Введите корректное значение для Y.");
+                MessageBox.Show("Введите положительное число для Y.");
             }
         }
 
         private void buttonMoveDown_Click(object sender, EventArgs e)
         {
-            int stepSizeY;
-            if (int.TryParse(SizeY.Text, out stepSizeY))
+            if (uint.TryParse(SizeY.Text, out uint stepSizeY))
             {
-                SendCommand(4, stepSizeY); // Команда движения вниз
+                // Команда 4 = движение вниз
+                SendCommand(4, stepSizeY);
                 Thread.Sleep(300);
             }
             else
             {
-                MessageBox.Show("Введите корректное значение для Y.");
+                MessageBox.Show("Введите положительное число для Y.");
             }
         }
 
+        // ----- Обработчик кнопки Scan -----
         private void scan_Click(object sender, EventArgs e)
         {
-            int scanSizeX, scanSizeY;
-            if (int.TryParse(SizeX.Text, out scanSizeX) && (int.TryParse(SizeY.Text, out scanSizeY)))
+            
+            if (uint.TryParse(SizeX.Text, out uint scanSizeX) &&
+                uint.TryParse(SizeY.Text, out uint scanSizeY))
             {
-                SendCommand(1, scanSizeX * 10);
-                Thread.Sleep(300);
-                
-                SendCommand(3, scanSizeY * 10);
-                Thread.Sleep(300);
+                // Двигаемся влево (команда 1)
+                SendCommand(1, scanSizeX * 100);
+                Thread.Sleep(100);
 
-
+                // Двигаемся вверх (команда 3)
+                SendCommand(3, scanSizeY * 100);
+                Thread.Sleep(100);
+            }
+            else
+            {
+                MessageBox.Show("Введите положительные числа для X и Y.");
             }
         }
-      
 
-        // Метод отправки команды на контроллер движения
+        // ----- Метод отправки 5-байтовой команды (команда + 4 байта шага) -----
+        private void SendCommand(byte commandByte, uint stepSize)
+        {
+            // Разбиваем 32-битное число stepSize на 4 байта (младший -> старший)
+            byte b0 = (byte)(stepSize & 0xFF);         // младший байт
+            byte b1 = (byte)((stepSize >> 8) & 0xFF);
+            byte b2 = (byte)((stepSize >> 16) & 0xFF);
+            byte b3 = (byte)((stepSize >> 24) & 0xFF); // старший байт
+
+            // Пакет: [команда] [b0] [b1] [b2] [b3]
+            byte[] dataToSend = new byte[] { commandByte, b0, b1, b2, b3 };
+
+            try
+            {
+                // Отправляем в порт
+                MyserialPort.Write(dataToSend, 0, dataToSend.Length);
+
+                // Ваш метод обновления визуализации (если нужен)
+                UpdateWaferVisualization();
+            }
+            catch
+            {
+                MessageBox.Show("Ошибка отправки. Проверьте, что COM-порт доступен.");
+            }
+        }
+
+        // ----- Старый метод (3 байта) можно убрать или оставить закомментированным -----
+        /*
         private void SendCommand(byte commandByte, int stepSize)
         {
-            if (stepSize >= 0 && stepSize <= 65535) // Проверка диапазона значений
+            if (stepSize >= 0 && stepSize <= 65535) 
             {
-                byte firstByte = (byte)(stepSize / 256);  // Старший байт
-                byte secondByte = (byte)(stepSize % 256);  // Младший байт
+                byte firstByte = (byte)(stepSize >> 8);    
+                byte secondByte = (byte)(stepSize & 0xFF);
 
                 try
                 {
-                    // Отправка 3 байт: команда + старший байт + младший байт
                     MyserialPort.Write(new byte[] { commandByte, firstByte, secondByte }, 0, 3);
-                    UpdateWaferVisualization(); // Обновление отображения
+                    UpdateWaferVisualization();
                 }
                 catch
                 {
@@ -100,8 +131,9 @@ namespace WindowsFormsApp1
             }
             else
             {
-                MessageBox.Show("Неверное число или значение байт для отправки. Убедитесь, что число в диапазоне от 0 до 65535.");
+                MessageBox.Show("Неверное число. Диапазон от 0 до 65535.");
             }
         }
+        */
     }
 }
