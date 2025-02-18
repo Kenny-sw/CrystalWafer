@@ -1,3 +1,0 @@
-﻿Small Crystal:1.55,0.93,100
-Large Crystal:3.00,2.00,150
-Standard Wafer:2.00,1.50,200

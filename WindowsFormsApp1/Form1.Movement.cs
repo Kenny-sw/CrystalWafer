@@ -2,7 +2,7 @@
 using System.Windows.Forms;
 using System.Threading;
 
-namespace WindowsFormsApp1
+namespace CrystalTable
 {
     public partial class Form1
     {
@@ -110,7 +110,7 @@ namespace WindowsFormsApp1
             }
         }
 
-        // ----- Старый метод (3 байта) можно убрать или оставить закомментированным -----
+        // ----- Старый метод (3 байта) 
         /*
         private void SendCommand(byte commandByte, int stepSize)
         {

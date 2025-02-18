@@ -4,7 +4,7 @@ using System.Drawing;
 using System.IO.Ports;
 using System.Windows.Forms;
 
-namespace WindowsFormsApp1
+namespace CrystalTable
 {
     public partial class Form1
     {
