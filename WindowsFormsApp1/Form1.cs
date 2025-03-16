@@ -3,8 +3,10 @@
 using CrystalTable.Data;
 using CrystalTable.Logic;
 using System;
+using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
 
 namespace CrystalTable
 {
@@ -159,16 +161,44 @@ namespace CrystalTable
 
         private void SizeX_TextChanged(object sender, EventArgs e)
         {
+            
+            if (!float.TryParse(SizeX.Text, out float value) || value <= 0) // Если не число или отрицательное
+            {
+                SizeX.BackColor = Color.Red; // Подсвечиваем красным
+            }
+            else
+            {
+                SizeX.BackColor = Color.White; // Возвращаем белый цвет, если всё верно
+            }
             pictureBox1.Invalidate(); // Перерисовка при изменении текста
         }
 
         private void SizeY_TextChanged(object sender, EventArgs e)
         {
+            
+
+            if (!float.TryParse(SizeY.Text, out float value) || value <= 0) // Если не число или отрицательное
+            {
+                SizeX.BackColor = Color.Red; // Подсвечиваем красным
+            }
+            else
+            {
+                SizeX.BackColor = Color.White; // Возвращаем белый цвет, если всё верно
+            }
             pictureBox1.Invalidate(); // Перерисовка при изменении текста
         }
 
         private void WaferDiameter_TextChanged(object sender, EventArgs e)
         {
+            
+            if (!float.TryParse(WaferDiameter.Text, out float value) || value <= 0) // Если не число или отрицательное
+            {
+                SizeX.BackColor = Color.Red; // Подсвечиваем красным
+            }
+            else
+            {
+                SizeX.BackColor = Color.White; // Возвращаем белый цвет, если всё верно
+            }
             pictureBox1.Invalidate(); // Перерисовка при изменении текста
         }
 
@@ -180,6 +210,11 @@ namespace CrystalTable
         private void fToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            
         }
     }
 }

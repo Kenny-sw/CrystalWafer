@@ -68,6 +68,7 @@ namespace CrystalTable
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.closeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.checkBox1 = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -216,7 +217,7 @@ namespace CrystalTable
             this.pictureBox1.BackColor = System.Drawing.Color.Transparent;
             this.pictureBox1.Location = new System.Drawing.Point(41, 82);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(963, 575);
+            this.pictureBox1.Size = new System.Drawing.Size(847, 660);
             this.pictureBox1.TabIndex = 11;
             this.pictureBox1.TabStop = false;
             this.pictureBox1.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureBox1_Paint);
@@ -251,7 +252,7 @@ namespace CrystalTable
             // labelTotalCrystals
             // 
             this.labelTotalCrystals.AutoSize = true;
-            this.labelTotalCrystals.Location = new System.Drawing.Point(227, 22);
+            this.labelTotalCrystals.Location = new System.Drawing.Point(227, 28);
             this.labelTotalCrystals.Name = "labelTotalCrystals";
             this.labelTotalCrystals.Size = new System.Drawing.Size(210, 16);
             this.labelTotalCrystals.TabIndex = 13;
@@ -260,7 +261,7 @@ namespace CrystalTable
             // labelSelectedCrystal
             // 
             this.labelSelectedCrystal.AutoSize = true;
-            this.labelSelectedCrystal.Location = new System.Drawing.Point(561, 22);
+            this.labelSelectedCrystal.Location = new System.Drawing.Point(563, 28);
             this.labelSelectedCrystal.Name = "labelSelectedCrystal";
             this.labelSelectedCrystal.Size = new System.Drawing.Size(185, 16);
             this.labelSelectedCrystal.TabIndex = 16;
@@ -280,7 +281,7 @@ namespace CrystalTable
             // 
             // label3
             // 
-            this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.label3.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(1092, 685);
             this.label3.Name = "label3";
@@ -291,7 +292,7 @@ namespace CrystalTable
             // 
             // label4
             // 
-            this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.label4.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label4.AutoSize = true;
             this.label4.Location = new System.Drawing.Point(1095, 718);
             this.label4.Name = "label4";
@@ -302,9 +303,7 @@ namespace CrystalTable
             // 
             // labelIndex
             // 
-            this.labelIndex.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelIndex.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.labelIndex.AutoSize = true;
             this.labelIndex.Location = new System.Drawing.Point(1070, 751);
             this.labelIndex.Name = "labelIndex";
@@ -314,6 +313,7 @@ namespace CrystalTable
             // 
             // comboBox1
             // 
+            this.comboBox1.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.comboBox1.FormattingEnabled = true;
             this.comboBox1.Location = new System.Drawing.Point(1275, 478);
             this.comboBox1.Name = "comboBox1";
@@ -322,6 +322,7 @@ namespace CrystalTable
             // 
             // label6
             // 
+            this.label6.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label6.AutoSize = true;
             this.label6.Location = new System.Drawing.Point(1165, 486);
             this.label6.Name = "label6";
@@ -331,6 +332,7 @@ namespace CrystalTable
             // 
             // scan
             // 
+            this.scan.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.scan.Location = new System.Drawing.Point(1255, 685);
             this.scan.Name = "scan";
             this.scan.Size = new System.Drawing.Size(126, 57);
@@ -353,6 +355,7 @@ namespace CrystalTable
             // 
             // menuStrip1
             // 
+            this.menuStrip1.BackColor = System.Drawing.Color.LightGray;
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fToolStripMenuItem});
@@ -376,26 +379,39 @@ namespace CrystalTable
             // openToolStripMenuItem
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(128, 26);
             this.openToolStripMenuItem.Text = "&Open";
             // 
             // closeToolStripMenuItem
             // 
             this.closeToolStripMenuItem.Name = "closeToolStripMenuItem";
-            this.closeToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.closeToolStripMenuItem.Size = new System.Drawing.Size(128, 26);
             this.closeToolStripMenuItem.Text = "&Close";
             // 
             // loadToolStripMenuItem
             // 
             this.loadToolStripMenuItem.Name = "loadToolStripMenuItem";
-            this.loadToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.loadToolStripMenuItem.Size = new System.Drawing.Size(128, 26);
             this.loadToolStripMenuItem.Text = "&Load";
+            // 
+            // checkBox1
+            // 
+            this.checkBox1.AutoSize = true;
+            this.checkBox1.Location = new System.Drawing.Point(1313, 517);
+            this.checkBox1.Name = "checkBox1";
+            this.checkBox1.Size = new System.Drawing.Size(114, 20);
+            this.checkBox1.TabIndex = 26;
+            this.checkBox1.Text = "Режим схемы";
+            this.checkBox1.UseVisualStyleBackColor = true;
+            this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.Color.Gainsboro;
             this.ClientSize = new System.Drawing.Size(1426, 795);
+            this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.saveButton);
             this.Controls.Add(this.scan);
             this.Controls.Add(this.label6);
@@ -425,6 +441,7 @@ namespace CrystalTable
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "Form1";
             this.Text = "Form1";
+            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.Resize += new System.EventHandler(this.Form1_Resize);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.menuStrip1.ResumeLayout(false);
@@ -467,5 +484,6 @@ namespace CrystalTable
         private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem closeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem loadToolStripMenuItem;
+        private System.Windows.Forms.CheckBox checkBox1;
     }
 }

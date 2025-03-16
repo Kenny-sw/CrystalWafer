@@ -2,6 +2,7 @@
 using CrystalTable.Logic;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -19,10 +20,12 @@ namespace CrystalTable
             Graphics g = e.Graphics; // Объект Graphics для рисования.
             g.Clear(Color.White);    // Очищаем область рисования (заливка белым цветом).
 
-            // Проверяем корректность ввода размеров.
+            // Проверяем корректность ввода размеров изменяя цвет(пока не работает,т.к по дефолту False)
             if (!IsInputValid())
             {
-                labelTotalCrystals.Text = "Введите корректные размеры кристаллов и пластины";
+              //SizeX.BackColor = Color.Red;
+               // SizeY.BackColor = Color.Red;
+                //WaferDiameter.BackColor = Color.Red;
                 return;
             }
 
@@ -74,12 +77,40 @@ namespace CrystalTable
             float radius = waferDiameter / 2;             // Радиус в мм.
             float displayRadius = radius * scaleFactor;     // Радиус в пикселях.
 
-            g.DrawEllipse(Pens.Black,
-                          centerX - displayRadius,
-                          centerY - displayRadius,
-                          displayRadius * 2,
-                          displayRadius * 2);
+            if (checkBox1.Checked == true)
+            {
+
+                pictureBox1.Invalidate();
+                g.DrawEllipse(Pens.Black,
+                                 centerX - displayRadius,
+                                 centerY - displayRadius,
+                                 displayRadius * 2,
+                                 displayRadius * 2);
+               
+            }
+            else
+            {
+                pictureBox1.Invalidate();
+                using (Brush fillBrush = new SolidBrush(Color.Green))
+                {
+                    // Заполняем круг зеленым цветом
+                    g.FillEllipse(fillBrush,
+                                  centerX - displayRadius,
+                                  centerY - displayRadius,
+                                  displayRadius * 2,
+                                  displayRadius * 2);
+
+                    // Рисуем чёрный контур круга
+                    g.DrawEllipse(Pens.Black,
+                                  centerX - displayRadius,
+                                  centerY - displayRadius,
+                                  displayRadius * 2,
+                                  displayRadius * 2);
+                }
+            }
         }
+    
+
 
         // Вычисление расположения кристаллов в логической системе координат (мм относительно центра пластины).
         private void BuildCrystals(float crystalWidthRaw, float crystalHeightRaw)
@@ -171,6 +202,8 @@ namespace CrystalTable
                 crystal.DisplayRight = scaledCrystalX + halfW;
                 crystal.DisplayTop = scaledCrystalY - halfH;
                 crystal.DisplayBottom = scaledCrystalY + halfH;
+
+               
 
                 // Отрисовка: если кристалл выбран, заливаем жёлтым, иначе рисуем синим контуром.
                 if (selectedCrystalIndex == crystal.Index)
