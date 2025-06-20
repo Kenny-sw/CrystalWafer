@@ -1,12 +1,9 @@
-﻿// Главный файл формы Form1, в котором содержатся основные параметры и обработка событий Resize и инициализация компонента
-
-using CrystalTable.Data;
+﻿using CrystalTable.Data;
 using CrystalTable.Logic;
 using System;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
 
 namespace CrystalTable
 {
@@ -14,35 +11,65 @@ namespace CrystalTable
     {
         // Основные параметры формы
         private float waferDiameter = 100f;     // Диаметр пластины в миллиметрах
-        private float scaleFactor = 4.0f;       // Коэффициент масштабирования для отображения
-        private const float MinWaferDiameter = 50f;  // Минимально допустимый диаметр пластины
-        private const float MaxWaferDiameter = 300f; // Максимально допустимый диаметр пластины
-        private int selectedCrystalIndex = -1;   // Индекс выбранного кристалла (-1 = не выбран)
-        private int nextCrystalIndex = 1;        // Счетчик для нумерации кристаллов
+        private float scaleFactor = 4.0f;       // Коэффициент масштабирования
+        private const float MinWaferDiameter = 50f;  // Минимальный диаметр пластины
+        private const float MaxWaferDiameter = 300f; // Максимальный диаметр пластины
+        private int selectedCrystalIndex = -1;   // Индекс выбранного кристалла
+        private int nextCrystalIndex = 1;        // Счетчик для кристаллов
         private float crystalWidthRaw;           // Ширина кристалла в микрометрах
         private float crystalHeightRaw;          // Высота кристалла в микрометрах
 
+        // Глобальные переменные для отслеживания значений
+        private float SizeXtemp = 0;
+        private float SizeYtemp = 0;
+        private float WaferDiameterTemp = 0;
+        private bool isDataChanged;
 
         public Form1()
         {
-            InitializeComponent(); // Инициализация компонентов формы
-            pictureBox1.Paint += pictureBox1_Paint; // Привязываем событие Paint к обработчику pictureBox1_Paint для отрисовки
-            this.Resize += new EventHandler(Form1_Resize); // Привязываем событие Resize для обновления визуализации при изменении размеров формы
+            InitializeComponent();
+            pictureBox1.Paint += pictureBox1_Paint;
+            this.Resize += new EventHandler(Form1_Resize);
+
+            // Устанавливаем событие Validated для TextBox
+            SizeX.Validated += SizeX_Validated;
+            SizeY.Validated += SizeY_Validated;
+            WaferDiameter.Validated += WaferDiameter_Validated;
+
+            // Инициализация меток
+            UpdateLabels();
         }
 
+        // Метод для обновления меток
+        private void UpdateLabels()
+        {
+            SizeXtempLabel.Text = SizeXtemp.ToString();
+            SizeYtempLabel.Text = SizeYtemp.ToString();
+            WaferDiameterTempLabel.Text = WaferDiameterTemp.ToString();
+        }
+
+        // Метод для перерасчета
+  //    private void RecalculateWafer() //для будущей переделки
+  //    {
+  //        if (isDataChanged)
+  //        {
+  //            // Здесь выполняется перерасчет на основе SizeXtemp, SizeYtemp, WaferDiameterTemp
+  //            pictureBox1.Invalidate(); // Перерисовываем pictureBox1
+  //            isDataChanged = false; // Сбрасываем флаг после перерасчета
+  //        }
+  //    }
 
         // Обработчик события изменения размеров формы
         private void Form1_Resize(object sender, EventArgs e)
         {
-            pictureBox1.Invalidate(); // Перерисовываем PictureBox при изменении размера формы
+            pictureBox1.Invalidate();
         }
 
         // Метод для обновления визуализации пластины
         private void UpdateWaferVisualization()
         {
-            pictureBox1.Refresh(); // Обновляем содержимое PictureBox
+            pictureBox1.Refresh();
         }
-
 
         private void SaveButton_Click(object sender, EventArgs e)
         {
@@ -59,11 +86,9 @@ namespace CrystalTable
             serializer.Serialize(waferInfo);
         }
 
-        // Метод для загрузки данных из файла в comboBox1
         public void LoadComboBoxData()
         {
-            string filePath = "crystal_data.txt"; // Укажите путь к вашему файлу
-
+            string filePath = "crystal_data.txt";
             if (!File.Exists(filePath))
             {
                 MessageBox.Show("Файл с данными не найден. Убедитесь, что файл 'crystal_data.txt' существует.");
@@ -72,16 +97,13 @@ namespace CrystalTable
 
             try
             {
-                // Читаем файл построчно
                 string[] lines = File.ReadAllLines(filePath);
-
-                // Заполняем comboBox1
                 foreach (string line in lines)
                 {
-                    string[] parts = line.Split(':'); // Разделяем строку по ":"
+                    string[] parts = line.Split(':');
                     if (parts.Length == 2)
                     {
-                        comboBox1.Items.Add(parts[0].Trim()); // Добавляем название набора в comboBox1
+                        comboBox1.Items.Add(parts[0].Trim());
                     }
                 }
             }
@@ -91,11 +113,9 @@ namespace CrystalTable
             }
         }
 
-        // Метод для установки значений в SizeX, SizeY и WaferDiameter на основе выбранного элемента
         public void SetFieldsFromComboBox()
         {
-            string filePath = "crystal_data.txt"; // Укажите путь к вашему файлу
-
+            string filePath = "crystal_data.txt";
             if (!File.Exists(filePath))
             {
                 MessageBox.Show("Файл с данными не найден.");
@@ -104,20 +124,15 @@ namespace CrystalTable
 
             try
             {
-                // Читаем файл построчно
                 string[] lines = File.ReadAllLines(filePath);
-
-                // Ищем выбранный элемент в файле
                 foreach (string line in lines)
                 {
                     string[] parts = line.Split(':');
-                    if (parts.Length == 2 && parts[0].Trim() == comboBox1.SelectedItem.ToString())
+                    if (parts.Length == 2 && parts[0].Trim() == comboBox1.SelectedItem?.ToString())
                     {
                         string[] parameters = parts[1].Split(',');
-
                         if (parameters.Length == 3)
                         {
-                            // Заполняем поля данными
                             SizeX.Text = parameters[0].Trim();
                             SizeY.Text = parameters[1].Trim();
                             WaferDiameter.Text = parameters[2].Trim();
@@ -159,47 +174,67 @@ namespace CrystalTable
             }
         }
 
-        private void SizeX_TextChanged(object sender, EventArgs e)
+        private void SizeX_Validated(object sender, EventArgs e)
         {
-            
-            if (!float.TryParse(SizeX.Text, out float value) || value <= 0) // Если не число или отрицательное
+            if (!float.TryParse(SizeX.Text, out float value) || value <= 0)
             {
-                SizeX.BackColor = Color.Red; // Подсвечиваем красным
+                SizeX.BackColor = Color.Red; // Подсвечиваем красным при неверном вводе
+                SizeXtemp = 0; // Сбрасываем значение
             }
             else
             {
-                SizeX.BackColor = Color.White; // Возвращаем белый цвет, если всё верно
+                SizeX.BackColor = Color.GreenYellow; // Возвращаем белый цвет
+                if (value != SizeXtemp) // Сравниваем с предыдущим значением
+                {
+                    SizeXtemp = value; // Обновляем временную переменную
+                    isDataChanged = true; // Устанавливаем флаг изменения
+                }
             }
-            pictureBox1.Invalidate(); // Перерисовка при изменении текста
+
+            SizeXtempLabel.Text = SizeXtemp.ToString(); // Обновляем метку
+            
         }
 
-        private void SizeY_TextChanged(object sender, EventArgs e)
+        private void SizeY_Validated(object sender, EventArgs e)
         {
-            
-
-            if (!float.TryParse(SizeY.Text, out float value) || value <= 0) // Если не число или отрицательное
+            if (!float.TryParse(SizeY.Text, out float value) || value <= 0)
             {
-                SizeX.BackColor = Color.Red; // Подсвечиваем красным
+                SizeY.BackColor = Color.Red; // Подсвечиваем красным при неверном вводе
+                SizeYtemp = 0; // Сбрасываем значение
             }
             else
             {
-                SizeX.BackColor = Color.White; // Возвращаем белый цвет, если всё верно
+                SizeY.BackColor = Color.GreenYellow; // Возвращаем белый цвет
+                if (value != SizeYtemp) // Сравниваем с предыдущим значением
+                {
+                    SizeYtemp = value; // Обновляем временную переменную
+                    isDataChanged = true; // Устанавливаем флаг изменения
+                }
             }
-            pictureBox1.Invalidate(); // Перерисовка при изменении текста
+
+            SizeYtempLabel.Text = SizeYtemp.ToString(); // Обновляем метку
+             
         }
 
-        private void WaferDiameter_TextChanged(object sender, EventArgs e)
+        private void WaferDiameter_Validated(object sender, EventArgs e)
         {
-            
-            if (!float.TryParse(WaferDiameter.Text, out float value) || value <= 0) // Если не число или отрицательное
+            if (!float.TryParse(WaferDiameter.Text, out float value) || value < MinWaferDiameter || value > MaxWaferDiameter)
             {
-                SizeX.BackColor = Color.Red; // Подсвечиваем красным
+                WaferDiameter.BackColor = Color.Red; // Подсвечиваем красным при неверном вводе
+                WaferDiameterTemp = 0; // Сбрасываем значение
             }
             else
             {
-                SizeX.BackColor = Color.White; // Возвращаем белый цвет, если всё верно
+                WaferDiameter.BackColor = Color.GreenYellow; // Возвращаем белый цвет
+                if (value != WaferDiameterTemp) // Сравниваем с предыдущим значением
+                {
+                    WaferDiameterTemp = value; // Обновляем временную переменную
+                    isDataChanged = true; // Устанавливаем флаг изменения
+                }
             }
-            pictureBox1.Invalidate(); // Перерисовка при изменении текста
+
+            WaferDiameterTempLabel.Text = WaferDiameterTemp.ToString(); // Обновляем метку
+            
         }
 
         private void Create_Click(object sender, EventArgs e)
@@ -209,12 +244,12 @@ namespace CrystalTable
 
         private void fToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            // Пустой обработчик
         }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
-            
+            // Пустой обработчик
         }
     }
 }

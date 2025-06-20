@@ -69,6 +69,9 @@ namespace CrystalTable
             this.closeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
+            this.SizeXtempLabel = new System.Windows.Forms.Label();
+            this.SizeYtempLabel = new System.Windows.Forms.Label();
+            this.WaferDiameterTempLabel = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -361,7 +364,7 @@ namespace CrystalTable
             this.fToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1426, 28);
+            this.menuStrip1.Size = new System.Drawing.Size(1426, 30);
             this.menuStrip1.TabIndex = 25;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -372,7 +375,7 @@ namespace CrystalTable
             this.closeToolStripMenuItem,
             this.loadToolStripMenuItem});
             this.fToolStripMenuItem.Name = "fToolStripMenuItem";
-            this.fToolStripMenuItem.Size = new System.Drawing.Size(46, 24);
+            this.fToolStripMenuItem.Size = new System.Drawing.Size(46, 26);
             this.fToolStripMenuItem.Text = "File";
             this.fToolStripMenuItem.Click += new System.EventHandler(this.fToolStripMenuItem_Click);
             // 
@@ -396,6 +399,7 @@ namespace CrystalTable
             // 
             // checkBox1
             // 
+            this.checkBox1.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.checkBox1.AutoSize = true;
             this.checkBox1.Location = new System.Drawing.Point(1313, 517);
             this.checkBox1.Name = "checkBox1";
@@ -405,12 +409,42 @@ namespace CrystalTable
             this.checkBox1.UseVisualStyleBackColor = true;
             this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
             // 
+            // SizeXtempLabel
+            // 
+            this.SizeXtempLabel.AutoSize = true;
+            this.SizeXtempLabel.Location = new System.Drawing.Point(941, 203);
+            this.SizeXtempLabel.Name = "SizeXtempLabel";
+            this.SizeXtempLabel.Size = new System.Drawing.Size(44, 16);
+            this.SizeXtempLabel.TabIndex = 27;
+            this.SizeXtempLabel.Text = "label7";
+            // 
+            // SizeYtempLabel
+            // 
+            this.SizeYtempLabel.AutoSize = true;
+            this.SizeYtempLabel.Location = new System.Drawing.Point(941, 237);
+            this.SizeYtempLabel.Name = "SizeYtempLabel";
+            this.SizeYtempLabel.Size = new System.Drawing.Size(44, 16);
+            this.SizeYtempLabel.TabIndex = 28;
+            this.SizeYtempLabel.Text = "label7";
+            // 
+            // WaferDiameterTempLabel
+            // 
+            this.WaferDiameterTempLabel.AutoSize = true;
+            this.WaferDiameterTempLabel.Location = new System.Drawing.Point(941, 270);
+            this.WaferDiameterTempLabel.Name = "WaferDiameterTempLabel";
+            this.WaferDiameterTempLabel.Size = new System.Drawing.Size(44, 16);
+            this.WaferDiameterTempLabel.TabIndex = 29;
+            this.WaferDiameterTempLabel.Text = "label7";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Gainsboro;
             this.ClientSize = new System.Drawing.Size(1426, 795);
+            this.Controls.Add(this.WaferDiameterTempLabel);
+            this.Controls.Add(this.SizeYtempLabel);
+            this.Controls.Add(this.SizeXtempLabel);
             this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.saveButton);
             this.Controls.Add(this.scan);
@@ -485,5 +519,8 @@ namespace CrystalTable
         private System.Windows.Forms.ToolStripMenuItem closeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem loadToolStripMenuItem;
         private System.Windows.Forms.CheckBox checkBox1;
+        private System.Windows.Forms.Label SizeXtempLabel;
+        private System.Windows.Forms.Label SizeYtempLabel;
+        private System.Windows.Forms.Label WaferDiameterTempLabel;
     }
 }

@@ -41,6 +41,7 @@ namespace CrystalTable.Logic
             float displayCrystalWidth = _getDisplayCrystalWidth();
             float displayCrystalHeight = _getDisplayCrystalHeight();
 
+
             // Перебираем кристаллы и проверяем, находится ли мышь над одним из них
             foreach (var crystal in CrystalManager.Instance.Crystals)
             {

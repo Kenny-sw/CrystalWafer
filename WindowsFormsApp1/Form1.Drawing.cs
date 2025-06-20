@@ -57,7 +57,7 @@ namespace CrystalTable
         // Проверка корректности введённых размеров.
         private bool IsInputValid()
         {
-            if (float.TryParse(SizeX.Text, out crystalWidthRaw) &&
+            if (float.TryParse(SizeX.Text, out crystalWidthRaw) &&      //Ключевое слово out указывает, что переменная crystalWidthRaw будет использоваться для хранения результата преобразования.
                 float.TryParse(SizeY.Text, out crystalHeightRaw) &&
                 float.TryParse(WaferDiameter.Text, out float waferDiameterRaw) &&
                 crystalWidthRaw > 0 && crystalHeightRaw > 0 &&
@@ -179,8 +179,12 @@ namespace CrystalTable
         }
 
         // Отрисовка кристаллов с преобразованием логических координат (мм) в экранные координаты (пиксели).
+      
         private void DrawCrystals(Graphics g)
         {
+            //if()
+
+
             float displayCrystalWidth = (crystalWidthRaw / 1000f) * scaleFactor;
             float displayCrystalHeight = (crystalHeightRaw / 1000f) * scaleFactor;
             float centerX = pictureBox1.Width / 2;

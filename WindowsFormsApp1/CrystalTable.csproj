@@ -48,9 +48,6 @@
   <ItemGroup>
     <Compile Include="Data\Crystal.cs" />
     <Compile Include="Data\WaferInfo.cs" />
-    <Compile Include="Form1.CrystalData.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
