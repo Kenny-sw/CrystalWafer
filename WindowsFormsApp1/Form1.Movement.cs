@@ -87,6 +87,12 @@ namespace CrystalTable
         // ----- Метод отправки 5-байтовой команды (команда + 4 байта шага) -----
         private void SendCommand(byte commandByte, uint stepSize)
         {
+            if (!MyserialPort.IsOpen)
+            {
+                MessageBox.Show("COM-порт не подключен.");
+                return;
+            }
+
             // Разбиваем 32-битное число stepSize на 4 байта (младший -> старший)
             byte b0 = (byte)(stepSize & 0xFF);         // младший байт
             byte b1 = (byte)((stepSize >> 8) & 0xFF);
@@ -104,9 +110,9 @@ namespace CrystalTable
                 // Ваш метод обновления визуализации (если нужен)
                 UpdateWaferVisualization();
             }
-            catch
+            catch (Exception ex)
             {
-                MessageBox.Show("Ошибка отправки. Проверьте, что COM-порт доступен.");
+                MessageBox.Show($"Ошибка отправки: {ex.Message}");
             }
         }
 
