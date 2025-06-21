@@ -86,93 +86,6 @@ namespace CrystalTable
             serializer.Serialize(waferInfo);
         }
 
-        public void LoadComboBoxData()
-        {
-            string filePath = "crystal_data.txt";
-            if (!File.Exists(filePath))
-            {
-                MessageBox.Show("Файл с данными не найден. Убедитесь, что файл 'crystal_data.txt' существует.");
-                return;
-            }
-
-            try
-            {
-                string[] lines = File.ReadAllLines(filePath);
-                foreach (string line in lines)
-                {
-                    string[] parts = line.Split(':');
-                    if (parts.Length == 2)
-                    {
-                        comboBox1.Items.Add(parts[0].Trim());
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка при чтении файла: {ex.Message}");
-            }
-        }
-
-        public void SetFieldsFromComboBox()
-        {
-            string filePath = "crystal_data.txt";
-            if (!File.Exists(filePath))
-            {
-                MessageBox.Show("Файл с данными не найден.");
-                return;
-            }
-
-            try
-            {
-                string[] lines = File.ReadAllLines(filePath);
-                foreach (string line in lines)
-                {
-                    string[] parts = line.Split(':');
-                    if (parts.Length == 2 && parts[0].Trim() == comboBox1.SelectedItem?.ToString())
-                    {
-                        string[] parameters = parts[1].Split(',');
-                        if (parameters.Length == 3)
-                        {
-                            SizeX.Text = parameters[0].Trim();
-                            SizeY.Text = parameters[1].Trim();
-                            WaferDiameter.Text = parameters[2].Trim();
-                        }
-                        return;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка при обработке данных: {ex.Message}");
-            }
-        }
-
-        private void SizeX_MouseClick(object sender, MouseEventArgs e)
-        {
-            if (string.IsNullOrEmpty(SizeX.Text))
-            {
-                SizeX.Focus();
-                SizeX.SelectionStart = 0;
-            }
-        }
-
-        private void SizeY_MouseClick(object sender, MouseEventArgs e)
-        {
-            if (string.IsNullOrEmpty(SizeY.Text))
-            {
-                SizeY.Focus();
-                SizeY.SelectionStart = 0;
-            }
-        }
-
-        private void WaferDiameter_MouseClick(object sender, MouseEventArgs e)
-        {
-            if (string.IsNullOrEmpty(WaferDiameter.Text))
-            {
-                WaferDiameter.Focus();
-                WaferDiameter.SelectionStart = 0;
-            }
-        }
 
         private void SizeX_Validated(object sender, EventArgs e)
         {
@@ -237,10 +150,6 @@ namespace CrystalTable
             
         }
 
-        private void Create_Click(object sender, EventArgs e)
-        {
-            pictureBox1.Invalidate();
-        }
 
         private void fToolStripMenuItem_Click(object sender, EventArgs e)
         {

@@ -2,7 +2,7 @@
 using System.IO;
 using System.Windows.Forms;
 
-namespace WindowsFormsApp1
+namespace CrystalTable
 {
     public partial class Form1
     {

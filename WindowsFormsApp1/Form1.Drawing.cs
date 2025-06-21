@@ -79,18 +79,17 @@ namespace CrystalTable
 
             if (checkBox1.Checked == true)
             {
-
-                pictureBox1.Invalidate();
+                // Рисуем только контур пластины
                 g.DrawEllipse(Pens.Black,
                                  centerX - displayRadius,
                                  centerY - displayRadius,
                                  displayRadius * 2,
                                  displayRadius * 2);
-               
+
             }
             else
             {
-                pictureBox1.Invalidate();
+                // Заполняем пластину и обводим её контур
                 using (Brush fillBrush = new SolidBrush(Color.Green))
                 {
                     // Заполняем круг зеленым цветом
