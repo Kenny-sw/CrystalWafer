@@ -19,6 +19,11 @@ namespace CrystalTable
         private float crystalWidthRaw;           // Ширина кристалла в микрометрах
         private float crystalHeightRaw;          // Высота кристалла в микрометрах
 
+        // Параметры последнего расчёта для кеширования
+        private float lastCrystalWidthRaw = -1f;
+        private float lastCrystalHeightRaw = -1f;
+        private float lastWaferDiameter = -1f;
+
         // Глобальные переменные для отслеживания значений
         private float SizeXtemp = 0;
         private float SizeYtemp = 0;
@@ -71,81 +76,32 @@ namespace CrystalTable
             pictureBox1.Refresh();
         }
 
+        /// <summary>
+        /// Сохраняет параметры пластины и текущие кристаллы в выбранный XML-файл.
+        /// </summary>
         private void SaveButton_Click(object sender, EventArgs e)
         {
-            uint.TryParse(SizeX.Text, out var sizeX);
-            uint.TryParse(SizeY.Text, out var sizeY);
-            uint.TryParse(WaferDiameter.Text, out var waferDiameter);
-            var waferInfo = new WaferInfo
+            using (var dialog = new SaveFileDialog())
             {
-                SizeX = sizeX,
-                SizeY = sizeY,
-                WaferDiameter = waferDiameter,
-            };
-            var serializer = new Serializer();
-            serializer.Serialize(waferInfo);
-        }
+                dialog.Filter = "XML files (*.xml)|*.xml";
+                if (dialog.ShowDialog() != DialogResult.OK)
+                    return;
 
-        public void LoadComboBoxData()
-        {
-            string filePath = "crystal_data.txt";
-            if (!File.Exists(filePath))
-            {
-                MessageBox.Show("Файл с данными не найден. Убедитесь, что файл 'crystal_data.txt' существует.");
-                return;
-            }
+                uint.TryParse(SizeX.Text, out var sizeX);
+                uint.TryParse(SizeY.Text, out var sizeY);
+                uint.TryParse(WaferDiameter.Text, out var wafer);
 
-            try
-            {
-                string[] lines = File.ReadAllLines(filePath);
-                foreach (string line in lines)
+                var info = new WaferInfo
                 {
-                    string[] parts = line.Split(':');
-                    if (parts.Length == 2)
-                    {
-                        comboBox1.Items.Add(parts[0].Trim());
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка при чтении файла: {ex.Message}");
+                    SizeX = sizeX,
+                    SizeY = sizeY,
+                    WaferDiameter = wafer
+                };
+
+                CrystalCache.Save(dialog.FileName, info, CrystalManager.Instance.Crystals);
             }
         }
 
-        public void SetFieldsFromComboBox()
-        {
-            string filePath = "crystal_data.txt";
-            if (!File.Exists(filePath))
-            {
-                MessageBox.Show("Файл с данными не найден.");
-                return;
-            }
-
-            try
-            {
-                string[] lines = File.ReadAllLines(filePath);
-                foreach (string line in lines)
-                {
-                    string[] parts = line.Split(':');
-                    if (parts.Length == 2 && parts[0].Trim() == comboBox1.SelectedItem?.ToString())
-                    {
-                        string[] parameters = parts[1].Split(',');
-                        if (parameters.Length == 3)
-                        {
-                            SizeX.Text = parameters[0].Trim();
-                            SizeY.Text = parameters[1].Trim();
-                            WaferDiameter.Text = parameters[2].Trim();
-                        }
-                        return;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка при обработке данных: {ex.Message}");
-            }
-        }
 
         private void SizeX_MouseClick(object sender, MouseEventArgs e)
         {
@@ -240,6 +196,35 @@ namespace CrystalTable
         private void Create_Click(object sender, EventArgs e)
         {
             pictureBox1.Invalidate();
+        }
+
+        /// <summary>
+        /// Загружает сохранённые параметры и кристаллы из файла.
+        /// </summary>
+        private void loadToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (var dialog = new OpenFileDialog())
+            {
+                dialog.Filter = "XML files (*.xml)|*.xml";
+                if (dialog.ShowDialog() != DialogResult.OK)
+                    return;
+
+                if (CrystalCache.TryLoad(dialog.FileName, out var info, out var crystals))
+                {
+                    SizeX.Text = info.SizeX.ToString();
+                    SizeY.Text = info.SizeY.ToString();
+                    WaferDiameter.Text = info.WaferDiameter.ToString();
+
+                    CrystalManager.Instance.Crystals.Clear();
+                    CrystalManager.Instance.Crystals.AddRange(crystals);
+
+                    pictureBox1.Invalidate();
+                }
+                else
+                {
+                    MessageBox.Show("Не удалось загрузить файл");
+                }
+            }
         }
 
         private void fToolStripMenuItem_Click(object sender, EventArgs e)

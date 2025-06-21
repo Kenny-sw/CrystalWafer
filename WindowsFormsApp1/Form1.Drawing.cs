@@ -2,7 +2,6 @@
 using CrystalTable.Logic;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -35,8 +34,8 @@ namespace CrystalTable
             // Рисуем пластину.
             DrawWafer(g);
 
-            // Вычисляем расположение кристаллов в логической системе координат (мм относительно центра пластины).
-            BuildCrystals(crystalWidthRaw, crystalHeightRaw);
+            // Вычисляем расположение кристаллов с учетом кеша.
+            BuildCrystalsCached(crystalWidthRaw, crystalHeightRaw);
 
             // Отрисовываем кристаллы с преобразованием логических координат в экранные.
             DrawCrystals(g);
@@ -79,8 +78,6 @@ namespace CrystalTable
 
             if (checkBox1.Checked == true)
             {
-
-                pictureBox1.Invalidate();
                 g.DrawEllipse(Pens.Black,
                                  centerX - displayRadius,
                                  centerY - displayRadius,
@@ -90,7 +87,6 @@ namespace CrystalTable
             }
             else
             {
-                pictureBox1.Invalidate();
                 using (Brush fillBrush = new SolidBrush(Color.Green))
                 {
                     // Заполняем круг зеленым цветом
@@ -109,8 +105,43 @@ namespace CrystalTable
                 }
             }
         }
-    
 
+
+        // Построение кристаллов с кешированием. Пересчёт выполняется только при
+        // изменении размеров или диаметра пластины.
+        private void BuildCrystalsCached(float crystalWidthRaw, float crystalHeightRaw)
+        {
+            if (crystalWidthRaw == lastCrystalWidthRaw &&
+                crystalHeightRaw == lastCrystalHeightRaw &&
+                waferDiameter == lastWaferDiameter &&
+                CrystalManager.Instance.Crystals.Count > 0)
+            {
+                return; // Кеш актуален
+            }
+
+            string cachePath = CrystalCache.GetCacheFilePath(crystalWidthRaw, crystalHeightRaw, waferDiameter);
+            if (CrystalCache.TryLoad(cachePath, out var info, out var cachedCrystals))
+            {
+                CrystalManager.Instance.Crystals.Clear();
+                CrystalManager.Instance.Crystals.AddRange(cachedCrystals);
+            }
+            else
+            {
+                BuildCrystals(crystalWidthRaw, crystalHeightRaw);
+
+                var infoToSave = new WaferInfo
+                {
+                    SizeX = (uint)crystalWidthRaw,
+                    SizeY = (uint)crystalHeightRaw,
+                    WaferDiameter = (uint)waferDiameter
+                };
+                CrystalCache.Save(cachePath, infoToSave, CrystalManager.Instance.Crystals);
+            }
+
+            lastCrystalWidthRaw = crystalWidthRaw;
+            lastCrystalHeightRaw = crystalHeightRaw;
+            lastWaferDiameter = waferDiameter;
+        }
 
         // Вычисление расположения кристаллов в логической системе координат (мм относительно центра пластины).
         private void BuildCrystals(float crystalWidthRaw, float crystalHeightRaw)
