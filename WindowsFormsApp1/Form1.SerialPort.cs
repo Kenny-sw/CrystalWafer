@@ -72,5 +72,19 @@ namespace CrystalTable
                 MessageBox.Show("Получены данные: " + data);
             }));
         }
+
+        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            try
+            {
+                if (MyserialPort.IsOpen)
+                    MyserialPort.Close();
+            }
+            catch { }
+            finally
+            {
+                MyserialPort.Dispose();
+            }
+        }
     }
 }

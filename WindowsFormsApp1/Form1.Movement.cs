@@ -1,19 +1,18 @@
 ﻿using System;
 using System.Windows.Forms;
-using System.Threading;
+using System.Threading.Tasks;
 
 namespace CrystalTable
 {
     public partial class Form1
     {
         // Обработчики кнопок движения
-        private void buttonMoveLeft_Click(object sender, EventArgs e)
+        private async void buttonMoveLeft_Click(object sender, EventArgs e)
         {
             if (uint.TryParse(SizeX.Text, out uint stepSizeX))
             {
-                // Команда 1 = движение влево
-                SendCommand(1, stepSizeX);
-                Thread.Sleep(300);
+                await SendCommandAsync(1, stepSizeX);
+                await Task.Delay(300);
             }
             else
             {
@@ -21,13 +20,12 @@ namespace CrystalTable
             }
         }
 
-        private void buttonMoveRight_Click(object sender, EventArgs e)
+        private async void buttonMoveRight_Click(object sender, EventArgs e)
         {
             if (uint.TryParse(SizeX.Text, out uint stepSizeX))
             {
-                // Команда 2 = движение вправо
-                SendCommand(2, stepSizeX);
-                Thread.Sleep(300);
+                await SendCommandAsync(2, stepSizeX);
+                await Task.Delay(300);
             }
             else
             {
@@ -35,13 +33,12 @@ namespace CrystalTable
             }
         }
 
-        private void buttonMoveUp_Click(object sender, EventArgs e)
+        private async void buttonMoveUp_Click(object sender, EventArgs e)
         {
             if (uint.TryParse(SizeY.Text, out uint stepSizeY))
             {
-                // Команда 3 = движение вверх
-                SendCommand(3, stepSizeY);
-                Thread.Sleep(300);
+                await SendCommandAsync(3, stepSizeY);
+                await Task.Delay(300);
             }
             else
             {
@@ -49,13 +46,12 @@ namespace CrystalTable
             }
         }
 
-        private void buttonMoveDown_Click(object sender, EventArgs e)
+        private async void buttonMoveDown_Click(object sender, EventArgs e)
         {
             if (uint.TryParse(SizeY.Text, out uint stepSizeY))
             {
-                // Команда 4 = движение вниз
-                SendCommand(4, stepSizeY);
-                Thread.Sleep(300);
+                await SendCommandAsync(4, stepSizeY);
+                await Task.Delay(300);
             }
             else
             {
@@ -64,19 +60,17 @@ namespace CrystalTable
         }
 
         // ----- Обработчик кнопки Scan -----
-        private void scan_Click(object sender, EventArgs e)
+        private async void scan_Click(object sender, EventArgs e)
         {
-            
+
             if (uint.TryParse(SizeX.Text, out uint scanSizeX) &&
                 uint.TryParse(SizeY.Text, out uint scanSizeY))
             {
-                // Двигаемся влево (команда 1)
-                SendCommand(1, scanSizeX * 100);
-                Thread.Sleep(100);
+                await SendCommandAsync(1, scanSizeX * 100);
+                await Task.Delay(100);
 
-                // Двигаемся вверх (команда 3)
-                SendCommand(3, scanSizeY * 100);
-                Thread.Sleep(100);
+                await SendCommandAsync(3, scanSizeY * 100);
+                await Task.Delay(100);
             }
             else
             {
@@ -85,7 +79,7 @@ namespace CrystalTable
         }
 
         // ----- Метод отправки 5-байтовой команды (команда + 4 байта шага) -----
-        private void SendCommand(byte commandByte, uint stepSize)
+        private async Task SendCommandAsync(byte commandByte, uint stepSize)
         {
             // Разбиваем 32-битное число stepSize на 4 байта (младший -> старший)
             byte b0 = (byte)(stepSize & 0xFF);         // младший байт
@@ -98,10 +92,8 @@ namespace CrystalTable
 
             try
             {
-                // Отправляем в порт
-                MyserialPort.Write(dataToSend, 0, dataToSend.Length);
-
-                // Ваш метод обновления визуализации (если нужен)
+                await MyserialPort.BaseStream.WriteAsync(dataToSend, 0, dataToSend.Length);
+                await MyserialPort.BaseStream.FlushAsync();
                 UpdateWaferVisualization();
             }
             catch

@@ -35,6 +35,7 @@ namespace CrystalTable
             InitializeComponent();
             pictureBox1.Paint += pictureBox1_Paint;
             this.Resize += new EventHandler(Form1_Resize);
+            LoadComboBoxData();
 
             // Устанавливаем событие Validated для TextBox
             SizeX.Validated += SizeX_Validated;
@@ -92,32 +93,6 @@ namespace CrystalTable
         }
 
 
-        private void SizeX_MouseClick(object sender, MouseEventArgs e)
-        {
-            if (string.IsNullOrEmpty(SizeX.Text))
-            {
-                SizeX.Focus();
-                SizeX.SelectionStart = 0;
-            }
-        }
-
-        private void SizeY_MouseClick(object sender, MouseEventArgs e)
-        {
-            if (string.IsNullOrEmpty(SizeY.Text))
-            {
-                SizeY.Focus();
-                SizeY.SelectionStart = 0;
-            }
-        }
-
-        private void WaferDiameter_MouseClick(object sender, MouseEventArgs e)
-        {
-            if (string.IsNullOrEmpty(WaferDiameter.Text))
-            {
-                WaferDiameter.Focus();
-                WaferDiameter.SelectionStart = 0;
-            }
-        }
 
         private void SizeX_Validated(object sender, EventArgs e)
         {
@@ -182,10 +157,6 @@ namespace CrystalTable
             
         }
 
-        private void Create_Click(object sender, EventArgs e)
-        {
-            pictureBox1.Invalidate();
-        }
 
         private void fToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -195,6 +166,11 @@ namespace CrystalTable
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
             // Пустой обработчик
+        }
+
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SetFieldsFromComboBox();
         }
     }
 }
