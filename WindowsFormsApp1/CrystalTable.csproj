@@ -65,6 +65,7 @@
     </Compile>
     <Compile Include="Logic\CrystalManager.cs" />
     <Compile Include="Logic\CrystalMouseHandler.cs" />
+    <Compile Include="Logic\CrystalCache.cs" />
     <Compile Include="Logic\Serializer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
