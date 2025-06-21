@@ -2,6 +2,7 @@ using CrystalTable.Data;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Globalization;
 using System.Xml.Serialization;
 
 namespace CrystalTable.Logic
@@ -30,7 +31,11 @@ namespace CrystalTable.Logic
             var storedDataDir = Path.Combine(Directory.GetCurrentDirectory(), "Stored data");
             if (!Directory.Exists(storedDataDir))
                 Directory.CreateDirectory(storedDataDir);
-            string fileName = $"Crystals_{sizeX}_{sizeY}_{diameter}.xml";
+            string fileName = string.Format(
+                "Crystals_{0}_{1}_{2}.xml",
+                sizeX.ToString(CultureInfo.InvariantCulture),
+                sizeY.ToString(CultureInfo.InvariantCulture),
+                diameter.ToString(CultureInfo.InvariantCulture));
             return Path.Combine(storedDataDir, fileName);
         }
 
