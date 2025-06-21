@@ -7,17 +7,20 @@ using System.Xml.Serialization;
 namespace CrystalTable.Logic
 {
     /// <summary>
+    /// Данные для кеша (перенесено отдельно и сделано public).
+    /// </summary>
+    [Serializable]
+    public class CacheData
+    {
+        public WaferInfo WaferInfo { get; set; }
+        public List<Crystal> Crystals { get; set; }
+    }
+
+    /// <summary>
     /// Класс для сохранения и загрузки кристаллов на диск.
     /// </summary>
-    internal static class CrystalCache
+    public static class CrystalCache
     {
-        [Serializable]
-        public class CacheData
-        {
-            public WaferInfo WaferInfo { get; set; }
-            public List<Crystal> Crystals { get; set; }
-        }
-
         /// <summary>
         /// Возвращает путь к файлу-кешу для заданных параметров.
         /// </summary>
