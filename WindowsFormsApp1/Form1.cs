@@ -19,6 +19,11 @@ namespace CrystalTable
         private float crystalWidthRaw;           // Ширина кристалла в микрометрах
         private float crystalHeightRaw;          // Высота кристалла в микрометрах
 
+        // Параметры последнего расчёта для кеширования
+        private float lastCrystalWidthRaw = -1f;
+        private float lastCrystalHeightRaw = -1f;
+        private float lastWaferDiameter = -1f;
+
         // Глобальные переменные для отслеживания значений
         private float SizeXtemp = 0;
         private float SizeYtemp = 0;
@@ -86,66 +91,6 @@ namespace CrystalTable
             serializer.Serialize(waferInfo);
         }
 
-        public void LoadComboBoxData()
-        {
-            string filePath = "crystal_data.txt";
-            if (!File.Exists(filePath))
-            {
-                MessageBox.Show("Файл с данными не найден. Убедитесь, что файл 'crystal_data.txt' существует.");
-                return;
-            }
-
-            try
-            {
-                string[] lines = File.ReadAllLines(filePath);
-                foreach (string line in lines)
-                {
-                    string[] parts = line.Split(':');
-                    if (parts.Length == 2)
-                    {
-                        comboBox1.Items.Add(parts[0].Trim());
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка при чтении файла: {ex.Message}");
-            }
-        }
-
-        public void SetFieldsFromComboBox()
-        {
-            string filePath = "crystal_data.txt";
-            if (!File.Exists(filePath))
-            {
-                MessageBox.Show("Файл с данными не найден.");
-                return;
-            }
-
-            try
-            {
-                string[] lines = File.ReadAllLines(filePath);
-                foreach (string line in lines)
-                {
-                    string[] parts = line.Split(':');
-                    if (parts.Length == 2 && parts[0].Trim() == comboBox1.SelectedItem?.ToString())
-                    {
-                        string[] parameters = parts[1].Split(',');
-                        if (parameters.Length == 3)
-                        {
-                            SizeX.Text = parameters[0].Trim();
-                            SizeY.Text = parameters[1].Trim();
-                            WaferDiameter.Text = parameters[2].Trim();
-                        }
-                        return;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка при обработке данных: {ex.Message}");
-            }
-        }
 
         private void SizeX_MouseClick(object sender, MouseEventArgs e)
         {
