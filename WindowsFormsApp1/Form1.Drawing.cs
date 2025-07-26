@@ -213,7 +213,7 @@ namespace CrystalTable
       
         private void DrawCrystals(Graphics g)
         {
-            //if()
+            
 
 
             float displayCrystalWidth = (crystalWidthRaw / 1000f) * scaleFactor;

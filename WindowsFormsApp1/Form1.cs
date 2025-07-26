@@ -35,24 +35,14 @@ namespace CrystalTable
             InitializeComponent();
             pictureBox1.Paint += pictureBox1_Paint;
             this.Resize += new EventHandler(Form1_Resize);
-            LoadComboBoxData();
+
 
             // Устанавливаем событие Validated для TextBox
             SizeX.Validated += SizeX_Validated;
             SizeY.Validated += SizeY_Validated;
             WaferDiameter.Validated += WaferDiameter_Validated;
-
-            // Инициализация меток
-            UpdateLabels();
         }
 
-        // Метод для обновления меток
-        private void UpdateLabels()
-        {
-            SizeXtempLabel.Text = SizeXtemp.ToString();
-            SizeYtempLabel.Text = SizeYtemp.ToString();
-            WaferDiameterTempLabel.Text = WaferDiameterTemp.ToString();
-        }
 
         // Метод для перерасчета
   //    private void RecalculateWafer() //для будущей переделки
@@ -111,7 +101,7 @@ namespace CrystalTable
                 }
             }
 
-            SizeXtempLabel.Text = SizeXtemp.ToString(); // Обновляем метку
+          
             
         }
 
@@ -132,8 +122,7 @@ namespace CrystalTable
                 }
             }
 
-            SizeYtempLabel.Text = SizeYtemp.ToString(); // Обновляем метку
-             
+                        
         }
 
         private void WaferDiameter_Validated(object sender, EventArgs e)
@@ -153,8 +142,7 @@ namespace CrystalTable
                 }
             }
 
-            WaferDiameterTempLabel.Text = WaferDiameterTemp.ToString(); // Обновляем метку
-            
+                        
         }
 
 
@@ -170,7 +158,7 @@ namespace CrystalTable
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SetFieldsFromComboBox();
+            
         }
     }
 }

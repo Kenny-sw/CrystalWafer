@@ -1,4 +1,7 @@
 ﻿// Класс для инициализации компонентов интерфейса Windows Forms
+using System;
+using System.Windows.Forms;
+
 namespace CrystalTable
 {
     partial class Form1
@@ -64,16 +67,8 @@ namespace CrystalTable
             this.scan = new System.Windows.Forms.Button();
             this.saveButton = new System.Windows.Forms.Button();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
-            this.fToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.closeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.loadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
-            this.SizeXtempLabel = new System.Windows.Forms.Label();
-            this.SizeYtempLabel = new System.Windows.Forms.Label();
-            this.WaferDiameterTempLabel = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-            this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // buttonConnect
@@ -323,7 +318,7 @@ namespace CrystalTable
             this.comboBox1.Size = new System.Drawing.Size(133, 24);
             this.comboBox1.TabIndex = 21;
             this.comboBox1.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
-            //
+            // 
             // label6
             // 
             this.label6.Anchor = System.Windows.Forms.AnchorStyles.Right;
@@ -361,42 +356,11 @@ namespace CrystalTable
             // 
             this.menuStrip1.BackColor = System.Drawing.Color.LightGray;
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
-            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.fToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1426, 30);
+            this.menuStrip1.Size = new System.Drawing.Size(1426, 24);
             this.menuStrip1.TabIndex = 25;
             this.menuStrip1.Text = "menuStrip1";
-            // 
-            // fToolStripMenuItem
-            // 
-            this.fToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.openToolStripMenuItem,
-            this.closeToolStripMenuItem,
-            this.loadToolStripMenuItem});
-            this.fToolStripMenuItem.Name = "fToolStripMenuItem";
-            this.fToolStripMenuItem.Size = new System.Drawing.Size(46, 26);
-            this.fToolStripMenuItem.Text = "File";
-            this.fToolStripMenuItem.Click += new System.EventHandler(this.fToolStripMenuItem_Click);
-            // 
-            // openToolStripMenuItem
-            // 
-            this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(128, 26);
-            this.openToolStripMenuItem.Text = "&Open";
-            // 
-            // closeToolStripMenuItem
-            // 
-            this.closeToolStripMenuItem.Name = "closeToolStripMenuItem";
-            this.closeToolStripMenuItem.Size = new System.Drawing.Size(128, 26);
-            this.closeToolStripMenuItem.Text = "&Close";
-            // 
-            // loadToolStripMenuItem
-            // 
-            this.loadToolStripMenuItem.Name = "loadToolStripMenuItem";
-            this.loadToolStripMenuItem.Size = new System.Drawing.Size(128, 26);
-            this.loadToolStripMenuItem.Text = "&Load";
             // 
             // checkBox1
             // 
@@ -409,43 +373,13 @@ namespace CrystalTable
             this.checkBox1.Text = "Режим схемы";
             this.checkBox1.UseVisualStyleBackColor = true;
             this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
-            // 
-            // SizeXtempLabel
-            // 
-            this.SizeXtempLabel.AutoSize = true;
-            this.SizeXtempLabel.Location = new System.Drawing.Point(941, 203);
-            this.SizeXtempLabel.Name = "SizeXtempLabel";
-            this.SizeXtempLabel.Size = new System.Drawing.Size(44, 16);
-            this.SizeXtempLabel.TabIndex = 27;
-            this.SizeXtempLabel.Text = "label7";
-            // 
-            // SizeYtempLabel
-            // 
-            this.SizeYtempLabel.AutoSize = true;
-            this.SizeYtempLabel.Location = new System.Drawing.Point(941, 237);
-            this.SizeYtempLabel.Name = "SizeYtempLabel";
-            this.SizeYtempLabel.Size = new System.Drawing.Size(44, 16);
-            this.SizeYtempLabel.TabIndex = 28;
-            this.SizeYtempLabel.Text = "label7";
-            // 
-            // WaferDiameterTempLabel
-            // 
-            this.WaferDiameterTempLabel.AutoSize = true;
-            this.WaferDiameterTempLabel.Location = new System.Drawing.Point(941, 270);
-            this.WaferDiameterTempLabel.Name = "WaferDiameterTempLabel";
-            this.WaferDiameterTempLabel.Size = new System.Drawing.Size(44, 16);
-            this.WaferDiameterTempLabel.TabIndex = 29;
-            this.WaferDiameterTempLabel.Text = "label7";
-            // 
+            //
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Gainsboro;
             this.ClientSize = new System.Drawing.Size(1426, 795);
-            this.Controls.Add(this.WaferDiameterTempLabel);
-            this.Controls.Add(this.SizeYtempLabel);
-            this.Controls.Add(this.SizeXtempLabel);
             this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.saveButton);
             this.Controls.Add(this.scan);
@@ -477,14 +411,32 @@ namespace CrystalTable
             this.Name = "Form1";
             this.Text = "Form1";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
-            this.Resize += new System.EventHandler(this.Form1_Resize);
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
+            this.Resize += new System.EventHandler(this.Form1_Resize);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            this.menuStrip1.ResumeLayout(false);
-            this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
+        }
+
+        private void Create_Click(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void WaferDiameter_MouseClick(object sender, MouseEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void SizeY_MouseClick(object sender, MouseEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void SizeX_MouseClick(object sender, MouseEventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         #endregion
@@ -516,13 +468,7 @@ namespace CrystalTable
         private System.Windows.Forms.Button scan;
         private System.Windows.Forms.Button saveButton;
         private System.Windows.Forms.MenuStrip menuStrip1;
-        private System.Windows.Forms.ToolStripMenuItem fToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem closeToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem loadToolStripMenuItem;
         private System.Windows.Forms.CheckBox checkBox1;
-        private System.Windows.Forms.Label SizeXtempLabel;
-        private System.Windows.Forms.Label SizeYtempLabel;
-        private System.Windows.Forms.Label WaferDiameterTempLabel;
+       
     }
 }
