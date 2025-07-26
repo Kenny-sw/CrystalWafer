@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Core.Domain/Core.Domain.csproj" />
+    <ProjectReference Include="../Core.Services/Core.Services.csproj" />
+    <ProjectReference Include="../Hardware/Hardware.csproj" />
+  </ItemGroup>
+</Project>

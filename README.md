@@ -18,3 +18,8 @@
 - .NET Framework 4.7.2
 - Windows 10 или новее
 
+
+## WaferVision
+
+Демонстрационный набор проектов для WPF-приложения визуализации пластин.
+Откройте решение `WaferVision/WaferVision.sln` в Visual Studio 2022.
