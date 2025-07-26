@@ -1,0 +1,21 @@
+{
+  "wafer": {
+    "diameter": 100,
+    "offsetX": 0,
+    "offsetY": 0
+  },
+  "grid": {
+    "dieWidth": 1,
+    "dieHeight": 1,
+    "streetWidth": 0.1,
+    "offsetX": 0,
+    "offsetY": 0
+  },
+  "scanProfile": {
+    "delayMs": 10,
+    "stepX": 1,
+    "stepY": 1
+  },
+  "results": [],
+  "markers": []
+}
