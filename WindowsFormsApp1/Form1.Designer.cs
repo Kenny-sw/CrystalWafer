@@ -360,29 +360,29 @@ namespace CrystalTable
             this.menuStrip1.Text = "menuStrip1";
             // 
             // checkBoxFillWafer
-            //
+            // 
             this.checkBoxFillWafer.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.checkBoxFillWafer.AutoSize = true;
             this.checkBoxFillWafer.Location = new System.Drawing.Point(1313, 517);
             this.checkBoxFillWafer.Name = "checkBoxFillWafer";
-            this.checkBoxFillWafer.Size = new System.Drawing.Size(114, 20);
+            this.checkBoxFillWafer.Size = new System.Drawing.Size(68, 20);
             this.checkBoxFillWafer.TabIndex = 26;
-            this.checkBoxFillWafer.Text = "Режим схемы";
+            this.checkBoxFillWafer.Text = "Карта";
             this.checkBoxFillWafer.UseVisualStyleBackColor = true;
             this.checkBoxFillWafer.CheckedChanged += new System.EventHandler(this.checkBoxFillWafer_CheckedChanged);
-
+            // 
             // checkBoxDrawCrystals
-            //
+            // 
             this.checkBoxDrawCrystals.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.checkBoxDrawCrystals.AutoSize = true;
-            this.checkBoxDrawCrystals.Location = new System.Drawing.Point(1313, 545);
+            this.checkBoxDrawCrystals.Location = new System.Drawing.Point(1313, 543);
             this.checkBoxDrawCrystals.Name = "checkBoxDrawCrystals";
-            this.checkBoxDrawCrystals.Size = new System.Drawing.Size(152, 20);
+            this.checkBoxDrawCrystals.Size = new System.Drawing.Size(114, 20);
             this.checkBoxDrawCrystals.TabIndex = 27;
-            this.checkBoxDrawCrystals.Text = "Показывать кристаллы";
+            this.checkBoxDrawCrystals.Text = "Режим схемы";
             this.checkBoxDrawCrystals.UseVisualStyleBackColor = true;
             this.checkBoxDrawCrystals.CheckedChanged += new System.EventHandler(this.checkBoxDrawCrystals_CheckedChanged);
-            //
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
