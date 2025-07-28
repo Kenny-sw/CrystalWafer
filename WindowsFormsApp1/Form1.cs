@@ -144,17 +144,9 @@ namespace CrystalTable
         }
 
 
-        private void fToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            // Пустой обработчик
-        }
+        
 
         private void checkBoxFillWafer_CheckedChanged(object sender, EventArgs e)
-        {
-            pictureBox1.Invalidate();
-        }
-
-        private void checkBoxDrawCrystals_CheckedChanged(object sender, EventArgs e)
         {
             pictureBox1.Invalidate();
         }
@@ -162,6 +154,11 @@ namespace CrystalTable
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             
+        }
+
+        private void Create_Click(object sender, EventArgs e)
+        {
+            pictureBox1.Invalidate();
         }
     }
 }

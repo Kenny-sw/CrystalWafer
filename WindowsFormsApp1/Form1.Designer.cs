@@ -68,7 +68,6 @@ namespace CrystalTable
             this.saveButton = new System.Windows.Forms.Button();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.checkBoxFillWafer = new System.Windows.Forms.CheckBox();
-            this.checkBoxDrawCrystals = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -217,7 +216,7 @@ namespace CrystalTable
             this.pictureBox1.Size = new System.Drawing.Size(847, 660);
             this.pictureBox1.TabIndex = 11;
             this.pictureBox1.TabStop = false;
-            this.pictureBox1.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureBox1_Paint);
+            this.pictureBox1.Paint += new System.Windows.Forms.PaintEventHandler(this.PictureBox1_Paint);
             this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
             this.pictureBox1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseMove);
             // 
@@ -273,6 +272,7 @@ namespace CrystalTable
             this.Create.TabIndex = 17;
             this.Create.Text = "Создать";
             this.Create.UseVisualStyleBackColor = true;
+            this.Create.Click += new System.EventHandler(this.Create_Click);
             // 
             // label3
             // 
@@ -363,25 +363,13 @@ namespace CrystalTable
             // 
             this.checkBoxFillWafer.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.checkBoxFillWafer.AutoSize = true;
-            this.checkBoxFillWafer.Location = new System.Drawing.Point(1313, 517);
+            this.checkBoxFillWafer.Location = new System.Drawing.Point(1267, 517);
             this.checkBoxFillWafer.Name = "checkBoxFillWafer";
-            this.checkBoxFillWafer.Size = new System.Drawing.Size(68, 20);
+            this.checkBoxFillWafer.Size = new System.Drawing.Size(114, 20);
             this.checkBoxFillWafer.TabIndex = 26;
-            this.checkBoxFillWafer.Text = "Карта";
+            this.checkBoxFillWafer.Text = "Режим схемы";
             this.checkBoxFillWafer.UseVisualStyleBackColor = true;
             this.checkBoxFillWafer.CheckedChanged += new System.EventHandler(this.checkBoxFillWafer_CheckedChanged);
-            // 
-            // checkBoxDrawCrystals
-            // 
-            this.checkBoxDrawCrystals.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.checkBoxDrawCrystals.AutoSize = true;
-            this.checkBoxDrawCrystals.Location = new System.Drawing.Point(1313, 543);
-            this.checkBoxDrawCrystals.Name = "checkBoxDrawCrystals";
-            this.checkBoxDrawCrystals.Size = new System.Drawing.Size(114, 20);
-            this.checkBoxDrawCrystals.TabIndex = 27;
-            this.checkBoxDrawCrystals.Text = "Режим схемы";
-            this.checkBoxDrawCrystals.UseVisualStyleBackColor = true;
-            this.checkBoxDrawCrystals.CheckedChanged += new System.EventHandler(this.checkBoxDrawCrystals_CheckedChanged);
             // 
             // Form1
             // 
@@ -390,7 +378,6 @@ namespace CrystalTable
             this.BackColor = System.Drawing.Color.Gainsboro;
             this.ClientSize = new System.Drawing.Size(1426, 795);
             this.Controls.Add(this.checkBoxFillWafer);
-            this.Controls.Add(this.checkBoxDrawCrystals);
             this.Controls.Add(this.saveButton);
             this.Controls.Add(this.scan);
             this.Controls.Add(this.label6);
@@ -459,7 +446,6 @@ namespace CrystalTable
         private System.Windows.Forms.Button saveButton;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.CheckBox checkBoxFillWafer;
-        private System.Windows.Forms.CheckBox checkBoxDrawCrystals;
        
     }
 }

@@ -14,7 +14,7 @@ namespace CrystalTable
         private float DisplayCrystalHeight => (crystalHeightRaw / 1000f) * scaleFactor;
 
         // Обработчик события перерисовки pictureBox1.
-        private void pictureBox1_Paint(object sender, PaintEventArgs e)
+        private void PictureBox1_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics; // Объект Graphics для рисования.
             g.Clear(Color.White);    // Очищаем область рисования (заливка белым цветом).
@@ -22,8 +22,8 @@ namespace CrystalTable
             // Проверяем корректность ввода размеров изменяя цвет(пока не работает,т.к по дефолту False)
             if (!IsInputValid())
             {
-              //SizeX.BackColor = Color.Red;
-               // SizeY.BackColor = Color.Red;
+                //SizeX.BackColor = Color.Red;
+                // SizeY.BackColor = Color.Red;
                 //WaferDiameter.BackColor = Color.Red;
                 return;
             }
@@ -38,11 +38,11 @@ namespace CrystalTable
             BuildCrystalsCached(crystalWidthRaw, crystalHeightRaw);
 
             // Отрисовываем кристаллы при включенном чекбоксе.
-            if (checkBoxDrawCrystals.Checked)
-            {
-                DrawCrystals(g);
-            }
+
+            DrawCrystals(g);
         }
+            
+        
 
         // Метод для подбора коэффициента масштабирования.
         private void AutoSetScaleFactor()
