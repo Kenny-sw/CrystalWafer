@@ -170,7 +170,6 @@ namespace CrystalTable
             this.SizeX.Size = new System.Drawing.Size(132, 22);
             this.SizeX.TabIndex = 7;
             this.SizeX.ValidatingType = typeof(int);
-            this.SizeX.MouseClick += new System.Windows.Forms.MouseEventHandler(this.SizeX_MouseClick);
             // 
             // SizeY
             // 
@@ -184,7 +183,6 @@ namespace CrystalTable
             this.SizeY.Size = new System.Drawing.Size(132, 22);
             this.SizeY.TabIndex = 8;
             this.SizeY.ValidatingType = typeof(int);
-            this.SizeY.MouseClick += new System.Windows.Forms.MouseEventHandler(this.SizeY_MouseClick);
             // 
             // label1
             // 
@@ -246,7 +244,6 @@ namespace CrystalTable
             this.WaferDiameter.Size = new System.Drawing.Size(132, 22);
             this.WaferDiameter.TabIndex = 14;
             this.WaferDiameter.ValidatingType = typeof(int);
-            this.WaferDiameter.MouseClick += new System.Windows.Forms.MouseEventHandler(this.WaferDiameter_MouseClick);
             // 
             // labelTotalCrystals
             // 
@@ -276,7 +273,6 @@ namespace CrystalTable
             this.Create.TabIndex = 17;
             this.Create.Text = "Создать";
             this.Create.UseVisualStyleBackColor = true;
-            this.Create.Click += new System.EventHandler(this.Create_Click);
             // 
             // label3
             // 
