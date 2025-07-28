@@ -28,6 +28,7 @@ namespace CrystalTable
                 return;
             }
 
+            
             // Подбираем коэффициент масштабирования, чтобы пластина целиком помещалась в pictureBox1.
             AutoSetScaleFactor();
 
@@ -79,7 +80,7 @@ namespace CrystalTable
             float radius = waferDiameter / 2;             // Радиус в мм.
             float displayRadius = radius * scaleFactor;     // Радиус в пикселях.
 
-            if (checkBoxFillWafer.Checked == true)
+            if (checkBoxFillWafer.Checked)
             {
                 g.DrawEllipse(Pens.Black,
                                  centerX - displayRadius,

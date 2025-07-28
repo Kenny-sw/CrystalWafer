@@ -57,6 +57,9 @@
     <Compile Include="Form1.Drawing.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Form1.LoadData.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Form1.Movement.cs">
       <SubType>Form</SubType>
     </Compile>
