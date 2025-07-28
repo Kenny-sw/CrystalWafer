@@ -37,8 +37,11 @@ namespace CrystalTable
             // Вычисляем расположение кристаллов с учетом кеша.
             BuildCrystalsCached(crystalWidthRaw, crystalHeightRaw);
 
-            // Отрисовываем кристаллы с преобразованием логических координат в экранные.
-            DrawCrystals(g);
+            // Отрисовываем кристаллы при включенном чекбоксе.
+            if (checkBoxDrawCrystals.Checked)
+            {
+                DrawCrystals(g);
+            }
         }
 
         // Метод для подбора коэффициента масштабирования.
@@ -76,7 +79,7 @@ namespace CrystalTable
             float radius = waferDiameter / 2;             // Радиус в мм.
             float displayRadius = radius * scaleFactor;     // Радиус в пикселях.
 
-            if (checkBox1.Checked == true)
+            if (checkBoxFillWafer.Checked == true)
             {
                 g.DrawEllipse(Pens.Black,
                                  centerX - displayRadius,

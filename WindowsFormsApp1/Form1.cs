@@ -33,8 +33,6 @@ namespace CrystalTable
         public Form1()
         {
             InitializeComponent();
-            pictureBox1.Paint += pictureBox1_Paint;
-            this.Resize += new EventHandler(Form1_Resize);
 
 
             // Устанавливаем событие Validated для TextBox
@@ -151,9 +149,14 @@ namespace CrystalTable
             // Пустой обработчик
         }
 
-        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        private void checkBoxFillWafer_CheckedChanged(object sender, EventArgs e)
         {
-            // Пустой обработчик
+            pictureBox1.Invalidate();
+        }
+
+        private void checkBoxDrawCrystals_CheckedChanged(object sender, EventArgs e)
+        {
+            pictureBox1.Invalidate();
         }
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
