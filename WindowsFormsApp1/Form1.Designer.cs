@@ -68,8 +68,58 @@ namespace CrystalTable
             this.saveButton = new System.Windows.Forms.Button();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.checkBoxFillWafer = new System.Windows.Forms.CheckBox();
+
+            // ===== НОВЫЕ ЭЛЕМЕНТЫ УПРАВЛЕНИЯ =====
+            this.toolStrip1 = new System.Windows.Forms.ToolStrip();
+            this.btnUndo = new System.Windows.Forms.ToolStripButton();
+            this.btnRedo = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.btnExport = new System.Windows.Forms.ToolStripButton();
+            this.btnImport = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.btnRoutePreview = new System.Windows.Forms.ToolStripButton();
+            this.btnStatistics = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.btnZoomIn = new System.Windows.Forms.ToolStripButton();
+            this.btnZoomOut = new System.Windows.Forms.ToolStripButton();
+            this.btnZoomReset = new System.Windows.Forms.ToolStripButton();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.statusLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.fillPercentageLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.zoomLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.coordinatesLabel = new System.Windows.Forms.ToolStripStatusLabel();
+
+            // Меню
+            this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
+            this.exportToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.importToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
+            this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.undoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.redoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripSeparator();
+            this.selectAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.clearSelectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.showRouteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.showStatisticsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripSeparator();
+            this.zoomInToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.zoomOutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.resetZoomToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.menuStrip1.SuspendLayout();
+            this.toolStrip1.SuspendLayout();
+            this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
+
             // 
             // buttonConnect
             // 
@@ -207,18 +257,20 @@ namespace CrystalTable
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.pictureBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.pictureBox1.BackColor = System.Drawing.Color.Transparent;
+            this.pictureBox1.BackColor = System.Drawing.Color.White;
+            this.pictureBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pictureBox1.Location = new System.Drawing.Point(41, 82);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(847, 660);
+            this.pictureBox1.Size = new System.Drawing.Size(847, 638);
             this.pictureBox1.TabIndex = 11;
             this.pictureBox1.TabStop = false;
             this.pictureBox1.Paint += new System.Windows.Forms.PaintEventHandler(this.PictureBox1_Paint);
             this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
             this.pictureBox1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseMove);
+            this.pictureBox1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseUp);
             // 
             // label5
             // 
@@ -247,20 +299,22 @@ namespace CrystalTable
             // labelTotalCrystals
             // 
             this.labelTotalCrystals.AutoSize = true;
-            this.labelTotalCrystals.Location = new System.Drawing.Point(227, 28);
+            this.labelTotalCrystals.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.labelTotalCrystals.Location = new System.Drawing.Point(227, 58);
             this.labelTotalCrystals.Name = "labelTotalCrystals";
-            this.labelTotalCrystals.Size = new System.Drawing.Size(210, 16);
+            this.labelTotalCrystals.Size = new System.Drawing.Size(210, 15);
             this.labelTotalCrystals.TabIndex = 13;
-            this.labelTotalCrystals.Text = "Общее количество кристаллов";
+            this.labelTotalCrystals.Text = "Общее количество кристаллов: 0";
             // 
             // labelSelectedCrystal
             // 
             this.labelSelectedCrystal.AutoSize = true;
-            this.labelSelectedCrystal.Location = new System.Drawing.Point(563, 28);
+            this.labelSelectedCrystal.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.labelSelectedCrystal.Location = new System.Drawing.Point(563, 58);
             this.labelSelectedCrystal.Name = "labelSelectedCrystal";
-            this.labelSelectedCrystal.Size = new System.Drawing.Size(185, 16);
+            this.labelSelectedCrystal.Size = new System.Drawing.Size(138, 15);
             this.labelSelectedCrystal.TabIndex = 16;
-            this.labelSelectedCrystal.Text = "Текущий индекс кристалла";
+            this.labelSelectedCrystal.Text = "Кристаллы не выбраны";
             // 
             // Create
             // 
@@ -280,9 +334,9 @@ namespace CrystalTable
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(1092, 685);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(44, 16);
+            this.label3.Size = new System.Drawing.Size(28, 16);
             this.label3.TabIndex = 18;
-            this.label3.Text = "label3";
+            this.label3.Text = "X: 0";
             this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // label4
@@ -291,9 +345,9 @@ namespace CrystalTable
             this.label4.AutoSize = true;
             this.label4.Location = new System.Drawing.Point(1095, 718);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(44, 16);
+            this.label4.Size = new System.Drawing.Size(29, 16);
             this.label4.TabIndex = 19;
-            this.label4.Text = "label4";
+            this.label4.Text = "Y: 0";
             this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // labelIndex
@@ -302,9 +356,9 @@ namespace CrystalTable
             this.labelIndex.AutoSize = true;
             this.labelIndex.Location = new System.Drawing.Point(1070, 751);
             this.labelIndex.Name = "labelIndex";
-            this.labelIndex.Size = new System.Drawing.Size(69, 16);
+            this.labelIndex.Size = new System.Drawing.Size(134, 16);
             this.labelIndex.TabIndex = 20;
-            this.labelIndex.Text = "labelIndex";
+            this.labelIndex.Text = "Индекс кристалла: -";
             // 
             // comboBox1
             // 
@@ -353,11 +407,204 @@ namespace CrystalTable
             // 
             this.menuStrip1.BackColor = System.Drawing.Color.LightGray;
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
+            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.fileToolStripMenuItem,
+            this.editToolStripMenuItem,
+            this.viewToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(1426, 24);
             this.menuStrip1.TabIndex = 25;
             this.menuStrip1.Text = "menuStrip1";
+            // 
+            // fileToolStripMenuItem
+            // 
+            this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.newToolStripMenuItem,
+            this.openToolStripMenuItem,
+            this.saveToolStripMenuItem,
+            this.saveAsToolStripMenuItem,
+            this.toolStripMenuItem1,
+            this.exportToolStripMenuItem,
+            this.importToolStripMenuItem,
+            this.toolStripMenuItem2,
+            this.exitToolStripMenuItem});
+            this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(48, 20);
+            this.fileToolStripMenuItem.Text = "Файл";
+            // 
+            // newToolStripMenuItem
+            // 
+            this.newToolStripMenuItem.Name = "newToolStripMenuItem";
+            this.newToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
+            this.newToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.newToolStripMenuItem.Text = "Новый";
+            this.newToolStripMenuItem.Click += new System.EventHandler(this.newToolStripMenuItem_Click);
+            // 
+            // openToolStripMenuItem
+            // 
+            this.openToolStripMenuItem.Name = "openToolStripMenuItem";
+            this.openToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.openToolStripMenuItem.Text = "Открыть...";
+            this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
+            // 
+            // saveToolStripMenuItem
+            // 
+            this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
+            this.saveToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.saveToolStripMenuItem.Text = "Сохранить";
+            this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
+            // 
+            // saveAsToolStripMenuItem
+            // 
+            this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
+            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.saveAsToolStripMenuItem.Text = "Сохранить как...";
+            this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.saveAsToolStripMenuItem_Click);
+            // 
+            // toolStripMenuItem1
+            // 
+            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(178, 6);
+            // 
+            // exportToolStripMenuItem
+            // 
+            this.exportToolStripMenuItem.Name = "exportToolStripMenuItem";
+            this.exportToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.E)));
+            this.exportToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.exportToolStripMenuItem.Text = "Экспорт...";
+            this.exportToolStripMenuItem.Click += new System.EventHandler(this.exportToolStripMenuItem_Click);
+            // 
+            // importToolStripMenuItem
+            // 
+            this.importToolStripMenuItem.Name = "importToolStripMenuItem";
+            this.importToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.I)));
+            this.importToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.importToolStripMenuItem.Text = "Импорт...";
+            this.importToolStripMenuItem.Click += new System.EventHandler(this.importToolStripMenuItem_Click);
+            // 
+            // toolStripMenuItem2
+            // 
+            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(178, 6);
+            // 
+            // exitToolStripMenuItem
+            // 
+            this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
+            this.exitToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.exitToolStripMenuItem.Text = "Выход";
+            this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
+            // 
+            // editToolStripMenuItem
+            // 
+            this.editToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.undoToolStripMenuItem,
+            this.redoToolStripMenuItem,
+            this.toolStripMenuItem3,
+            this.selectAllToolStripMenuItem,
+            this.clearSelectionToolStripMenuItem});
+            this.editToolStripMenuItem.Name = "editToolStripMenuItem";
+            this.editToolStripMenuItem.Size = new System.Drawing.Size(59, 20);
+            this.editToolStripMenuItem.Text = "Правка";
+            // 
+            // undoToolStripMenuItem
+            // 
+            this.undoToolStripMenuItem.Name = "undoToolStripMenuItem";
+            this.undoToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Z)));
+            this.undoToolStripMenuItem.Size = new System.Drawing.Size(210, 22);
+            this.undoToolStripMenuItem.Text = "Отменить";
+            this.undoToolStripMenuItem.Click += new System.EventHandler(this.undoToolStripMenuItem_Click);
+            // 
+            // redoToolStripMenuItem
+            // 
+            this.redoToolStripMenuItem.Name = "redoToolStripMenuItem";
+            this.redoToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Y)));
+            this.redoToolStripMenuItem.Size = new System.Drawing.Size(210, 22);
+            this.redoToolStripMenuItem.Text = "Повторить";
+            this.redoToolStripMenuItem.Click += new System.EventHandler(this.redoToolStripMenuItem_Click);
+            // 
+            // toolStripMenuItem3
+            // 
+            this.toolStripMenuItem3.Name = "toolStripMenuItem3";
+            this.toolStripMenuItem3.Size = new System.Drawing.Size(207, 6);
+            // 
+            // selectAllToolStripMenuItem
+            // 
+            this.selectAllToolStripMenuItem.Name = "selectAllToolStripMenuItem";
+            this.selectAllToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.A)));
+            this.selectAllToolStripMenuItem.Size = new System.Drawing.Size(210, 22);
+            this.selectAllToolStripMenuItem.Text = "Выделить всё";
+            this.selectAllToolStripMenuItem.Click += new System.EventHandler(this.selectAllToolStripMenuItem_Click);
+            // 
+            // clearSelectionToolStripMenuItem
+            // 
+            this.clearSelectionToolStripMenuItem.Name = "clearSelectionToolStripMenuItem";
+            this.clearSelectionToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.D)));
+            this.clearSelectionToolStripMenuItem.Size = new System.Drawing.Size(210, 22);
+            this.clearSelectionToolStripMenuItem.Text = "Снять выделение";
+            this.clearSelectionToolStripMenuItem.Click += new System.EventHandler(this.clearSelectionToolStripMenuItem_Click);
+            // 
+            // viewToolStripMenuItem
+            // 
+            this.viewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.showRouteToolStripMenuItem,
+            this.showStatisticsToolStripMenuItem,
+            this.toolStripMenuItem4,
+            this.zoomInToolStripMenuItem,
+            this.zoomOutToolStripMenuItem,
+            this.resetZoomToolStripMenuItem});
+            this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
+            this.viewToolStripMenuItem.Size = new System.Drawing.Size(39, 20);
+            this.viewToolStripMenuItem.Text = "Вид";
+            // 
+            // showRouteToolStripMenuItem
+            // 
+            this.showRouteToolStripMenuItem.CheckOnClick = true;
+            this.showRouteToolStripMenuItem.Name = "showRouteToolStripMenuItem";
+            this.showRouteToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.R)));
+            this.showRouteToolStripMenuItem.Size = new System.Drawing.Size(240, 22);
+            this.showRouteToolStripMenuItem.Text = "Показать маршрут";
+            this.showRouteToolStripMenuItem.Click += new System.EventHandler(this.showRouteToolStripMenuItem_Click);
+            // 
+            // showStatisticsToolStripMenuItem
+            // 
+            this.showStatisticsToolStripMenuItem.Name = "showStatisticsToolStripMenuItem";
+            this.showStatisticsToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.T)));
+            this.showStatisticsToolStripMenuItem.Size = new System.Drawing.Size(240, 22);
+            this.showStatisticsToolStripMenuItem.Text = "Показать статистику";
+            this.showStatisticsToolStripMenuItem.Click += new System.EventHandler(this.showStatisticsToolStripMenuItem_Click);
+            // 
+            // toolStripMenuItem4
+            // 
+            this.toolStripMenuItem4.Name = "toolStripMenuItem4";
+            this.toolStripMenuItem4.Size = new System.Drawing.Size(237, 6);
+            // 
+            // zoomInToolStripMenuItem
+            // 
+            this.zoomInToolStripMenuItem.Name = "zoomInToolStripMenuItem";
+            this.zoomInToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Oemplus)));
+            this.zoomInToolStripMenuItem.Size = new System.Drawing.Size(240, 22);
+            this.zoomInToolStripMenuItem.Text = "Увеличить";
+            this.zoomInToolStripMenuItem.Click += new System.EventHandler(this.zoomInToolStripMenuItem_Click);
+            // 
+            // zoomOutToolStripMenuItem
+            // 
+            this.zoomOutToolStripMenuItem.Name = "zoomOutToolStripMenuItem";
+            this.zoomOutToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.OemMinus)));
+            this.zoomOutToolStripMenuItem.Size = new System.Drawing.Size(240, 22);
+            this.zoomOutToolStripMenuItem.Text = "Уменьшить";
+            this.zoomOutToolStripMenuItem.Click += new System.EventHandler(this.zoomOutToolStripMenuItem_Click);
+            // 
+            // resetZoomToolStripMenuItem
+            // 
+            this.resetZoomToolStripMenuItem.Name = "resetZoomToolStripMenuItem";
+            this.resetZoomToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.D0)));
+            this.resetZoomToolStripMenuItem.Size = new System.Drawing.Size(240, 22);
+            this.resetZoomToolStripMenuItem.Text = "Сбросить масштаб";
+            this.resetZoomToolStripMenuItem.Click += new System.EventHandler(this.resetZoomToolStripMenuItem_Click);
             // 
             // checkBoxFillWafer
             // 
@@ -370,6 +617,183 @@ namespace CrystalTable
             this.checkBoxFillWafer.Text = "Режим схемы";
             this.checkBoxFillWafer.UseVisualStyleBackColor = true;
             this.checkBoxFillWafer.CheckedChanged += new System.EventHandler(this.checkBoxFillWafer_CheckedChanged);
+
+            // ===== НОВЫЕ ЭЛЕМЕНТЫ УПРАВЛЕНИЯ =====
+
+            // 
+            // toolStrip1
+            // 
+            this.toolStrip1.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.btnUndo,
+            this.btnRedo,
+            this.toolStripSeparator1,
+            this.btnExport,
+            this.btnImport,
+            this.toolStripSeparator2,
+            this.btnRoutePreview,
+            this.btnStatistics,
+            this.toolStripSeparator3,
+            this.btnZoomIn,
+            this.btnZoomOut,
+            this.btnZoomReset});
+            this.toolStrip1.Location = new System.Drawing.Point(0, 24);
+            this.toolStrip1.Name = "toolStrip1";
+            this.toolStrip1.Size = new System.Drawing.Size(1426, 25);
+            this.toolStrip1.TabIndex = 27;
+            this.toolStrip1.Text = "toolStrip1";
+            // 
+            // btnUndo
+            // 
+            this.btnUndo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnUndo.Image = global::CrystalTable.Properties.Resources.undo; // Добавьте иконку
+            this.btnUndo.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnUndo.Name = "btnUndo";
+            this.btnUndo.Size = new System.Drawing.Size(23, 22);
+            this.btnUndo.Text = "Отменить";
+            this.btnUndo.ToolTipText = "Отменить (Ctrl+Z)";
+            this.btnUndo.Click += new System.EventHandler(this.btnUndo_Click);
+            // 
+            // btnRedo
+            // 
+            this.btnRedo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnRedo.Image = global::CrystalTable.Properties.Resources.redo; // Добавьте иконку
+            this.btnRedo.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnRedo.Name = "btnRedo";
+            this.btnRedo.Size = new System.Drawing.Size(23, 22);
+            this.btnRedo.Text = "Повторить";
+            this.btnRedo.ToolTipText = "Повторить (Ctrl+Y)";
+            this.btnRedo.Click += new System.EventHandler(this.btnRedo_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
+            // 
+            // btnExport
+            // 
+            this.btnExport.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnExport.Image = global::CrystalTable.Properties.Resources.export; // Добавьте иконку
+            this.btnExport.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnExport.Name = "btnExport";
+            this.btnExport.Size = new System.Drawing.Size(23, 22);
+            this.btnExport.Text = "Экспорт";
+            this.btnExport.ToolTipText = "Экспорт данных (Ctrl+E)";
+            this.btnExport.Click += new System.EventHandler(this.btnExport_Click);
+            // 
+            // btnImport
+            // 
+            this.btnImport.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnImport.Image = global::CrystalTable.Properties.Resources.import; // Добавьте иконку
+            this.btnImport.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnImport.Name = "btnImport";
+            this.btnImport.Size = new System.Drawing.Size(23, 22);
+            this.btnImport.Text = "Импорт";
+            this.btnImport.ToolTipText = "Импорт данных (Ctrl+I)";
+            this.btnImport.Click += new System.EventHandler(this.btnImport_Click);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 25);
+            // 
+            // btnRoutePreview
+            // 
+            this.btnRoutePreview.CheckOnClick = true;
+            this.btnRoutePreview.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnRoutePreview.Image = global::CrystalTable.Properties.Resources.route; // Добавьте иконку
+            this.btnRoutePreview.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnRoutePreview.Name = "btnRoutePreview";
+            this.btnRoutePreview.Size = new System.Drawing.Size(23, 22);
+            this.btnRoutePreview.Text = "Маршрут";
+            this.btnRoutePreview.ToolTipText = "Предпросмотр маршрута (Ctrl+R)";
+            this.btnRoutePreview.Click += new System.EventHandler(this.btnRoutePreview_Click);
+            // 
+            // btnStatistics
+            // 
+            this.btnStatistics.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnStatistics.Image = global::CrystalTable.Properties.Resources.statistics; // Добавьте иконку
+            this.btnStatistics.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnStatistics.Name = "btnStatistics";
+            this.btnStatistics.Size = new System.Drawing.Size(23, 22);
+            this.btnStatistics.Text = "Статистика";
+            this.btnStatistics.ToolTipText = "Показать статистику (Ctrl+T)";
+            this.btnStatistics.Click += new System.EventHandler(this.btnStatistics_Click);
+            // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
+            // 
+            // btnZoomIn
+            // 
+            this.btnZoomIn.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnZoomIn.Image = global::CrystalTable.Properties.Resources.zoom_in; // Добавьте иконку
+            this.btnZoomIn.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnZoomIn.Name = "btnZoomIn";
+            this.btnZoomIn.Size = new System.Drawing.Size(23, 22);
+            this.btnZoomIn.Text = "Увеличить";
+            this.btnZoomIn.ToolTipText = "Увеличить (Ctrl++)";
+            this.btnZoomIn.Click += new System.EventHandler(this.btnZoomIn_Click);
+            // 
+            // btnZoomOut
+            // 
+            this.btnZoomOut.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnZoomOut.Image = global::CrystalTable.Properties.Resources.zoom_out; // Добавьте иконку
+            this.btnZoomOut.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnZoomOut.Name = "btnZoomOut";
+            this.btnZoomOut.Size = new System.Drawing.Size(23, 22);
+            this.btnZoomOut.Text = "Уменьшить";
+            this.btnZoomOut.ToolTipText = "Уменьшить (Ctrl+-)";
+            this.btnZoomOut.Click += new System.EventHandler(this.btnZoomOut_Click);
+            // 
+            // btnZoomReset
+            // 
+            this.btnZoomReset.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnZoomReset.Image = global::CrystalTable.Properties.Resources.zoom_reset; // Добавьте иконку
+            this.btnZoomReset.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnZoomReset.Name = "btnZoomReset";
+            this.btnZoomReset.Size = new System.Drawing.Size(23, 22);
+            this.btnZoomReset.Text = "Сбросить масштаб";
+            this.btnZoomReset.ToolTipText = "Сбросить масштаб (Ctrl+0)";
+            this.btnZoomReset.Click += new System.EventHandler(this.btnZoomReset_Click);
+            // 
+            // statusStrip1
+            // 
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.statusLabel,
+            this.fillPercentageLabel,
+            this.zoomLabel,
+            this.coordinatesLabel});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 773);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Size = new System.Drawing.Size(1426, 22);
+            this.statusStrip1.TabIndex = 28;
+            this.statusStrip1.Text = "statusStrip1";
+            // 
+            // statusLabel
+            // 
+            this.statusLabel.Name = "statusLabel";
+            this.statusLabel.Size = new System.Drawing.Size(43, 17);
+            this.statusLabel.Text = "Готово";
+            // 
+            // fillPercentageLabel
+            // 
+            this.fillPercentageLabel.Name = "fillPercentageLabel";
+            this.fillPercentageLabel.Size = new System.Drawing.Size(99, 17);
+            this.fillPercentageLabel.Text = "Заполнение: 0%";
+            // 
+            // zoomLabel
+            // 
+            this.zoomLabel.Name = "zoomLabel";
+            this.zoomLabel.Size = new System.Drawing.Size(84, 17);
+            this.zoomLabel.Text = "Масштаб: 1.0x";
+            // 
+            // coordinatesLabel
+            // 
+            this.coordinatesLabel.Name = "coordinatesLabel";
+            this.coordinatesLabel.Size = new System.Drawing.Size(59, 17);
+            this.coordinatesLabel.Text = "X: 0, Y: 0";
             // 
             // Form1
             // 
@@ -377,6 +801,8 @@ namespace CrystalTable
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Gainsboro;
             this.ClientSize = new System.Drawing.Size(1426, 795);
+            this.Controls.Add(this.statusStrip1);
+            this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.checkBoxFillWafer);
             this.Controls.Add(this.saveButton);
             this.Controls.Add(this.scan);
@@ -406,11 +832,17 @@ namespace CrystalTable
             this.MainMenuStrip = this.menuStrip1;
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "Form1";
-            this.Text = "Form1";
+            this.Text = "CrystalTable - Управление полупроводниковыми пластинами";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
             this.Resize += new System.EventHandler(this.Form1_Resize);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            this.menuStrip1.ResumeLayout(false);
+            this.menuStrip1.PerformLayout();
+            this.toolStrip1.ResumeLayout(false);
+            this.toolStrip1.PerformLayout();
+            this.statusStrip1.ResumeLayout(false);
+            this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -446,6 +878,50 @@ namespace CrystalTable
         private System.Windows.Forms.Button saveButton;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.CheckBox checkBoxFillWafer;
-       
+
+        // ===== НОВЫЕ ЭЛЕМЕНТЫ =====
+        private System.Windows.Forms.ToolStrip toolStrip1;
+        private System.Windows.Forms.ToolStripButton btnUndo;
+        private System.Windows.Forms.ToolStripButton btnRedo;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripButton btnExport;
+        private System.Windows.Forms.ToolStripButton btnImport;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripButton btnRoutePreview;
+        private System.Windows.Forms.ToolStripButton btnStatistics;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.ToolStripButton btnZoomIn;
+        private System.Windows.Forms.ToolStripButton btnZoomOut;
+        private System.Windows.Forms.ToolStripButton btnZoomReset;
+        private System.Windows.Forms.StatusStrip statusStrip1;
+        private System.Windows.Forms.ToolStripStatusLabel statusLabel;
+        private System.Windows.Forms.ToolStripStatusLabel fillPercentageLabel;
+        private System.Windows.Forms.ToolStripStatusLabel zoomLabel;
+        private System.Windows.Forms.ToolStripStatusLabel coordinatesLabel;
+
+        // Пункты меню
+        private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem newToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem saveAsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem exportToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem importToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem2;
+        private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem editToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem undoToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem redoToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem3;
+        private System.Windows.Forms.ToolStripMenuItem selectAllToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem clearSelectionToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem viewToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem showRouteToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem showStatisticsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem4;
+        private System.Windows.Forms.ToolStripMenuItem zoomInToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem zoomOutToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem resetZoomToolStripMenuItem;
     }
 }

@@ -3,6 +3,8 @@ using CrystalTable.Logic;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace CrystalTable
@@ -19,16 +21,24 @@ namespace CrystalTable
             Graphics g = e.Graphics; // Объект Graphics для рисования.
             g.Clear(Color.White);    // Очищаем область рисования (заливка белым цветом).
 
-            // Проверяем корректность ввода размеров изменяя цвет(пока не работает,т.к по дефолту False)
+            // Проверяем корректность ввода размеров
             if (!IsInputValid())
             {
-                //SizeX.BackColor = Color.Red;
-                // SizeY.BackColor = Color.Red;
-                //WaferDiameter.BackColor = Color.Red;
                 return;
             }
 
-            
+            // ===== ПРИМЕНЯЕМ ТРАНСФОРМАЦИИ ДЛЯ МАСШТАБИРОВАНИЯ И ПАНОРАМИРОВАНИЯ =====
+
+            // Сохраняем исходное состояние графики
+            GraphicsState originalState = g.Save();
+
+            // Применяем трансформации
+            g.TranslateTransform(panOffset.X, panOffset.Y);
+            g.ScaleTransform(zoomFactor, zoomFactor);
+
+            // Включаем сглаживание для лучшего качества при масштабировании
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+
             // Подбираем коэффициент масштабирования, чтобы пластина целиком помещалась в pictureBox1.
             AutoSetScaleFactor();
 
@@ -38,12 +48,65 @@ namespace CrystalTable
             // Вычисляем расположение кристаллов с учетом кеша.
             BuildCrystalsCached(crystalWidthRaw, crystalHeightRaw);
 
-            // Отрисовываем кристаллы при включенном чекбоксе.
-
+            // Отрисовываем кристаллы
             DrawCrystals(g);
+
+            // Рисуем предпросмотр маршрута, если включен
+            if (showRoutePreview && routePreview != null)
+            {
+                float centerX = pictureBox1.Width / 2;
+                float centerY = pictureBox1.Height / 2;
+                routePreview.DrawRoutePreview(g, CrystalManager.Instance.Crystals,
+                    scaleFactor, centerX, centerY);
+            }
+
+            // Восстанавливаем исходное состояние графики
+            g.Restore(originalState);
+
+            // ===== РИСУЕМ ЭЛЕМЕНТЫ ИНТЕРФЕЙСА БЕЗ ТРАНСФОРМАЦИЙ =====
+
+            // Рисуем прямоугольник выделения (без трансформаций)
+            if (isSelecting && selectionRectangle.Width > 0 && selectionRectangle.Height > 0)
+            {
+                using (Pen selectionPen = new Pen(Color.FromArgb(128, Color.Blue), 2))
+                {
+                    selectionPen.DashStyle = DashStyle.Dash;
+                    g.DrawRectangle(selectionPen, selectionRectangle);
+                }
+
+                // Полупрозрачная заливка области выделения
+                using (Brush selectionBrush = new SolidBrush(Color.FromArgb(30, Color.Blue)))
+                {
+                    g.FillRectangle(selectionBrush, selectionRectangle);
+                }
+            }
+
+            // Отображаем информацию о масштабе
+            DrawZoomInfo(g);
         }
-            
-        
+
+        /// <summary>
+        /// Отображает информацию о текущем масштабе
+        /// </summary>
+        private void DrawZoomInfo(Graphics g)
+        {
+            string zoomText = $"Масштаб: {zoomFactor:F1}x";
+            using (Font font = new Font("Arial", 10))
+            using (Brush brush = new SolidBrush(Color.Black))
+            {
+                SizeF textSize = g.MeasureString(zoomText, font);
+                float x = pictureBox1.Width - textSize.Width - 10;
+                float y = pictureBox1.Height - textSize.Height - 10;
+
+                // Фон для текста
+                using (Brush bgBrush = new SolidBrush(Color.FromArgb(200, Color.White)))
+                {
+                    g.FillRectangle(bgBrush, x - 5, y - 5, textSize.Width + 10, textSize.Height + 10);
+                }
+
+                g.DrawString(zoomText, font, brush, x, y);
+            }
+        }
 
         // Метод для подбора коэффициента масштабирования.
         private void AutoSetScaleFactor()
@@ -53,14 +116,13 @@ namespace CrystalTable
             float minSide = Math.Min(picWidth, picHeight);
 
             // waferDiameter указан в мм, scaleFactor — пиксели на мм.
-            scaleFactor = minSide / waferDiameter;
-            // Если нужен отступ, можно уменьшить масштаб: scaleFactor *= 0.9f;
+            scaleFactor = minSide / waferDiameter * 0.9f; // 0.9 для отступов
         }
 
         // Проверка корректности введённых размеров.
         private bool IsInputValid()
         {
-            if (float.TryParse(SizeX.Text, out crystalWidthRaw) &&      //Ключевое слово out указывает, что переменная crystalWidthRaw будет использоваться для хранения результата преобразования.
+            if (float.TryParse(SizeX.Text, out crystalWidthRaw) &&
                 float.TryParse(SizeY.Text, out crystalHeightRaw) &&
                 float.TryParse(WaferDiameter.Text, out float waferDiameterRaw) &&
                 crystalWidthRaw > 0 && crystalHeightRaw > 0 &&
@@ -82,16 +144,20 @@ namespace CrystalTable
 
             if (checkBoxFillWafer.Checked)
             {
-                g.DrawEllipse(Pens.Black,
-                                 centerX - displayRadius,
-                                 centerY - displayRadius,
-                                 displayRadius * 2,
-                                 displayRadius * 2);
-               
+                // Режим схемы - только контур
+                using (Pen pen = new Pen(Color.Black, 2))
+                {
+                    g.DrawEllipse(pen,
+                                     centerX - displayRadius,
+                                     centerY - displayRadius,
+                                     displayRadius * 2,
+                                     displayRadius * 2);
+                }
             }
             else
             {
-                using (Brush fillBrush = new SolidBrush(Color.Green))
+                // Режим визуализации - заливка
+                using (Brush fillBrush = new SolidBrush(Color.LightGreen))
                 {
                     // Заполняем круг зеленым цветом
                     g.FillEllipse(fillBrush,
@@ -99,9 +165,12 @@ namespace CrystalTable
                                   centerY - displayRadius,
                                   displayRadius * 2,
                                   displayRadius * 2);
+                }
 
-                    // Рисуем чёрный контур круга
-                    g.DrawEllipse(Pens.Black,
+                // Рисуем чёрный контур круга
+                using (Pen pen = new Pen(Color.DarkGreen, 2))
+                {
+                    g.DrawEllipse(pen,
                                   centerX - displayRadius,
                                   centerY - displayRadius,
                                   displayRadius * 2,
@@ -110,9 +179,7 @@ namespace CrystalTable
             }
         }
 
-
-        // Построение кристаллов с кешированием. Пересчёт выполняется только при
-        // изменении размеров или диаметра пластины.
+        // Построение кристаллов с кешированием.
         private void BuildCrystalsCached(float crystalWidthRaw, float crystalHeightRaw)
         {
             if (crystalWidthRaw == lastCrystalWidthRaw &&
@@ -147,7 +214,7 @@ namespace CrystalTable
             lastWaferDiameter = waferDiameter;
         }
 
-        // Вычисление расположения кристаллов в логической системе координат (мм относительно центра пластины).
+        // Вычисление расположения кристаллов в логической системе координат.
         private void BuildCrystals(float crystalWidthRaw, float crystalHeightRaw)
         {
             CrystalManager.Instance.Crystals.Clear();
@@ -155,11 +222,11 @@ namespace CrystalTable
 
             float waferRadius = waferDiameter / 2; // в мм
 
-            // Преобразуем размеры кристаллов из исходных единиц в мм.
+            // Преобразуем размеры кристаллов из микрометров в мм.
             float crystalWidth = crystalWidthRaw / 1000f;
             float crystalHeight = crystalHeightRaw / 1000f;
 
-            // Задаём область размещения кристаллов в логической системе координат (центр пластины — 0,0).
+            // Задаём область размещения кристаллов в логической системе координат.
             float startX = -waferRadius;
             float endX = waferRadius;
             float startY = -waferRadius;
@@ -181,7 +248,7 @@ namespace CrystalTable
                     float crystalX = startX + i * crystalWidth + crystalWidth / 2;
                     float crystalY = startY + j * crystalHeight + crystalHeight / 2;
 
-                    // Добавляем кристалл, если его центр находится внутри пластины (окружности).
+                    // Добавляем кристалл, если его центр находится внутри пластины.
                     if ((crystalX * crystalX + crystalY * crystalY) <= (waferRadius * waferRadius))
                     {
                         var crystal = new Crystal
@@ -213,13 +280,9 @@ namespace CrystalTable
             labelTotalCrystals.Text = $"Общее количество кристаллов: {totalCrystals}";
         }
 
-        // Отрисовка кристаллов с преобразованием логических координат (мм) в экранные координаты (пиксели).
-      
+        // Отрисовка кристаллов с поддержкой множественного выделения
         private void DrawCrystals(Graphics g)
         {
-            
-
-
             float displayCrystalWidth = (crystalWidthRaw / 1000f) * scaleFactor;
             float displayCrystalHeight = (crystalHeightRaw / 1000f) * scaleFactor;
             float centerX = pictureBox1.Width / 2;
@@ -242,12 +305,33 @@ namespace CrystalTable
                 crystal.DisplayTop = scaledCrystalY - halfH;
                 crystal.DisplayBottom = scaledCrystalY + halfH;
 
-               
+                // ===== УЛУЧШЕННАЯ ОТРИСОВКА С ПОДДЕРЖКОЙ МНОЖЕСТВЕННОГО ВЫДЕЛЕНИЯ =====
 
-                // Отрисовка: если кристалл выбран, заливаем жёлтым, иначе рисуем синим контуром.
-                if (selectedCrystalIndex == crystal.Index)
+                // Определяем состояние кристалла
+                bool isSelected = selectedCrystals.Contains(crystal.Index);
+                bool isHovered = crystal.Index == GetHoveredCrystalIndex();
+
+                // Выбираем цвета на основе состояния
+                Color fillColor = Color.Empty;
+                Color borderColor = Color.Blue;
+                float borderWidth = 1;
+
+                if (isSelected)
                 {
-                    using (Brush fillBrush = new SolidBrush(Color.Yellow))
+                    fillColor = Color.Yellow;
+                    borderColor = Color.DarkBlue;
+                    borderWidth = 2;
+                }
+                else if (isHovered)
+                {
+                    fillColor = Color.LightBlue;
+                    borderColor = Color.DarkBlue;
+                }
+
+                // Рисуем заливку, если нужно
+                if (fillColor != Color.Empty)
+                {
+                    using (Brush fillBrush = new SolidBrush(fillColor))
                     {
                         g.FillRectangle(fillBrush,
                             crystal.DisplayLeft,
@@ -256,20 +340,63 @@ namespace CrystalTable
                             displayCrystalHeight);
                     }
                 }
-                else
+
+                // Рисуем контур
+                using (Pen pen = new Pen(borderColor, borderWidth))
                 {
-                    g.DrawRectangle(Pens.Blue,
+                    g.DrawRectangle(pen,
                         crystal.DisplayLeft,
                         crystal.DisplayTop,
                         displayCrystalWidth,
                         displayCrystalHeight);
                 }
+
+                // Отображаем номер кристалла, если масштаб достаточно большой
+                if (zoomFactor > 2.0f)
+                {
+                    using (Font font = new Font("Arial", 8))
+                    using (Brush textBrush = new SolidBrush(Color.Black))
+                    {
+                        string text = crystal.Index.ToString();
+                        SizeF textSize = g.MeasureString(text, font);
+                        float textX = scaledCrystalX - textSize.Width / 2;
+                        float textY = scaledCrystalY - textSize.Height / 2;
+                        g.DrawString(text, font, textBrush, textX, textY);
+                    }
+                }
             }
 
-            if (selectedCrystalIndex > CrystalManager.Instance.Crystals.Count)
+            // Обновляем индекс выбранного кристалла
+            if (selectedCrystals.Count == 1)
+            {
+                selectedCrystalIndex = selectedCrystals.First();
+            }
+            else if (selectedCrystals.Count == 0)
             {
                 selectedCrystalIndex = -1;
             }
+        }
+
+        /// <summary>
+        /// Получает индекс кристалла под курсором мыши
+        /// </summary>
+        private int GetHoveredCrystalIndex()
+        {
+            Point mousePos = pictureBox1.PointToClient(Cursor.Position);
+            PointF transformedPos = TransformMousePoint(mousePos);
+
+            foreach (var crystal in CrystalManager.Instance.Crystals)
+            {
+                if (transformedPos.X >= crystal.DisplayLeft &&
+                    transformedPos.X <= crystal.DisplayRight &&
+                    transformedPos.Y >= crystal.DisplayTop &&
+                    transformedPos.Y <= crystal.DisplayBottom)
+                {
+                    return crystal.Index;
+                }
+            }
+
+            return -1;
         }
 
         // Проверка принадлежности точки кругу.
@@ -280,17 +407,77 @@ namespace CrystalTable
             return (dx * dx + dy * dy) <= radiusSq;
         }
 
+        // ===== ОБНОВЛЕННЫЕ ОБРАБОТЧИКИ МЫШИ С ПОДДЕРЖКОЙ ТРАНСФОРМАЦИЙ =====
+
         // Обработчик перемещения мыши по pictureBox1.
         private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
         {
             label3.Text = $"X: {e.X}";
             label4.Text = $"Y: {e.Y}";
 
-            // Проверяем, попадает ли курсор в область какого-либо кристалла.
+            // Обработка панорамирования
+            if (isPanning && e.Button == MouseButtons.Middle)
+            {
+                int deltaX = e.X - lastMousePosition.X;
+                int deltaY = e.Y - lastMousePosition.Y;
+
+                panOffset.X += deltaX;
+                panOffset.Y += deltaY;
+
+                lastMousePosition = e.Location;
+                pictureBox1.Invalidate();
+                return;
+            }
+
+            // Обработка выделения области
+            if (isSelecting)
+            {
+                // Обновляем прямоугольник выделения
+                int x = Math.Min(selectionStart.X, e.X);
+                int y = Math.Min(selectionStart.Y, e.Y);
+                int width = Math.Abs(e.X - selectionStart.X);
+                int height = Math.Abs(e.Y - selectionStart.Y);
+
+                selectionRectangle = new Rectangle(x, y, width, height);
+
+                // Обновляем выбранные кристаллы с учетом трансформаций
+                selectedCrystals.Clear();
+
+                foreach (var crystal in CrystalManager.Instance.Crystals)
+                {
+                    // Преобразуем координаты кристалла в экранные с учетом трансформаций
+                    float screenX = crystal.DisplayX * zoomFactor + panOffset.X;
+                    float screenY = crystal.DisplayY * zoomFactor + panOffset.Y;
+                    float screenWidth = DisplayCrystalWidth * zoomFactor;
+                    float screenHeight = DisplayCrystalHeight * zoomFactor;
+
+                    Rectangle crystalRect = new Rectangle(
+                        (int)(screenX - screenWidth / 2),
+                        (int)(screenY - screenHeight / 2),
+                        (int)screenWidth,
+                        (int)screenHeight
+                    );
+
+                    if (selectionRectangle.IntersectsWith(crystalRect))
+                    {
+                        selectedCrystals.Add(crystal.Index);
+                    }
+                }
+
+                UpdateSelectionLabel();
+                pictureBox1.Invalidate();
+                return;
+            }
+
+            // Отображение информации о кристалле под курсором
+            PointF transformedPoint = TransformMousePoint(e.Location);
+
             foreach (var crystal in CrystalManager.Instance.Crystals)
             {
-                if (e.X >= crystal.DisplayLeft && e.X <= crystal.DisplayRight &&
-                    e.Y >= crystal.DisplayTop && e.Y <= crystal.DisplayBottom)
+                if (transformedPoint.X >= crystal.DisplayLeft &&
+                    transformedPoint.X <= crystal.DisplayRight &&
+                    transformedPoint.Y >= crystal.DisplayTop &&
+                    transformedPoint.Y <= crystal.DisplayBottom)
                 {
                     labelIndex.Text = $"Индекс кристалла: {crystal.Index}";
                     return;
@@ -303,26 +490,100 @@ namespace CrystalTable
         // Обработчик нажатия кнопки мыши в pictureBox1.
         private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
         {
-            // Перебираем кристаллы в обратном порядке (для выбора верхнего при перекрытии).
-            for (int i = CrystalManager.Instance.Crystals.Count - 1; i >= 0; i--)
+            // Обработка панорамирования средней кнопкой
+            if (e.Button == MouseButtons.Middle)
             {
-                var crystal = CrystalManager.Instance.Crystals[i];
-
-                if (e.X >= crystal.DisplayLeft && e.X <= crystal.DisplayRight &&
-                    e.Y >= crystal.DisplayTop && e.Y <= crystal.DisplayBottom)
-                {
-                    selectedCrystalIndex = crystal.Index;
-                    labelSelectedCrystal.Text = $"Текущий индекс кристалла: {Convert.ToString(selectedCrystalIndex)}"; // Обновляем лейбл здесь
-                    pictureBox1.Invalidate(); // Обновляем отрисовку.
-                    return;
-                }
+                isPanning = true;
+                lastMousePosition = e.Location;
+                pictureBox1.Cursor = Cursors.Hand;
+                return;
             }
 
-            // Если ни один кристалл не выбран, сбрасываем индекс и обновляем лейбл.
-            selectedCrystalIndex = -1;
-            labelSelectedCrystal.Text = Convert.ToString(selectedCrystalIndex);
-            pictureBox1.Invalidate();
+            if (e.Button == MouseButtons.Left)
+            {
+                PointF transformedPoint = TransformMousePoint(e.Location);
+                bool hitCrystal = false;
+
+                // Проверяем, попали ли в кристалл
+                for (int i = CrystalManager.Instance.Crystals.Count - 1; i >= 0; i--)
+                {
+                    var crystal = CrystalManager.Instance.Crystals[i];
+
+                    if (transformedPoint.X >= crystal.DisplayLeft &&
+                        transformedPoint.X <= crystal.DisplayRight &&
+                        transformedPoint.Y >= crystal.DisplayTop &&
+                        transformedPoint.Y <= crystal.DisplayBottom)
+                    {
+                        hitCrystal = true;
+                        int oldSelectedIndex = selectedCrystalIndex;
+
+                        if (isCtrlPressed)
+                        {
+                            // Множественный выбор с Ctrl
+                            if (selectedCrystals.Contains(crystal.Index))
+                            {
+                                selectedCrystals.Remove(crystal.Index);
+                            }
+                            else
+                            {
+                                selectedCrystals.Add(crystal.Index);
+                            }
+                        }
+                        else
+                        {
+                            // Одиночный выбор - сохраняем в историю
+                            var oldSelection = new HashSet<int>(selectedCrystals);
+                            selectedCrystals.Clear();
+                            selectedCrystals.Add(crystal.Index);
+                            selectedCrystalIndex = crystal.Index;
+
+                            // Добавляем команду в историю
+                            commandHistory.ExecuteCommand(
+                                new SelectCrystalCommand(
+                                    oldSelectedIndex,
+                                    crystal.Index,
+                                    (index) => {
+                                        selectedCrystalIndex = index;
+                                        selectedCrystals.Clear();
+                                        if (index > 0) selectedCrystals.Add(index);
+                                    },
+                                    () => pictureBox1.Invalidate()
+                                )
+                            );
+                        }
+
+                        UpdateSelectionLabel();
+                        pictureBox1.Invalidate();
+                        return;
+                    }
+                }
+
+                // Если не попали в кристалл, начинаем выделение области
+                if (!hitCrystal && !isCtrlPressed)
+                {
+                    isSelecting = true;
+                    selectionStart = e.Location;
+                    selectionRectangle = new Rectangle(e.X, e.Y, 0, 0);
+                    selectedCrystals.Clear();
+                    UpdateSelectionLabel();
+                }
+            }
         }
 
+        // Обработчик отпускания кнопки мыши
+        private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Middle)
+            {
+                isPanning = false;
+                pictureBox1.Cursor = Cursors.Default;
+            }
+            else if (e.Button == MouseButtons.Left && isSelecting)
+            {
+                isSelecting = false;
+                UpdateSelectionLabel();
+                pictureBox1.Invalidate();
+            }
+        }
     }
 }
