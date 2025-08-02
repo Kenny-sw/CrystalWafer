@@ -46,8 +46,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\ExportImportController.cs" />
+    <Compile Include="Controllers\MouseController.cs" />
+    <Compile Include="Controllers\SerialPortController.cs" />
+    <Compile Include="Controllers\UIController.cs" />
+    <Compile Include="Controllers\WaferController.cs" />
+    <Compile Include="Controllers\ZoomPanController.cs" />
     <Compile Include="Data\Crystal.cs" />
     <Compile Include="Data\WaferInfo.cs" />
+    <Compile Include="Controllers\DrawingController.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -57,16 +64,10 @@
     <Compile Include="Form1.Drawing.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form1.InputHandlers.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="Form1.LoadData.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Form1.Movement.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Form1.SerialPort.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Logic\CommandHistory.cs" />
