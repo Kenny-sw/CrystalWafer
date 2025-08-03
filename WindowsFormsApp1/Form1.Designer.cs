@@ -61,7 +61,7 @@ namespace CrystalTable
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.labelIndex = new System.Windows.Forms.Label();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.loadDataComboBox = new System.Windows.Forms.ComboBox();
             this.label6 = new System.Windows.Forms.Label();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.scan = new System.Windows.Forms.Button();
@@ -354,15 +354,15 @@ namespace CrystalTable
             this.labelIndex.TabIndex = 20;
             this.labelIndex.Text = "Индекс кристалла: -";
             // 
-            // comboBox1
+            // loadDataComboBox
             // 
-            this.comboBox1.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Location = new System.Drawing.Point(1275, 478);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(133, 24);
-            this.comboBox1.TabIndex = 21;
-            this.comboBox1.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
+            this.loadDataComboBox.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.loadDataComboBox.FormattingEnabled = true;
+            this.loadDataComboBox.Location = new System.Drawing.Point(1275, 478);
+            this.loadDataComboBox.Name = "loadDataComboBox";
+            this.loadDataComboBox.Size = new System.Drawing.Size(133, 24);
+            this.loadDataComboBox.TabIndex = 21;
+            this.loadDataComboBox.SelectedIndexChanged += new System.EventHandler(this.loadDataComboBox_SelectedIndexChanged);
             // 
             // label6
             // 
@@ -800,7 +800,7 @@ namespace CrystalTable
             this.Controls.Add(this.saveButton);
             this.Controls.Add(this.scan);
             this.Controls.Add(this.label6);
-            this.Controls.Add(this.comboBox1);
+            this.Controls.Add(this.loadDataComboBox);
             this.Controls.Add(this.labelIndex);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
@@ -864,7 +864,7 @@ namespace CrystalTable
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label labelIndex;
-        private System.Windows.Forms.ComboBox comboBox1;
+        private System.Windows.Forms.ComboBox loadDataComboBox;
         private System.Windows.Forms.Label label6;
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
         private System.Windows.Forms.Button scan;

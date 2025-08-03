@@ -21,7 +21,7 @@ namespace CrystalTable
 
             try
             {
-                comboBox1.Items.Clear();
+                loadDataComboBox.Items.Clear();
                 string[] lines = File.ReadAllLines(filePath);
 
                 foreach (string line in lines)
@@ -32,13 +32,13 @@ namespace CrystalTable
                     string[] parts = line.Split(':');
                     if (parts.Length == 2)
                     {
-                        comboBox1.Items.Add(parts[0].Trim());
+                        loadDataComboBox.Items.Add(parts[0].Trim());
                     }
                 }
 
-                if (comboBox1.Items.Count > 0)
+                if (loadDataComboBox.Items.Count > 0)
                 {
-                    comboBox1.SelectedIndex = 0;
+                    loadDataComboBox.SelectedIndex = 0;
                 }
             }
             catch (Exception ex)
@@ -91,7 +91,7 @@ namespace CrystalTable
         /// </summary>
         public void SetFieldsFromComboBox()
         {
-            if (comboBox1.SelectedItem == null)
+            if (loadDataComboBox.SelectedItem == null)
                 return;
 
             string filePath = Path.Combine(Application.StartupPath, "crystal_data.txt");
@@ -113,7 +113,7 @@ namespace CrystalTable
                         continue;
 
                     string[] parts = line.Split(':');
-                    if (parts.Length == 2 && parts[0].Trim() == comboBox1.SelectedItem.ToString())
+                    if (parts.Length == 2 && parts[0].Trim() == loadDataComboBox.SelectedItem.ToString())
                     {
                         string[] parameters = parts[1].Split(',');
 
@@ -185,11 +185,11 @@ namespace CrystalTable
                 {
                     string lastConfig = File.ReadAllText(lastConfigPath).Trim();
 
-                    for (int i = 0; i < comboBox1.Items.Count; i++)
+                    for (int i = 0; i < loadDataComboBox.Items.Count; i++)
                     {
-                        if (comboBox1.Items[i].ToString() == lastConfig)
+                        if (loadDataComboBox.Items[i].ToString() == lastConfig)
                         {
-                            comboBox1.SelectedIndex = i;
+                            loadDataComboBox.SelectedIndex = i;
                             SetFieldsFromComboBox();
                             break;
                         }
@@ -209,10 +209,10 @@ namespace CrystalTable
         {
             try
             {
-                if (comboBox1.SelectedItem != null)
+                if (loadDataComboBox.SelectedItem != null)
                 {
                     string lastConfigPath = Path.Combine(Application.StartupPath, "last_config.txt");
-                    File.WriteAllText(lastConfigPath, comboBox1.SelectedItem.ToString());
+                    File.WriteAllText(lastConfigPath, loadDataComboBox.SelectedItem.ToString());
                 }
             }
             catch

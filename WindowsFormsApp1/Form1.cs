@@ -129,7 +129,7 @@ namespace CrystalTable
             pictureBox1.Invalidate();
         }
 
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        private void loadDataComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             SetFieldsFromComboBox();
         }

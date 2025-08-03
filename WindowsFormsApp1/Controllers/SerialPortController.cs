@@ -73,36 +73,7 @@ namespace CrystalTable.Controllers
             }
         }
 
-        /// <summary>
-        /// Отправка команды
-        /// </summary>
-        public async Task SendCommandAsync(byte commandByte, uint stepSize)
-        {
-            if (!serialPort.IsOpen)
-            {
-                MessageBox.Show("Порт не подключен!");
-                return;
-            }
-
-            // Разбиваем 32-битное число на 4 байта
-            byte b0 = (byte)(stepSize & 0xFF);
-            byte b1 = (byte)((stepSize >> 8) & 0xFF);
-            byte b2 = (byte)((stepSize >> 16) & 0xFF);
-            byte b3 = (byte)((stepSize >> 24) & 0xFF);
-
-            byte[] dataToSend = new byte[] { commandByte, b0, b1, b2, b3 };
-
-            try
-            {
-                await serialPort.BaseStream.WriteAsync(dataToSend, 0, dataToSend.Length);
-                await serialPort.BaseStream.FlushAsync();
-            }
-            catch
-            {
-                MessageBox.Show("Ошибка отправки. Проверьте, что COM-порт доступен.");
-            }
-        }
-
+        
         /// <summary>
         /// Обработка полученных данных
         /// </summary>
