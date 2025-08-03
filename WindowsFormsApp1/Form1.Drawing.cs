@@ -1,227 +1,142 @@
 ﻿using CrystalTable.Data;
 using CrystalTable.Logic;
+using CrystalTable.Controllers;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace CrystalTable
 {
     public partial class Form1 : Form
     {
-        // Вычисляемые свойства для отображаемых размеров кристалла.
-        private float DisplayCrystalWidth => (crystalWidthRaw / 1000f) * scaleFactor;
-        private float DisplayCrystalHeight => (crystalHeightRaw / 1000f) * scaleFactor;
-
-        // Обработчик события перерисовки pictureBox1.
+        /// <summary>
+        /// Обработчик события перерисовки pictureBox1
+        /// </summary>
         private void PictureBox1_Paint(object sender, PaintEventArgs e)
         {
-            Graphics g = e.Graphics; // Объект Graphics для рисования.
-            g.Clear(Color.White);    // Очищаем область рисования (заливка белым цветом).
+            Graphics g = e.Graphics;
+            g.Clear(Color.White);
 
-            // Проверяем корректность ввода размеров изменяя цвет(пока не работает,т.к по дефолту False)
+            // Проверяем корректность ввода
             if (!IsInputValid())
             {
-                //SizeX.BackColor = Color.Red;
-                // SizeY.BackColor = Color.Red;
-                //WaferDiameter.BackColor = Color.Red;
                 return;
             }
 
-            
-            // Подбираем коэффициент масштабирования, чтобы пластина целиком помещалась в pictureBox1.
-            AutoSetScaleFactor();
+            // Сохраняем исходное состояние графики
+            GraphicsState originalState = g.Save();
 
-            // Рисуем пластину.
+            // Применяем трансформации масштабирования и панорамирования
+            g.TranslateTransform(zoomPanController.PanOffset.X, zoomPanController.PanOffset.Y);
+            g.ScaleTransform(zoomPanController.ZoomFactor, zoomPanController.ZoomFactor);
+
+            // Включаем сглаживание
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+
+            // Автоматическая настройка масштаба
+            waferController.AutoSetScaleFactor(pictureBox1.Width, pictureBox1.Height);
+
+            // Рисуем пластину
             DrawWafer(g);
 
-            // Вычисляем расположение кристаллов с учетом кеша.
-            BuildCrystalsCached(crystalWidthRaw, crystalHeightRaw);
+            // Строим кристаллы с кешированием
+            waferController.BuildCrystalsCached();
 
-            // Отрисовываем кристаллы при включенном чекбоксе.
-
+            // Отрисовываем кристаллы
             DrawCrystals(g);
+
+            // Рисуем предпросмотр маршрута
+            if (showRoutePreview && routePreview != null)
+            {
+                float centerX = pictureBox1.Width / 2;
+                float centerY = pictureBox1.Height / 2;
+                routePreview.DrawRoutePreview(g, CrystalManager.Instance.Crystals,
+                    waferController.ScaleFactor, centerX, centerY);
+            }
+
+            // Восстанавливаем состояние графики
+            g.Restore(originalState);
+
+            // Рисуем элементы интерфейса без трансформаций
+            DrawUIElements(g);
+
+            // Отображаем информацию о масштабе
+            uiController.DrawZoomInfo(g, zoomPanController.ZoomFactor);
         }
-            
-        
 
-        // Метод для подбора коэффициента масштабирования.
-        private void AutoSetScaleFactor()
-        {
-            float picWidth = pictureBox1.Width;
-            float picHeight = pictureBox1.Height;
-            float minSide = Math.Min(picWidth, picHeight);
-
-            // waferDiameter указан в мм, scaleFactor — пиксели на мм.
-            scaleFactor = minSide / waferDiameter;
-            // Если нужен отступ, можно уменьшить масштаб: scaleFactor *= 0.9f;
-        }
-
-        // Проверка корректности введённых размеров.
+        /// <summary>
+        /// Проверка корректности введённых размеров
+        /// </summary>
         private bool IsInputValid()
         {
-            if (float.TryParse(SizeX.Text, out crystalWidthRaw) &&      //Ключевое слово out указывает, что переменная crystalWidthRaw будет использоваться для хранения результата преобразования.
-                float.TryParse(SizeY.Text, out crystalHeightRaw) &&
-                float.TryParse(WaferDiameter.Text, out float waferDiameterRaw) &&
-                crystalWidthRaw > 0 && crystalHeightRaw > 0 &&
-                waferDiameterRaw >= MinWaferDiameter && waferDiameterRaw <= MaxWaferDiameter)
+            if (float.TryParse(SizeX.Text, out float widthRaw) &&
+                float.TryParse(SizeY.Text, out float heightRaw) &&
+                float.TryParse(WaferDiameter.Text, out float diameterRaw) &&
+                widthRaw > 0 && heightRaw > 0 &&
+                diameterRaw >= WaferController.MinWaferDiameter &&
+                diameterRaw <= WaferController.MaxWaferDiameter)
             {
-                waferDiameter = waferDiameterRaw;
+                waferController.CrystalWidthRaw = widthRaw;
+                waferController.CrystalHeightRaw = heightRaw;
+                waferController.WaferDiameter = diameterRaw;
                 return true;
             }
             return false;
         }
 
-        // Рисование пластины (окружности) по центру pictureBox1.
+        /// <summary>
+        /// Рисование пластины
+        /// </summary>
         private void DrawWafer(Graphics g)
         {
             float centerX = pictureBox1.Width / 2;
             float centerY = pictureBox1.Height / 2;
-            float radius = waferDiameter / 2;             // Радиус в мм.
-            float displayRadius = radius * scaleFactor;     // Радиус в пикселях.
+            float radius = waferController.WaferDiameter / 2;
+            float displayRadius = radius * waferController.ScaleFactor;
 
-            if (checkBoxFillWafer.Checked)
+            if (waferController.WaferDisplayMode) // Режим схемы
             {
-                g.DrawEllipse(Pens.Black,
-                                 centerX - displayRadius,
-                                 centerY - displayRadius,
-                                 displayRadius * 2,
-                                 displayRadius * 2);
-               
-            }
-            else
-            {
-                using (Brush fillBrush = new SolidBrush(Color.Green))
+                using (Pen pen = new Pen(Color.Black, 2))
                 {
-                    // Заполняем круг зеленым цветом
+                    g.DrawEllipse(pen,
+                        centerX - displayRadius,
+                        centerY - displayRadius,
+                        displayRadius * 2,
+                        displayRadius * 2);
+                }
+            }
+            else // Режим визуализации
+            {
+                using (Brush fillBrush = new SolidBrush(Color.LightGreen))
+                {
                     g.FillEllipse(fillBrush,
-                                  centerX - displayRadius,
-                                  centerY - displayRadius,
-                                  displayRadius * 2,
-                                  displayRadius * 2);
+                        centerX - displayRadius,
+                        centerY - displayRadius,
+                        displayRadius * 2,
+                        displayRadius * 2);
+                }
 
-                    // Рисуем чёрный контур круга
-                    g.DrawEllipse(Pens.Black,
-                                  centerX - displayRadius,
-                                  centerY - displayRadius,
-                                  displayRadius * 2,
-                                  displayRadius * 2);
+                using (Pen pen = new Pen(Color.DarkGreen, 2))
+                {
+                    g.DrawEllipse(pen,
+                        centerX - displayRadius,
+                        centerY - displayRadius,
+                        displayRadius * 2,
+                        displayRadius * 2);
                 }
             }
         }
 
-
-        // Построение кристаллов с кешированием. Пересчёт выполняется только при
-        // изменении размеров или диаметра пластины.
-        private void BuildCrystalsCached(float crystalWidthRaw, float crystalHeightRaw)
-        {
-            if (crystalWidthRaw == lastCrystalWidthRaw &&
-                crystalHeightRaw == lastCrystalHeightRaw &&
-                waferDiameter == lastWaferDiameter &&
-                CrystalManager.Instance.Crystals.Count > 0)
-            {
-                return; // Кеш актуален
-            }
-
-            string cachePath = CrystalCache.GetCacheFilePath(crystalWidthRaw, crystalHeightRaw, waferDiameter);
-            if (CrystalCache.TryLoad(cachePath, out var cachedCrystals))
-            {
-                CrystalManager.Instance.Crystals.Clear();
-                CrystalManager.Instance.Crystals.AddRange(cachedCrystals);
-            }
-            else
-            {
-                BuildCrystals(crystalWidthRaw, crystalHeightRaw);
-
-                var info = new WaferInfo
-                {
-                    SizeX = (uint)crystalWidthRaw,
-                    SizeY = (uint)crystalHeightRaw,
-                    WaferDiameter = (uint)waferDiameter
-                };
-                CrystalCache.Save(cachePath, info, CrystalManager.Instance.Crystals);
-            }
-
-            lastCrystalWidthRaw = crystalWidthRaw;
-            lastCrystalHeightRaw = crystalHeightRaw;
-            lastWaferDiameter = waferDiameter;
-        }
-
-        // Вычисление расположения кристаллов в логической системе координат (мм относительно центра пластины).
-        private void BuildCrystals(float crystalWidthRaw, float crystalHeightRaw)
-        {
-            CrystalManager.Instance.Crystals.Clear();
-            nextCrystalIndex = 1;
-
-            float waferRadius = waferDiameter / 2; // в мм
-
-            // Преобразуем размеры кристаллов из исходных единиц в мм.
-            float crystalWidth = crystalWidthRaw / 1000f;
-            float crystalHeight = crystalHeightRaw / 1000f;
-
-            // Задаём область размещения кристаллов в логической системе координат (центр пластины — 0,0).
-            float startX = -waferRadius;
-            float endX = waferRadius;
-            float startY = -waferRadius;
-            float endY = waferRadius;
-
-            int numCrystalsX = (int)((endX - startX) / crystalWidth);
-            int numCrystalsY = (int)((endY - startY) / crystalHeight);
-
-            int totalCrystals = 0;
-            bool isReversed = false;
-            List<Crystal> rowCrystals = new List<Crystal>();
-
-            for (int j = 0; j <= numCrystalsY; j++)
-            {
-                rowCrystals.Clear();
-                for (int i = 0; i <= numCrystalsX; i++)
-                {
-                    // Вычисляем центр потенциального кристалла в логических координатах (мм).
-                    float crystalX = startX + i * crystalWidth + crystalWidth / 2;
-                    float crystalY = startY + j * crystalHeight + crystalHeight / 2;
-
-                    // Добавляем кристалл, если его центр находится внутри пластины (окружности).
-                    if ((crystalX * crystalX + crystalY * crystalY) <= (waferRadius * waferRadius))
-                    {
-                        var crystal = new Crystal
-                        {
-                            Index = nextCrystalIndex++,
-                            RealX = crystalX,
-                            RealY = crystalY,
-                            Color = Color.Blue
-                        };
-
-                        rowCrystals.Add(crystal);
-                        totalCrystals++;
-                    }
-                }
-
-                if (isReversed)
-                {
-                    rowCrystals.Reverse();
-                    for (int i = 0; i < rowCrystals.Count; i++)
-                    {
-                        rowCrystals[i].Index = nextCrystalIndex - rowCrystals.Count + i;
-                    }
-                }
-
-                CrystalManager.Instance.Crystals.AddRange(rowCrystals);
-                isReversed = !isReversed;
-            }
-
-            labelTotalCrystals.Text = $"Общее количество кристаллов: {totalCrystals}";
-        }
-
-        // Отрисовка кристаллов с преобразованием логических координат (мм) в экранные координаты (пиксели).
-      
+        /// <summary>
+        /// Отрисовка кристаллов
+        /// </summary>
         private void DrawCrystals(Graphics g)
         {
-            
-
-
-            float displayCrystalWidth = (crystalWidthRaw / 1000f) * scaleFactor;
-            float displayCrystalHeight = (crystalHeightRaw / 1000f) * scaleFactor;
+            float displayCrystalWidth = (waferController.CrystalWidthRaw / 1000f) * waferController.ScaleFactor;
+            float displayCrystalHeight = (waferController.CrystalHeightRaw / 1000f) * waferController.ScaleFactor;
             float centerX = pictureBox1.Width / 2;
             float centerY = pictureBox1.Height / 2;
 
@@ -230,24 +145,43 @@ namespace CrystalTable
                 float halfW = displayCrystalWidth / 2;
                 float halfH = displayCrystalHeight / 2;
 
-                // Преобразуем логические координаты кристалла (мм) в экранные координаты (пиксели).
-                float scaledCrystalX = crystal.RealX * scaleFactor + centerX;
-                float scaledCrystalY = crystal.RealY * scaleFactor + centerY;
+                // Преобразуем логические координаты в экранные
+                float scaledCrystalX = crystal.RealX * waferController.ScaleFactor + centerX;
+                float scaledCrystalY = crystal.RealY * waferController.ScaleFactor + centerY;
+
+                // Сохраняем экранные координаты для обработки мыши
                 crystal.DisplayX = scaledCrystalX;
                 crystal.DisplayY = scaledCrystalY;
-
-                // Вычисляем границы кристалла для обработки MouseMove и MouseDown.
                 crystal.DisplayLeft = scaledCrystalX - halfW;
                 crystal.DisplayRight = scaledCrystalX + halfW;
                 crystal.DisplayTop = scaledCrystalY - halfH;
                 crystal.DisplayBottom = scaledCrystalY + halfH;
 
-               
+                // Определяем состояние кристалла
+                bool isSelected = mouseController.SelectedCrystals.Contains(crystal.Index);
+                bool isHovered = GetHoveredCrystalIndex() == crystal.Index;
 
-                // Отрисовка: если кристалл выбран, заливаем жёлтым, иначе рисуем синим контуром.
-                if (selectedCrystalIndex == crystal.Index)
+                // Выбираем цвета
+                Color fillColor = Color.Empty;
+                Color borderColor = Color.Blue;
+                float borderWidth = 1;
+
+                if (isSelected)
                 {
-                    using (Brush fillBrush = new SolidBrush(Color.Yellow))
+                    fillColor = Color.Yellow;
+                    borderColor = Color.DarkBlue;
+                    borderWidth = 2;
+                }
+                else if (isHovered)
+                {
+                    fillColor = Color.LightBlue;
+                    borderColor = Color.DarkBlue;
+                }
+
+                // Рисуем заливку
+                if (fillColor != Color.Empty)
+                {
+                    using (Brush fillBrush = new SolidBrush(fillColor))
                     {
                         g.FillRectangle(fillBrush,
                             crystal.DisplayLeft,
@@ -256,73 +190,84 @@ namespace CrystalTable
                             displayCrystalHeight);
                     }
                 }
-                else
+
+                // Рисуем контур
+                using (Pen pen = new Pen(borderColor, borderWidth))
                 {
-                    g.DrawRectangle(Pens.Blue,
+                    g.DrawRectangle(pen,
                         crystal.DisplayLeft,
                         crystal.DisplayTop,
                         displayCrystalWidth,
                         displayCrystalHeight);
                 }
-            }
 
-            if (selectedCrystalIndex > CrystalManager.Instance.Crystals.Count)
+                // Отображаем номер кристалла при большом масштабе
+                if (zoomPanController.ZoomFactor > 2.0f)
+                {
+                    using (Font font = new Font("Arial", 8))
+                    using (Brush textBrush = new SolidBrush(Color.Black))
+                    {
+                        string text = crystal.Index.ToString();
+                        SizeF textSize = g.MeasureString(text, font);
+                        float textX = scaledCrystalX - textSize.Width / 2;
+                        float textY = scaledCrystalY - textSize.Height / 2;
+                        g.DrawString(text, font, textBrush, textX, textY);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Рисование элементов интерфейса
+        /// </summary>
+        private void DrawUIElements(Graphics g)
+        {
+            // Рисуем прямоугольник выделения
+            var selectionRect = mouseController.GetSelectionRectangle();
+            if (mouseController.IsSelecting && !selectionRect.IsEmpty)
             {
-                selectedCrystalIndex = -1;
+                using (Pen selectionPen = new Pen(Color.FromArgb(128, Color.Blue), 2))
+                {
+                    selectionPen.DashStyle = DashStyle.Dash;
+                    g.DrawRectangle(selectionPen, selectionRect);
+                }
+
+                using (Brush selectionBrush = new SolidBrush(Color.FromArgb(30, Color.Blue)))
+                {
+                    g.FillRectangle(selectionBrush, selectionRect);
+                }
             }
         }
 
-        // Проверка принадлежности точки кругу.
-        private bool IsInsideCircle(float px, float py, float cx, float cy, float radiusSq)
+        /// <summary>
+        /// Получает индекс кристалла под курсором
+        /// </summary>
+        private int GetHoveredCrystalIndex()
         {
-            float dx = px - cx;
-            float dy = py - cy;
-            return (dx * dx + dy * dy) <= radiusSq;
-        }
+            Point mousePos = pictureBox1.PointToClient(Cursor.Position);
+            PointF transformedPos = zoomPanController.TransformPoint(new PointF(mousePos.X, mousePos.Y));
 
-        // Обработчик перемещения мыши по pictureBox1.
-        private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
-        {
-            label3.Text = $"X: {e.X}";
-            label4.Text = $"Y: {e.Y}";
-
-            // Проверяем, попадает ли курсор в область какого-либо кристалла.
             foreach (var crystal in CrystalManager.Instance.Crystals)
             {
-                if (e.X >= crystal.DisplayLeft && e.X <= crystal.DisplayRight &&
-                    e.Y >= crystal.DisplayTop && e.Y <= crystal.DisplayBottom)
+                // Применяем обратную трансформацию к координатам кристалла
+                PointF crystalPos = zoomPanController.InverseTransformPoint(
+                    new PointF(crystal.DisplayX, crystal.DisplayY));
+
+                float halfW = (waferController.CrystalWidthRaw / 1000f) *
+                             waferController.ScaleFactor * zoomPanController.ZoomFactor / 2;
+                float halfH = (waferController.CrystalHeightRaw / 1000f) *
+                             waferController.ScaleFactor * zoomPanController.ZoomFactor / 2;
+
+                if (mousePos.X >= crystalPos.X - halfW &&
+                    mousePos.X <= crystalPos.X + halfW &&
+                    mousePos.Y >= crystalPos.Y - halfH &&
+                    mousePos.Y <= crystalPos.Y + halfH)
                 {
-                    labelIndex.Text = $"Индекс кристалла: {crystal.Index}";
-                    return;
+                    return crystal.Index;
                 }
             }
 
-            labelIndex.Text = "Индекс кристалла: -";
+            return -1;
         }
-
-        // Обработчик нажатия кнопки мыши в pictureBox1.
-        private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
-        {
-            // Перебираем кристаллы в обратном порядке (для выбора верхнего при перекрытии).
-            for (int i = CrystalManager.Instance.Crystals.Count - 1; i >= 0; i--)
-            {
-                var crystal = CrystalManager.Instance.Crystals[i];
-
-                if (e.X >= crystal.DisplayLeft && e.X <= crystal.DisplayRight &&
-                    e.Y >= crystal.DisplayTop && e.Y <= crystal.DisplayBottom)
-                {
-                    selectedCrystalIndex = crystal.Index;
-                    labelSelectedCrystal.Text = $"Текущий индекс кристалла: {Convert.ToString(selectedCrystalIndex)}"; // Обновляем лейбл здесь
-                    pictureBox1.Invalidate(); // Обновляем отрисовку.
-                    return;
-                }
-            }
-
-            // Если ни один кристалл не выбран, сбрасываем индекс и обновляем лейбл.
-            selectedCrystalIndex = -1;
-            labelSelectedCrystal.Text = Convert.ToString(selectedCrystalIndex);
-            pictureBox1.Invalidate();
-        }
-
     }
 }
