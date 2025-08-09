@@ -134,17 +134,6 @@ namespace CrystalTable
             SetFieldsFromComboBox();
         }
 
-        // ===== ОБРАБОТЧИКИ КНОПОК =====
-
-        private void Create_Click(object sender, EventArgs e)
-        {
-            waferController.CreateNewWafer();
-            zoomPanController.Reset();
-            mouseController.ClearSelection();
-            commandHistory.Clear();
-            UpdateUI();
-        }
-
         private void SaveButton_Click(object sender, EventArgs e)
         {
             exportImportController.SaveWaferInfo(SizeX.Text, SizeY.Text, WaferDiameter.Text);
@@ -354,5 +343,32 @@ namespace CrystalTable
         public ToolStripButton BtnRoutePreview => btnRoutePreview;
         public ToolStripMenuItem ShowRouteToolStripMenuItem => showRouteToolStripMenuItem;
         public SerialPortController SerialPortController => serialPortController;
+
+        
+
+        /// <summary>Кнопка «Создать» (новая пластина по введённым значениям).</summary>
+        private void Create_Click(object sender, EventArgs e)
+        {
+            if (!uint.TryParse(SizeX.Text.Trim(), out var sizeX) ||
+                !uint.TryParse(SizeY.Text.Trim(), out var sizeY) ||
+                !uint.TryParse(WaferDiameter.Text.Trim(), out var diameter))
+            {
+                MessageBox.Show("Укажи корректные шаги (SizeX/SizeY, мкм) и диаметр пластины (мм).",
+                    "Новая пластина", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            waferController.CrystalWidthRaw = sizeX;     // мкм
+            waferController.CrystalHeightRaw = sizeY;     // мкм
+            waferController.WaferDiameter = diameter;  // мм
+
+            waferController.CreateNewWafer();
+
+            // Сброс секции калибровки (если есть частичный класс с методом)
+            try { InitializeCalibrationUiState(); } catch { /* игнор, если метода нет */ }
+
+            pictureBox1?.Invalidate();
+            UpdateUI();
+        }
     }
 }

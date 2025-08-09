@@ -109,10 +109,21 @@ namespace CrystalTable
             this.fillPercentageLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.zoomLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.coordinatesLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.groupBoxCalibration = new System.Windows.Forms.GroupBox();
+            this.btnBuildMap = new System.Windows.Forms.Button();
+            this.btnSelectLast = new System.Windows.Forms.Button();
+            this.btnSelectFirst = new System.Windows.Forms.Button();
+            this.lblRows = new System.Windows.Forms.Label();
+            this.lblCols = new System.Windows.Forms.Label();
+            this.lblPitchY = new System.Windows.Forms.Label();
+            this.lblPitchX = new System.Windows.Forms.Label();
+            this.lblLastRef = new System.Windows.Forms.Label();
+            this.lblFirstRef = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.toolStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
+            this.groupBoxCalibration.SuspendLayout();
             this.SuspendLayout();
             // 
             // buttonConnect
@@ -156,7 +167,7 @@ namespace CrystalTable
             // buttonMoveUp
             // 
             this.buttonMoveUp.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.buttonMoveUp.Location = new System.Drawing.Point(1173, 286);
+            this.buttonMoveUp.Location = new System.Drawing.Point(1200, 308);
             this.buttonMoveUp.Margin = new System.Windows.Forms.Padding(4);
             this.buttonMoveUp.Name = "buttonMoveUp";
             this.buttonMoveUp.Size = new System.Drawing.Size(100, 28);
@@ -168,7 +179,7 @@ namespace CrystalTable
             // buttonMoveDown
             // 
             this.buttonMoveDown.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.buttonMoveDown.Location = new System.Drawing.Point(1173, 322);
+            this.buttonMoveDown.Location = new System.Drawing.Point(1200, 344);
             this.buttonMoveDown.Margin = new System.Windows.Forms.Padding(4);
             this.buttonMoveDown.Name = "buttonMoveDown";
             this.buttonMoveDown.Size = new System.Drawing.Size(100, 28);
@@ -180,7 +191,7 @@ namespace CrystalTable
             // buttonMoveLeft
             // 
             this.buttonMoveLeft.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.buttonMoveLeft.Location = new System.Drawing.Point(1065, 321);
+            this.buttonMoveLeft.Location = new System.Drawing.Point(1092, 343);
             this.buttonMoveLeft.Margin = new System.Windows.Forms.Padding(4);
             this.buttonMoveLeft.Name = "buttonMoveLeft";
             this.buttonMoveLeft.Size = new System.Drawing.Size(100, 28);
@@ -192,7 +203,7 @@ namespace CrystalTable
             // buttonMoveRight
             // 
             this.buttonMoveRight.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.buttonMoveRight.Location = new System.Drawing.Point(1281, 321);
+            this.buttonMoveRight.Location = new System.Drawing.Point(1308, 343);
             this.buttonMoveRight.Margin = new System.Windows.Forms.Padding(4);
             this.buttonMoveRight.Name = "buttonMoveRight";
             this.buttonMoveRight.Size = new System.Drawing.Size(100, 28);
@@ -293,7 +304,7 @@ namespace CrystalTable
             // labelTotalCrystals
             // 
             this.labelTotalCrystals.AutoSize = true;
-            this.labelTotalCrystals.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.labelTotalCrystals.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F);
             this.labelTotalCrystals.Location = new System.Drawing.Point(227, 58);
             this.labelTotalCrystals.Name = "labelTotalCrystals";
             this.labelTotalCrystals.Size = new System.Drawing.Size(244, 18);
@@ -303,7 +314,7 @@ namespace CrystalTable
             // labelSelectedCrystal
             // 
             this.labelSelectedCrystal.AutoSize = true;
-            this.labelSelectedCrystal.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.labelSelectedCrystal.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F);
             this.labelSelectedCrystal.Location = new System.Drawing.Point(563, 58);
             this.labelSelectedCrystal.Name = "labelSelectedCrystal";
             this.labelSelectedCrystal.Size = new System.Drawing.Size(173, 18);
@@ -788,12 +799,116 @@ namespace CrystalTable
             this.coordinatesLabel.Size = new System.Drawing.Size(63, 20);
             this.coordinatesLabel.Text = "X: 0, Y: 0";
             // 
+            // groupBoxCalibration
+            // 
+            this.groupBoxCalibration.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.groupBoxCalibration.Controls.Add(this.btnBuildMap);
+            this.groupBoxCalibration.Controls.Add(this.btnSelectLast);
+            this.groupBoxCalibration.Controls.Add(this.btnSelectFirst);
+            this.groupBoxCalibration.Controls.Add(this.lblRows);
+            this.groupBoxCalibration.Controls.Add(this.lblCols);
+            this.groupBoxCalibration.Controls.Add(this.lblPitchY);
+            this.groupBoxCalibration.Controls.Add(this.lblPitchX);
+            this.groupBoxCalibration.Controls.Add(this.lblLastRef);
+            this.groupBoxCalibration.Controls.Add(this.lblFirstRef);
+            this.groupBoxCalibration.Location = new System.Drawing.Point(894, 69);
+            this.groupBoxCalibration.Name = "groupBoxCalibration";
+            this.groupBoxCalibration.Size = new System.Drawing.Size(184, 273);
+            this.groupBoxCalibration.TabIndex = 30;
+            this.groupBoxCalibration.TabStop = false;
+            this.groupBoxCalibration.Text = "Калибровка (2 точки)";
+            // 
+            // btnBuildMap
+            // 
+            this.btnBuildMap.Location = new System.Drawing.Point(16, 215);
+            this.btnBuildMap.Name = "btnBuildMap";
+            this.btnBuildMap.Size = new System.Drawing.Size(153, 32);
+            this.btnBuildMap.TabIndex = 8;
+            this.btnBuildMap.Text = "Построить карту";
+            this.btnBuildMap.UseVisualStyleBackColor = true;
+            this.btnBuildMap.Click += new System.EventHandler(this.btnBuildMap_Click);
+            // 
+            // btnSelectLast
+            // 
+            this.btnSelectLast.Location = new System.Drawing.Point(16, 69);
+            this.btnSelectLast.Name = "btnSelectLast";
+            this.btnSelectLast.Size = new System.Drawing.Size(153, 28);
+            this.btnSelectLast.TabIndex = 2;
+            this.btnSelectLast.Text = "Выбрать последний";
+            this.btnSelectLast.UseVisualStyleBackColor = true;
+            this.btnSelectLast.Click += new System.EventHandler(this.btnSelectLast_Click);
+            // 
+            // btnSelectFirst
+            // 
+            this.btnSelectFirst.Location = new System.Drawing.Point(16, 17);
+            this.btnSelectFirst.Name = "btnSelectFirst";
+            this.btnSelectFirst.Size = new System.Drawing.Size(153, 28);
+            this.btnSelectFirst.TabIndex = 1;
+            this.btnSelectFirst.Text = "Выбрать первый";
+            this.btnSelectFirst.UseVisualStyleBackColor = true;
+            this.btnSelectFirst.Click += new System.EventHandler(this.btnSelectFirst_Click);
+            // 
+            // lblRows
+            // 
+            this.lblRows.AutoSize = true;
+            this.lblRows.Location = new System.Drawing.Point(13, 191);
+            this.lblRows.Name = "lblRows";
+            this.lblRows.Size = new System.Drawing.Size(82, 16);
+            this.lblRows.TabIndex = 7;
+            this.lblRows.Text = "Rows (Ny): 0";
+            // 
+            // lblCols
+            // 
+            this.lblCols.AutoSize = true;
+            this.lblCols.Location = new System.Drawing.Point(13, 173);
+            this.lblCols.Name = "lblCols";
+            this.lblCols.Size = new System.Drawing.Size(74, 16);
+            this.lblCols.TabIndex = 6;
+            this.lblCols.Text = "Cols (Nx): 0";
+            // 
+            // lblPitchY
+            // 
+            this.lblPitchY.AutoSize = true;
+            this.lblPitchY.Location = new System.Drawing.Point(13, 155);
+            this.lblPitchY.Name = "lblPitchY";
+            this.lblPitchY.Size = new System.Drawing.Size(75, 16);
+            this.lblPitchY.TabIndex = 5;
+            this.lblPitchY.Text = "PitchY: 0.00";
+            // 
+            // lblPitchX
+            // 
+            this.lblPitchX.AutoSize = true;
+            this.lblPitchX.Location = new System.Drawing.Point(13, 137);
+            this.lblPitchX.Name = "lblPitchX";
+            this.lblPitchX.Size = new System.Drawing.Size(74, 16);
+            this.lblPitchX.TabIndex = 4;
+            this.lblPitchX.Text = "PitchX: 0.00";
+            // 
+            // lblLastRef
+            // 
+            this.lblLastRef.AutoSize = true;
+            this.lblLastRef.Location = new System.Drawing.Point(13, 118);
+            this.lblLastRef.Name = "lblLastRef";
+            this.lblLastRef.Size = new System.Drawing.Size(110, 16);
+            this.lblLastRef.TabIndex = 3;
+            this.lblLastRef.Text = "Последний: —, —";
+            // 
+            // lblFirstRef
+            // 
+            this.lblFirstRef.AutoSize = true;
+            this.lblFirstRef.Location = new System.Drawing.Point(13, 100);
+            this.lblFirstRef.Name = "lblFirstRef";
+            this.lblFirstRef.Size = new System.Drawing.Size(88, 16);
+            this.lblFirstRef.TabIndex = 0;
+            this.lblFirstRef.Text = "Первый: —, —";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Gainsboro;
             this.ClientSize = new System.Drawing.Size(1426, 795);
+            this.Controls.Add(this.groupBoxCalibration);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.checkBoxFillWafer);
@@ -836,6 +951,8 @@ namespace CrystalTable
             this.toolStrip1.PerformLayout();
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
+            this.groupBoxCalibration.ResumeLayout(false);
+            this.groupBoxCalibration.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -913,6 +1030,19 @@ namespace CrystalTable
         private System.Windows.Forms.ToolStripMenuItem zoomInToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem zoomOutToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem resetZoomToolStripMenuItem;
+
         public ToolStrip toolStrip1;
+
+        // --- Калибровка (новые элементы) ---
+        private System.Windows.Forms.GroupBox groupBoxCalibration;
+        private System.Windows.Forms.Button btnBuildMap;
+        private System.Windows.Forms.Button btnSelectLast;
+        private System.Windows.Forms.Button btnSelectFirst;
+        private System.Windows.Forms.Label lblRows;
+        private System.Windows.Forms.Label lblCols;
+        private System.Windows.Forms.Label lblPitchY;
+        private System.Windows.Forms.Label lblPitchX;
+        private System.Windows.Forms.Label lblLastRef;
+        private System.Windows.Forms.Label lblFirstRef;
     }
 }
