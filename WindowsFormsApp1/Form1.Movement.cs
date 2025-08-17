@@ -1,131 +1,177 @@
 ﻿using System;
-using System.Windows.Forms;
+using System.Drawing;
+using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace CrystalTable
 {
     public partial class Form1
     {
-        // Обработчики кнопок движения
-        private async void buttonMoveLeft_Click(object sender, EventArgs e)
+        private const byte CMD_LEFT = 1;
+        private const byte CMD_RIGHT = 2;
+        private const byte CMD_UP = 3;
+        private const byte CMD_DOWN = 4;
+
+        private PointF pointerMm = new PointF(0, 0);
+
+        // Доступ для UI/статуса
+        public PointF GetPointerMm() => pointerMm;
+
+        // Сброс указателя в центр (0;0)
+        public void CenterPointer()
         {
-            if (uint.TryParse(SizeX.Text, out uint stepSizeX))
-            {
-                await SendCommandAsync(1, stepSizeX);
-                await Task.Delay(300);
-            }
-            else
-            {
-                MessageBox.Show("Введите положительное число для X.");
-            }
+            pointerMm = new PointF(0f, 0f);
+            pictureBox1?.Invalidate();
         }
 
-        private async void buttonMoveRight_Click(object sender, EventArgs e)
-        {
-            if (uint.TryParse(SizeX.Text, out uint stepSizeX))
-            {
-                await SendCommandAsync(2, stepSizeX);
-                await Task.Delay(300);
-            }
-            else
-            {
-                MessageBox.Show("Введите положительное число для X.");
-            }
-        }
+        // ===== Обработчики кнопок движения =====
+        private async void buttonMoveLeft_Click(object sender, EventArgs e) => await MoveAxisAsync(Axis.X, negative: true);
+        private async void buttonMoveRight_Click(object sender, EventArgs e) => await MoveAxisAsync(Axis.X, negative: false);
+        private async void buttonMoveUp_Click(object sender, EventArgs e) => await MoveAxisAsync(Axis.Y, negative: true);  // ВВЕРХ = минус Y
+        private async void buttonMoveDown_Click(object sender, EventArgs e) => await MoveAxisAsync(Axis.Y, negative: false); // ВНИЗ  = плюс  Y
 
-        private async void buttonMoveUp_Click(object sender, EventArgs e)
-        {
-            if (uint.TryParse(SizeY.Text, out uint stepSizeY))
-            {
-                await SendCommandAsync(3, stepSizeY);
-                await Task.Delay(300);
-            }
-            else
-            {
-                MessageBox.Show("Введите положительное число для Y.");
-            }
-        }
-
-        private async void buttonMoveDown_Click(object sender, EventArgs e)
-        {
-            if (uint.TryParse(SizeY.Text, out uint stepSizeY))
-            {
-                await SendCommandAsync(4, stepSizeY);
-                await Task.Delay(300);
-            }
-            else
-            {
-                MessageBox.Show("Введите положительное число для Y.");
-            }
-        }
-
-        // ----- Обработчик кнопки Scan -----
+        // Диагональный шаг X+Y
         private async void scan_Click(object sender, EventArgs e)
         {
-
-            if (uint.TryParse(SizeX.Text, out uint scanSizeX) &&
-                uint.TryParse(SizeY.Text, out uint scanSizeY))
+            if (!TryGetMoveSteps(out uint stepXum, out uint stepYum))
             {
-                await SendCommandAsync(1, scanSizeX * 100);
-                await Task.Delay(100);
+                MessageBox.Show("Введите корректные шаги.", "Шаг", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
-                await SendCommandAsync(3, scanSizeY * 100);
-                await Task.Delay(100);
+            float dxMm = stepXum / 1000f;
+            float dyMm = stepYum / 1000f;
+
+            // Вверх = минус Y
+            float newX = pointerMm.X + dxMm;
+            float newY = pointerMm.Y - dyMm;
+
+            if (!CanMoveTo(newX, newY))
+            {
+                MessageBox.Show("Выход за пределы пластины.");
+                return;
+            }
+
+            if (!await TrySendAsync(CMD_RIGHT, stepXum)) return;
+            if (!await TrySendAsync(CMD_UP, stepYum)) return;
+
+            pointerMm = new PointF(newX, newY);
+            pictureBox1.Invalidate();
+            UpdateUI();
+        }
+
+        private enum Axis { X, Y }
+
+        private async Task MoveAxisAsync(Axis axis, bool negative)
+        {
+            if (!TryGetMoveSteps(out uint stepXum, out uint stepYum))
+            {
+                MessageBox.Show("Введите корректные шаги.", "Шаг", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            byte cmd;
+            uint stepUm;
+            float dMm;
+
+            if (axis == Axis.X)
+            {
+                cmd = negative ? CMD_LEFT : CMD_RIGHT;
+                stepUm = stepXum;
+                dMm = (negative ? -1f : 1f) * (stepXum / 1000f);
+
+                float newX = pointerMm.X + dMm;
+                if (!CanMoveTo(newX, pointerMm.Y)) { MessageBox.Show("Выход за пределы пластины."); return; }
+                if (!await TrySendAsync(cmd, stepUm)) return;
+                pointerMm = new PointF(newX, pointerMm.Y);
             }
             else
             {
-                MessageBox.Show("Введите положительные числа для X и Y.");
+                // ВВЕРХ = минус Y
+                cmd = negative ? CMD_UP : CMD_DOWN;
+                stepUm = stepYum;
+                dMm = (negative ? -1f : 1f) * (stepYum / 1000f);
+
+                float newY = pointerMm.Y + (negative ? -Math.Abs(dMm) : Math.Abs(dMm));
+                if (!CanMoveTo(pointerMm.X, newY)) { MessageBox.Show("Выход за пределы пластины."); return; }
+                if (!await TrySendAsync(cmd, stepUm)) return;
+                pointerMm = new PointF(pointerMm.X, newY);
             }
+
+            pictureBox1.Invalidate();
+            UpdateUI();
         }
 
-        // ----- Метод отправки 5-байтовой команды (команда + 4 байта шага) -----
-        private async Task SendCommandAsync(byte commandByte, uint stepSize)
+        // ===== Режим шага: дискретный (Pitch) / произвольный (фиксированные) =====
+        // Если на форме есть CheckBox "checkBoxDiscreteStep":
+        // ON  — дискретный шаг по Pitch (SizeX/SizeY)
+        // OFF — фиксированный шаг (по умолчанию 100 µm)
+        private bool UseDiscreteStep()
         {
-            // Разбиваем 32-битное число stepSize на 4 байта (младший -> старший)
-            byte b0 = (byte)(stepSize & 0xFF);         // младший байт
-            byte b1 = (byte)((stepSize >> 8) & 0xFF);
-            byte b2 = (byte)((stepSize >> 16) & 0xFF);
-            byte b3 = (byte)((stepSize >> 24) & 0xFF); // старший байт
+            var ctrl = this.Controls.Find("checkBoxDiscreteStep", true).FirstOrDefault() as CheckBox;
+            return ctrl?.Checked ?? true; // по умолчанию — дискретный
+        }
 
-            // Пакет: [команда] [b0] [b1] [b2] [b3]
-            byte[] dataToSend = new byte[] { commandByte, b0, b1, b2, b3 };
+        // Текущие шаги перемещения в µm
+        private bool TryGetMoveSteps(out uint pitchXum, out uint pitchYum)
+        {
+            pitchXum = pitchYum = 0;
 
+            if (UseDiscreteStep())
+                return TryGetPitchUm(out pitchXum, out pitchYum);
+
+            const uint defaultStepUm = 100;
+            pitchXum = defaultStepUm;
+            pitchYum = defaultStepUm;
+            return true;
+        }
+
+        // Pitch из полей ввода (µm)
+        private bool TryGetPitchUm(out uint pitchXum, out uint pitchYum)
+        {
+            pitchXum = pitchYum = 0;
+            if (!uint.TryParse(SizeX.Text.Trim(), out pitchXum)) return false;
+            if (!uint.TryParse(SizeY.Text.Trim(), out pitchYum)) return false;
+            if (pitchXum == 0 || pitchYum == 0) return false;
+            return true;
+        }
+
+        private bool CanMoveTo(float xMm, float yMm)
+        {
+            float r = waferController?.WaferDiameter > 0 ? waferController.WaferDiameter / 2f : 100f;
+            return (xMm * xMm + yMm * yMm) <= (r * r) + 1e-6f;
+        }
+
+        private async Task<bool> TrySendAsync(byte commandByte, uint stepUm)
+        {
             try
             {
+                if (MyserialPort == null || !MyserialPort.IsOpen)
+                {
+                    MessageBox.Show("COM-порт не подключён.");
+                    return false;
+                }
+
+                byte[] dataToSend = new byte[]
+                {
+                    commandByte,
+                    (byte)(stepUm & 0xFF),
+                    (byte)((stepUm >> 8) & 0xFF),
+                    (byte)((stepUm >> 16) & 0xFF),
+                    (byte)((stepUm >> 24) & 0xFF)
+                };
+
                 await MyserialPort.BaseStream.WriteAsync(dataToSend, 0, dataToSend.Length);
                 await MyserialPort.BaseStream.FlushAsync();
-                UpdateWaferVisualization();
+                await Task.Delay(50);
+                return true;
             }
             catch
             {
-                MessageBox.Show("Ошибка отправки. Проверьте, что COM-порт доступен.");
+                MessageBox.Show("Ошибка отправки. Проверьте COM-порт.");
+                return false;
             }
         }
-
-        // ----- Старый метод (3 байта) 
-        /*
-        private void SendCommand(byte commandByte, int stepSize)
-        {
-            if (stepSize >= 0 && stepSize <= 65535) 
-            {
-                byte firstByte = (byte)(stepSize >> 8);    
-                byte secondByte = (byte)(stepSize & 0xFF);
-
-                try
-                {
-                    MyserialPort.Write(new byte[] { commandByte, firstByte, secondByte }, 0, 3);
-                    UpdateWaferVisualization();
-                }
-                catch
-                {
-                    MessageBox.Show("Ошибка отправки данных. Убедитесь, что COM-порт подключен.");
-                }
-            }
-            else
-            {
-                MessageBox.Show("Неверное число. Диапазон от 0 до 65535.");
-            }
-        }
-        */
     }
 }

@@ -1,106 +1,90 @@
 ﻿using System;
-using System.Drawing;
 using System.IO.Ports;
-using System.Threading.Tasks;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace CrystalTable.Controllers
 {
-    /// <summary>
-    /// Контроллер для работы с COM-портом
-    /// </summary>
     public class SerialPortController : IDisposable
     {
-        private readonly SerialPort serialPort;
+        private readonly SerialPort _port;
+
+        // События для UI
+        public event Action<string> DataReceived;                 // текстовые данные RX
+        public event Action<bool, string> ConnectionStateChanged; // (isOpen, portName)
 
         public SerialPortController(SerialPort serialPort)
         {
-            this.serialPort = serialPort;
+            _port = serialPort ?? throw new ArgumentNullException(nameof(serialPort));
         }
 
-        /// <summary>
-        /// Переключение подключения
-        /// </summary>
-        public void ToggleConnection(string portName, Button connectButton, ComboBox portsComboBox)
+        public void ToggleConnection(string portName, Button btnConnect, ComboBox portsCombo)
         {
             try
             {
-                if (!serialPort.IsOpen)
+                if (_port.IsOpen)
                 {
-                    if (string.IsNullOrEmpty(portName))
-                    {
-                        MessageBox.Show("Выберите порт для подключения.");
-                        return;
-                    }
+                    _port.Close();
+                    if (btnConnect != null) btnConnect.Text = "Подключить";
+                    ConnectionStateChanged?.Invoke(false, null);
+                    return;
+                }
 
-                    serialPort.PortName = portName;
-                    serialPort.Open();
-                    portsComboBox.Enabled = false;
-                    connectButton.Text = "Отключиться";
-                    connectButton.BackColor = Color.LightGreen;
-                }
-                else
+                if (string.IsNullOrWhiteSpace(portName))
                 {
-                    serialPort.Close();
-                    portsComboBox.Enabled = true;
-                    connectButton.Text = "Подключить";
-                    connectButton.BackColor = Color.LightCoral;
+                    MessageBox.Show("Выберите COM-порт.", "COM", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
                 }
+
+                _port.BaudRate = 115200;
+                _port.Parity = Parity.None;
+                _port.DataBits = 8;
+                _port.StopBits = StopBits.One;
+                _port.Handshake = Handshake.None;
+                _port.PortName = portName;
+
+                _port.Open();
+                if (btnConnect != null) btnConnect.Text = "Отключить";
+                ConnectionStateChanged?.Invoke(true, _port.PortName);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Ошибка подключения: " + ex.Message);
+                MessageBox.Show("Не удалось открыть порт: " + ex.Message, "COM", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ConnectionStateChanged?.Invoke(false, null);
             }
         }
 
-        /// <summary>
-        /// Обновление списка портов
-        /// </summary>
-        public void UpdatePortList(ComboBox comboBox)
+        public void UpdatePortList(ComboBox combo)
         {
-            string[] ports = SerialPort.GetPortNames();
-            comboBox.Items.Clear();
-            comboBox.Text = "";
-
-            if (ports.Length != 0)
-            {
-                comboBox.Items.AddRange(ports);
-                comboBox.SelectedIndex = 0;
-            }
-            else
-            {
-                MessageBox.Show("Нет доступных COM-портов.");
-            }
+            if (combo == null) return;
+            var list = SerialPort.GetPortNames().OrderBy(s => s, StringComparer.OrdinalIgnoreCase).ToArray();
+            combo.Items.Clear();
+            combo.Items.AddRange(list);
+            if (list.Length > 0) combo.SelectedIndex = 0;
         }
 
-        
-        /// <summary>
-        /// Обработка полученных данных
-        /// </summary>
         public void HandleDataReceived()
         {
             try
             {
-                string data = serialPort.ReadExisting();
-                MessageBox.Show("Получены данные: " + data);
+                string data = _port.ReadExisting();
+                if (!string.IsNullOrEmpty(data))
+                    DataReceived?.Invoke(data);
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Ошибка при чтении данных: " + ex.Message);
-            }
+            catch { /* игнорируем спорадические ошибки чтения */ }
         }
 
         public void Dispose()
         {
             try
             {
-                if (serialPort?.IsOpen == true)
+                if (_port != null)
                 {
-                    serialPort.Close();
+                    if (_port.IsOpen) _port.Close();
+                    _port.Dispose();
                 }
-                serialPort?.Dispose();
             }
-            catch { }
+            catch { /* ignore */ }
         }
     }
 }

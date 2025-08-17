@@ -3,14 +3,15 @@ using CrystalTable.Logic;
 using CrystalTable.Controllers;
 using System;
 using System.Drawing;
+using System.Globalization;
+using System.Reflection;
 using System.Windows.Forms;
-using System.Linq;
 
 namespace CrystalTable
 {
     public partial class Form1 : Form
     {
-        // Контроллеры для разделения логики
+        // Контроллеры
         private readonly WaferController waferController;
         private readonly MouseController mouseController;
         private readonly ZoomPanController zoomPanController;
@@ -25,11 +26,22 @@ namespace CrystalTable
         private readonly RoutePreview routePreview = new RoutePreview();
         private bool showRoutePreview = false;
 
+        // Для дросселирования обновления статус-бара по RX
+        private DateTime _lastRxUiUpdate = DateTime.MinValue;
+
         public Form1()
         {
             InitializeComponent();
 
-            // Инициализация контроллеров
+            // Устраняем мерцания при перерисовке
+            try
+            {
+                pictureBox1.GetType()
+                    .GetProperty("DoubleBuffered", BindingFlags.NonPublic | BindingFlags.Instance)?
+                    .SetValue(pictureBox1, true, null);
+            }
+            catch { /* no-op */ }
+
             waferController = new WaferController(this);
             mouseController = new MouseController(this, waferController);
             zoomPanController = new ZoomPanController(this);
@@ -37,48 +49,40 @@ namespace CrystalTable
             exportImportController = new ExportImportController(this, waferController);
             serialPortController = new SerialPortController(MyserialPort);
 
+            // RX/STATE → статус-бар
+            serialPortController.DataReceived += SerialPort_DataReceived;
+            serialPortController.ConnectionStateChanged += SerialPort_ConnectionStateChanged;
+
             InitializeEventHandlers();
             LoadDefaultConfiguration();
             UpdateUI();
         }
 
-        /// <summary>
-        /// Инициализация обработчиков событий
-        /// </summary>
         private void InitializeEventHandlers()
         {
-            // Валидация полей ввода
             SizeX.Validated += (s, e) => uiController.ValidateInput(SizeX, ref waferController.SizeXtemp);
             SizeY.Validated += (s, e) => uiController.ValidateInput(SizeY, ref waferController.SizeYtemp);
-            WaferDiameter.Validated += (s, e) => uiController.ValidateWaferDiameter(
-                WaferDiameter, ref waferController.WaferDiameterTemp);
+            WaferDiameter.Validated += (s, e) => uiController.ValidateWaferDiameter(WaferDiameter, ref waferController.WaferDiameterTemp);
 
-            // События мыши
-            pictureBox1.MouseWheel += (s, e) => {
+            pictureBox1.MouseWheel += (s, e) =>
+            {
                 zoomPanController.HandleMouseWheel(e);
                 UpdateUI();
             };
 
-            // События клавиатуры
-            this.KeyPreview = true;
-            this.KeyDown += HandleKeyDown;
-            this.KeyUp += (s, e) => mouseController.HandleKeyUp(e);
+            KeyPreview = true;
+            KeyDown += HandleKeyDown;
+            KeyUp += (s, e) => mouseController.HandleKeyUp(e);
 
-            // События изменения данных
             commandHistory.HistoryChanged += (s, e) => uiController.UpdateToolbarState(commandHistory);
 
-            // События формы
-            this.FormClosing += (s, e) => SaveLastConfiguration();
+            FormClosing += (s, e) => SaveLastConfiguration();
         }
 
-        /// <summary>
-        /// Обработчик нажатий клавиш
-        /// </summary>
         private void HandleKeyDown(object sender, KeyEventArgs e)
         {
             mouseController.HandleKeyDown(e);
 
-            // Undo/Redo
             if (e.Control)
             {
                 if (e.KeyCode == Keys.Z && commandHistory.CanUndo())
@@ -94,9 +98,6 @@ namespace CrystalTable
             }
         }
 
-        /// <summary>
-        /// Обновление всего интерфейса
-        /// </summary>
         private void UpdateUI()
         {
             pictureBox1.Invalidate();
@@ -105,39 +106,18 @@ namespace CrystalTable
             uiController.UpdateToolbarState(commandHistory);
         }
 
-        // ===== ОБРАБОТЧИКИ СОБЫТИЙ ЭЛЕМЕНТОВ УПРАВЛЕНИЯ =====
+        // ===== PictureBox =====
+        private void pictureBox1_MouseDown(object sender, MouseEventArgs e) => mouseController.HandleMouseDown(e);
+        private void pictureBox1_MouseMove(object sender, MouseEventArgs e) => mouseController.HandleMouseMove(e);
+        private void pictureBox1_MouseUp(object sender, MouseEventArgs e) => mouseController.HandleMouseUp(e);
+        private void Form1_Resize(object sender, EventArgs e) => pictureBox1.Invalidate();
 
-        // События PictureBox
-        private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
-        {
-            mouseController.HandleMouseDown(e);
-        }
+        // ===== Загрузка набора =====
+        private void loadDataComboBox_SelectedIndexChanged(object sender, EventArgs e) => SetFieldsFromComboBox();
 
-        private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
-        {
-            mouseController.HandleMouseMove(e);
-        }
-
-        private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
-        {
-            mouseController.HandleMouseUp(e);
-        }
-
-        // События формы
-        private void Form1_Resize(object sender, EventArgs e)
-        {
-            pictureBox1.Invalidate();
-        }
-
-        private void loadDataComboBox_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            SetFieldsFromComboBox();
-        }
-
-        private void SaveButton_Click(object sender, EventArgs e)
-        {
+        // ===== Кнопки =====
+        private void SaveButton_Click(object sender, EventArgs e) =>
             exportImportController.SaveWaferInfo(SizeX.Text, SizeY.Text, WaferDiameter.Text);
-        }
 
         private void checkBoxFillWafer_CheckedChanged(object sender, EventArgs e)
         {
@@ -145,8 +125,7 @@ namespace CrystalTable
             UpdateUI();
         }
 
-        // ===== ПАНЕЛЬ ИНСТРУМЕНТОВ =====
-
+        // ===== Тулбар =====
         private void btnUndo_Click(object sender, EventArgs e) => HandleUndo();
         private void btnRedo_Click(object sender, EventArgs e) => HandleRedo();
         private void btnExport_Click(object sender, EventArgs e) => exportImportController.ExportData();
@@ -157,9 +136,8 @@ namespace CrystalTable
         private void btnZoomOut_Click(object sender, EventArgs e) => Zoom(-0.2f);
         private void btnZoomReset_Click(object sender, EventArgs e) => ResetZoom();
 
-        // ===== МЕНЮ =====
-
-        private void newToolStripMenuItem_Click(object sender, EventArgs e) => CreateNewWafer();
+        // ===== Меню =====
+        private void newToolStripMenuItem_Click(object sender, EventArgs e) => Create_Click(sender, e);
         private void openToolStripMenuItem_Click(object sender, EventArgs e) => OpenFile();
         private void saveToolStripMenuItem_Click(object sender, EventArgs e) => SaveButton_Click(sender, e);
         private void saveAsToolStripMenuItem_Click(object sender, EventArgs e) => exportImportController.SaveAs();
@@ -178,8 +156,7 @@ namespace CrystalTable
         private void zoomOutToolStripMenuItem_Click(object sender, EventArgs e) => Zoom(-0.2f);
         private void resetZoomToolStripMenuItem_Click(object sender, EventArgs e) => ResetZoom();
 
-        // ===== COM-ПОРТ =====
-
+        // ===== COM-порт =====
         private void buttonConnect_Click(object sender, EventArgs e) =>
             serialPortController.ToggleConnection(comboBoxPorts.Text, buttonConnect, comboBoxPorts);
 
@@ -189,8 +166,7 @@ namespace CrystalTable
         private void MyserialPort_DataReceived(object sender, System.IO.Ports.SerialDataReceivedEventArgs e) =>
             serialPortController.HandleDataReceived();
 
-        // ===== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ =====
-
+        // ===== Вспомогательные =====
         private void HandleUndo()
         {
             if (commandHistory.CanUndo())
@@ -240,9 +216,7 @@ namespace CrystalTable
             showRouteToolStripMenuItem.Checked = showRoutePreview;
 
             if (showRoutePreview)
-            {
                 waferController.GenerateRoute(routePreview, mouseController.SelectedCrystals);
-            }
 
             UpdateUI();
         }
@@ -252,9 +226,10 @@ namespace CrystalTable
             var stats = waferController.GetStatistics();
             if (stats != null)
             {
-                var form = new StatisticsForm(stats.GenerateFullReport(
-                    waferController.CrystalWidthRaw / 1000f,
-                    waferController.CrystalHeightRaw / 1000f),
+                var form = new StatisticsForm(
+                    stats.GenerateFullReport(
+                        waferController.CrystalWidthRaw / 1000f,
+                        waferController.CrystalHeightRaw / 1000f),
                     stats, mouseController.SelectedCrystals);
                 form.ShowDialog();
             }
@@ -273,7 +248,7 @@ namespace CrystalTable
                 uiController.ClearInputFields(SizeX, SizeY, WaferDiameter);
                 waferController.CreateNewWafer();
                 mouseController.ClearSelection();
-                zoomPanController.Reset();
+                CenterPointerAndView();   // <— центрируем
                 commandHistory.Clear();
                 UpdateUI();
             }
@@ -286,7 +261,14 @@ namespace CrystalTable
             {
                 SizeX.Text = result.Value.info.SizeX.ToString();
                 SizeY.Text = result.Value.info.SizeY.ToString();
-                WaferDiameter.Text = result.Value.info.WaferDiameter.ToString();
+                WaferDiameter.Text = result.Value.info.WaferDiameter.ToString(CultureInfo.InvariantCulture);
+
+                waferController.CrystalWidthRaw = (uint)result.Value.info.SizeX;
+                waferController.CrystalHeightRaw = (uint)result.Value.info.SizeY;
+                waferController.WaferDiameter = result.Value.info.WaferDiameter;
+
+                waferController.BuildCrystalsCached();
+                CenterPointerAndView();   // <— по центру
                 UpdateUI();
             }
         }
@@ -300,8 +282,14 @@ namespace CrystalTable
                 {
                     SizeX.Text = result.Value.info.SizeX.ToString();
                     SizeY.Text = result.Value.info.SizeY.ToString();
-                    WaferDiameter.Text = result.Value.info.WaferDiameter.ToString();
+                    WaferDiameter.Text = result.Value.info.WaferDiameter.ToString(CultureInfo.InvariantCulture);
+
+                    waferController.CrystalWidthRaw = (uint)result.Value.info.SizeX;
+                    waferController.CrystalHeightRaw = (uint)result.Value.info.SizeY;
+                    waferController.WaferDiameter = result.Value.info.WaferDiameter;
                 }
+                waferController.BuildCrystalsCached();
+                CenterPointerAndView();
                 UpdateUI();
             }
         }
@@ -315,18 +303,14 @@ namespace CrystalTable
             }
         }
 
-        private void UpdateWaferVisualization()
-        {
-            pictureBox1.Refresh();
-        }
+        private void UpdateWaferVisualization() => pictureBox1.Refresh();
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
             serialPortController?.Dispose();
         }
 
-        // ===== ПУБЛИЧНЫЕ СВОЙСТВА ДЛЯ КОНТРОЛЛЕРОВ =====
-
+        // Публичные свойства для UIController
         public PictureBox PictureBox => pictureBox1;
         public CommandHistory CommandHistory => commandHistory;
         public RoutePreview RoutePreview => routePreview;
@@ -339,36 +323,130 @@ namespace CrystalTable
         public ToolStripStatusLabel StatusLabel => statusLabel;
         public ToolStripStatusLabel FillPercentageLabel => fillPercentageLabel;
         public ToolStripStatusLabel ZoomLabel => zoomLabel;
+        public ToolStripStatusLabel CoordinatesLabel => coordinatesLabel;
         public CheckBox CheckBoxFillWafer => checkBoxFillWafer;
         public ToolStripButton BtnRoutePreview => btnRoutePreview;
         public ToolStripMenuItem ShowRouteToolStripMenuItem => showRouteToolStripMenuItem;
         public SerialPortController SerialPortController => serialPortController;
+        public ToolStripButton BtnUndo => btnUndo;
+        public ToolStripButton BtnRedo => btnRedo;
 
-        
+        // ====== RX → статус-бар ======
+        private void SerialPort_DataReceived(string data)
+        {
+            var now = DateTime.Now;
+            if ((now - _lastRxUiUpdate).TotalMilliseconds < 150) return;
+            _lastRxUiUpdate = now;
 
-        /// <summary>Кнопка «Создать» (новая пластина по введённым значениям).</summary>
+            string preview = FormatPacketPreview(data);
+            if (StatusLabel != null)
+                StatusLabel.Text = $"COM RX {now:HH:mm:ss}  {preview}";
+            else
+                Text = $"COM RX {now:HH:mm:ss}  {preview}";
+        }
+
+        private void SerialPort_ConnectionStateChanged(bool isOpen, string portName)
+        {
+            var msg = isOpen ? $"COM подключён: {portName}" : "COM отключён";
+            if (StatusLabel != null) StatusLabel.Text = msg;
+        }
+
+        private static string FormatPacketPreview(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return "(пусто)";
+            s = s.Replace("\r", " ").Replace("\n", " ").Trim();
+            const int max = 60;
+            if (s.Length > max) s = s.Substring(0, max) + "…";
+            return s;
+        }
+
+        // ====== ОБРАБОТЧИКИ ======
+
+        // «Создать»
         private void Create_Click(object sender, EventArgs e)
         {
             if (!uint.TryParse(SizeX.Text.Trim(), out var sizeX) ||
                 !uint.TryParse(SizeY.Text.Trim(), out var sizeY) ||
-                !uint.TryParse(WaferDiameter.Text.Trim(), out var diameter))
+                !float.TryParse(WaferDiameter.Text.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out var diameter) ||
+                sizeX == 0 || sizeY == 0 || diameter <= 0)
             {
                 MessageBox.Show("Укажи корректные шаги (SizeX/SizeY, мкм) и диаметр пластины (мм).",
                     "Новая пластина", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            waferController.CrystalWidthRaw = sizeX;     // мкм
-            waferController.CrystalHeightRaw = sizeY;     // мкм
-            waferController.WaferDiameter = diameter;  // мм
+            waferController.CrystalWidthRaw = sizeX;     // µm
+            waferController.CrystalHeightRaw = sizeY;     // µm
+            waferController.WaferDiameter = diameter;  // mm
 
             waferController.CreateNewWafer();
+            CenterPointerAndView(); // <— центр
 
-            // Сброс секции калибровки (если есть частичный класс с методом)
-            try { InitializeCalibrationUiState(); } catch { /* игнор, если метода нет */ }
+            try { InitializeCalibrationUiState(); } catch { }
 
             pictureBox1?.Invalidate();
             UpdateUI();
+        }
+
+        // «Выбрать первый»
+        private void btnSelectFirst_Click(object sender, EventArgs e)
+        {
+            var p = TryGetPointerOrZero();
+            waferController.SetFirstReference(p.X, p.Y);
+            try { if (lblFirstRef != null) lblFirstRef.Text = $"Первый: {p.X:F3} мм; {p.Y:F3} мм"; } catch { }
+            try { UpdateBuildMapEnabled(); } catch { }
+            UpdateUI();
+        }
+
+        // «Выбрать последний»
+        private void btnSelectLast_Click(object sender, EventArgs e)
+        {
+            var p = TryGetPointerOrZero();
+            waferController.SetLastReference(p.X, p.Y);
+            try { if (lblLastRef != null) lblLastRef.Text = $"Последний: {p.X:F3} мм; {p.Y:F3} мм"; } catch { }
+            try { UpdateBuildMapEnabled(); } catch { }
+            UpdateUI();
+        }
+
+        // «Построить карту»
+        private void btnBuildMap_Click(object sender, EventArgs e)
+        {
+            bool ok = false;
+
+            if (waferController.IsCalibrationReady())
+            {
+                waferController.BuildMapFromReferences();
+                ok = true;
+            }
+            else if (waferController.IsPresetReady())
+            {
+                waferController.BuildMapFromPreset();
+                ok = true;
+            }
+
+            if (!ok)
+            {
+                MessageBox.Show("Построение карты недоступно. Задайте шаги (SizeX/SizeY) или выберите две опорные точки.",
+                    "Построить карту", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            try { UpdateCalibrationLabelsAfterBuild(); } catch { }
+            pictureBox1?.Invalidate();
+            UpdateUI();
+        }
+
+        // Вспомогательные
+        private PointF TryGetPointerOrZero()
+        {
+            try { return GetPointerMm(); } // реализован в Form1.Movement.cs (partial)
+            catch { return new PointF(0f, 0f); }
+        }
+
+        private void CenterPointerAndView()
+        {
+            try { CenterPointer(); } catch { }   // из Form1.Movement.cs
+            zoomPanController.Reset();           // центр и 1.0x
         }
     }
 }

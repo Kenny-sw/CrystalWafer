@@ -3,141 +3,79 @@ using System.Collections.Generic;
 
 namespace CrystalTable.Logic
 {
-    /// <summary>
-    /// Интерфейс для команд, поддерживающих отмену/повтор
-    /// </summary>
+    /// <summary>Интерфейс для команд, поддерживающих отмену/повтор</summary>
     public interface ICommand
     {
-        void Execute();  // Выполнить команду
-        void Undo();     // Отменить команду
-        string Description { get; } // Описание команды для отображения в интерфейсе
+        void Execute();   // Выполнить команду
+        void Undo();      // Отменить команду
+        string Description { get; } // Описание команды для UI
     }
 
-    /// <summary>
-    /// Менеджер истории команд для реализации функциональности Undo/Redo
-    /// </summary>
+    /// <summary>Менеджер истории команд для Undo/Redo</summary>
     public class CommandHistory
     {
-        // Стек для хранения выполненных команд (для отмены)
         private readonly Stack<ICommand> undoStack = new Stack<ICommand>();
-
-        // Стек для хранения отмененных команд (для повтора)
         private readonly Stack<ICommand> redoStack = new Stack<ICommand>();
 
-        // Максимальный размер истории для экономии памяти
         private const int MaxHistorySize = 100;
 
-        /// <summary>
-        /// Событие, возникающее при изменении состояния истории
-        /// </summary>
+        /// <summary>Событие при изменении состояния истории</summary>
         public event EventHandler HistoryChanged;
 
-        /// <summary>
-        /// Выполняет команду и добавляет её в историю
-        /// </summary>
-        /// <param name="command">Команда для выполнения</param>
+        /// <summary>Выполняет команду и добавляет её в историю</summary>
         public void ExecuteCommand(ICommand command)
         {
-            // Выполняем команду
+            if (command == null) return;
+
             command.Execute();
-
-            // Добавляем в стек отмены
             undoStack.Push(command);
-
-            // Очищаем стек повтора (после новой команды нельзя делать redo)
             redoStack.Clear();
 
-            // Ограничиваем размер истории
+            // Ограничение размера истории
             if (undoStack.Count > MaxHistorySize)
             {
-                // Удаляем самые старые команды
-                var tempStack = new Stack<ICommand>();
+                var temp = new Stack<ICommand>();
                 for (int i = 0; i < MaxHistorySize - 1; i++)
-                {
-                    tempStack.Push(undoStack.Pop());
-                }
+                    temp.Push(undoStack.Pop());
                 undoStack.Clear();
-                while (tempStack.Count > 0)
-                {
-                    undoStack.Push(tempStack.Pop());
-                }
+                while (temp.Count > 0)
+                    undoStack.Push(temp.Pop());
             }
 
-            // Уведомляем об изменении истории
             OnHistoryChanged();
         }
 
-        /// <summary>
-        /// Отменяет последнюю выполненную команду
-        /// </summary>
+        /// <summary>Отменяет последнюю выполненную команду</summary>
         public void Undo()
         {
             if (CanUndo())
             {
-                // Извлекаем последнюю команду
                 var command = undoStack.Pop();
-
-                // Отменяем её
                 command.Undo();
-
-                // Добавляем в стек повтора
                 redoStack.Push(command);
-
-                // Уведомляем об изменении
                 OnHistoryChanged();
             }
         }
 
-        /// <summary>
-        /// Повторяет последнюю отмененную команду
-        /// </summary>
+        /// <summary>Повторяет последнюю отменённую команду</summary>
         public void Redo()
         {
             if (CanRedo())
             {
-                // Извлекаем команду из стека повтора
                 var command = redoStack.Pop();
-
-                // Выполняем её снова
                 command.Execute();
-
-                // Возвращаем в стек отмены
                 undoStack.Push(command);
-
-                // Уведомляем об изменении
                 OnHistoryChanged();
             }
         }
 
-        /// <summary>
-        /// Проверяет, можно ли отменить команду
-        /// </summary>
         public bool CanUndo() => undoStack.Count > 0;
-
-        /// <summary>
-        /// Проверяет, можно ли повторить команду
-        /// </summary>
         public bool CanRedo() => redoStack.Count > 0;
 
-        /// <summary>
-        /// Получает описание последней команды для отмены
-        /// </summary>
-        public string GetUndoDescription()
-        {
-            return CanUndo() ? undoStack.Peek().Description : string.Empty;
-        }
+        public string GetUndoDescription() => CanUndo() ? undoStack.Peek().Description : string.Empty;
+        public string GetRedoDescription() => CanRedo() ? redoStack.Peek().Description : string.Empty;
 
-        /// <summary>
-        /// Получает описание последней команды для повтора
-        /// </summary>
-        public string GetRedoDescription()
-        {
-            return CanRedo() ? redoStack.Peek().Description : string.Empty;
-        }
-
-        /// <summary>
-        /// Очищает всю историю
-        /// </summary>
+        /// <summary>Очищает всю историю</summary>
         public void Clear()
         {
             undoStack.Clear();
@@ -145,18 +83,10 @@ namespace CrystalTable.Logic
             OnHistoryChanged();
         }
 
-        /// <summary>
-        /// Вызывает событие изменения истории
-        /// </summary>
-        private void OnHistoryChanged()
-        {
-            HistoryChanged?.Invoke(this, EventArgs.Empty);
-        }
+        private void OnHistoryChanged() => HistoryChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    /// <summary>
-    /// Команда для изменения выбранного кристалла
-    /// </summary>
+    /// <summary>Команда: выбор одного кристалла</summary>
     public class SelectCrystalCommand : ICommand
     {
         private readonly int newIndex;
@@ -188,9 +118,7 @@ namespace CrystalTable.Logic
         }
     }
 
-    /// <summary>
-    /// Команда для группового выделения кристаллов
-    /// </summary>
+    /// <summary>Команда: групповое выделение кристаллов</summary>
     public class MultiSelectCrystalsCommand : ICommand
     {
         private readonly HashSet<int> oldSelection;
@@ -208,8 +136,7 @@ namespace CrystalTable.Logic
             this.invalidateAction = invalidateAction;
         }
 
-        public string Description =>
-            $"Выделение {newSelection.Count} кристаллов";
+        public string Description => $"Выделение {newSelection.Count} кристаллов";
 
         public void Execute()
         {
@@ -224,17 +151,11 @@ namespace CrystalTable.Logic
         }
     }
 
-    /// <summary>
-    /// Команда для изменения параметров пластины
-    /// </summary>
+    /// <summary>Команда: изменение параметров пластины</summary>
     public class ChangeWaferParametersCommand : ICommand
     {
-        private readonly float oldSizeX;
-        private readonly float oldSizeY;
-        private readonly float oldDiameter;
-        private readonly float newSizeX;
-        private readonly float newSizeY;
-        private readonly float newDiameter;
+        private readonly float oldSizeX, oldSizeY, oldDiameter;
+        private readonly float newSizeX, newSizeY, newDiameter;
         private readonly Action<float, float, float> applyParameters;
         private readonly Action rebuildAction;
 
@@ -269,46 +190,28 @@ namespace CrystalTable.Logic
         }
     }
 
-    /// <summary>
-    /// Составная команда для выполнения нескольких команд как одной
-    /// </summary>
+    /// <summary>Составная команда: несколько команд как одна</summary>
     public class CompositeCommand : ICommand
     {
-        private readonly List<ICommand> commands;
+        private readonly List<ICommand> commands = new List<ICommand>();
         private readonly string description;
 
-        public CompositeCommand(string description)
-        {
-            this.description = description;
-            this.commands = new List<ICommand>();
-        }
+        public CompositeCommand(string description) => this.description = description;
 
         public string Description => description;
 
-        /// <summary>
-        /// Добавляет команду в составную команду
-        /// </summary>
-        public void AddCommand(ICommand command)
-        {
-            commands.Add(command);
-        }
+        public void AddCommand(ICommand command) => commands.Add(command);
 
         public void Execute()
         {
-            // Выполняем все команды в прямом порядке
-            foreach (var command in commands)
-            {
-                command.Execute();
-            }
+            foreach (var cmd in commands)
+                cmd.Execute();
         }
 
         public void Undo()
         {
-            // Отменяем команды в обратном порядке
             for (int i = commands.Count - 1; i >= 0; i--)
-            {
                 commands[i].Undo();
-            }
         }
     }
 }

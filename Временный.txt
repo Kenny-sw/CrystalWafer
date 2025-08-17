@@ -1,0 +1,118 @@
+Ок, пробежался по всем твоим файлам и сопоставил с ТЗ. Ниже — чёткий список, что править в каждом файле, без лишних подробностей.
+
+**Важное общее:**
+
+* Удалить дубли partial-файлов из проекта (из `.csproj`): в наборе есть несколько копий `Form1.cs` и др., из-за этого и идут «Неоднозначность…» по полям/методам. Оставить по одному экземпляру.  &#x20;
+* Все старые вызовы вида `btnUp/btnDown/btnLeft/btnRight` заменить на актуальные `buttonMoveUp/Down/Left/Right`. Имена этих кнопок уже такие в дизайнере.&#x20;
+* В проекте есть `MaskedTextBox` для SizeX/SizeY/WaferDiameter — методы `UIController` должны принимать `MaskedTextBox` (или `TextBoxBase`), а не `TextBox` → иначе ошибка приведения типов. Вызовы уже идут с `MaskedTextBox`. &#x20;
+
+---
+
+### CrystalTable.csproj
+
+* Удалить дубликаты `Compile Include` на partial-файлы (`Form1.cs`, `Form1.Movement.cs`, `Calibration.cs`, …).
+* Убедиться, что включены: `Form1.Drawing.cs`, `Form1.Movement.cs`, `Form1.LoadData.cs`, `Calibration.cs`.
+* Ссылки на `System.IO.Ports` и WinForms — в наличии.
+
+### Form1.Designer.cs
+
+* Оставить имена кнопок движения как `buttonMoveUp/Down/Left/Right`; подписки уже на эти обработчики — не менять.&#x20;
+* `PictureBox1_Paint` уже привязан — ок.&#x20;
+* Секция «Калибровка» (группа, метки, кнопки) — присутствует; использовать именно эти имена (`btnBuildMap`, `btnSelectFirst/Last`, `lblPitchX/Y`, `lblCols/Rows`). &#x20;
+
+### Form1.cs (основной partial)
+
+* Конструктор `SerialPortController(MyserialPort)` оставить; по проекту запретить создание контроллера без порта (иначе «Отсутствует аргумент…»).&#x20;
+* Вызовы валидации входов оставить, но после правки `UIController` (см. ниже).&#x20;
+* Метод `LoadDefaultConfiguration()` должен быть единственным (убрать дубли в других partial, если есть), чтобы избежать «Неоднозначный вызов…». Реализация — в `Form1.LoadData.cs`.&#x20;
+
+### Form1.Drawing.cs
+
+* Никаких вызовов рисования из `WaferController` (типа `DrawWafer/DrawGrid`) — рисуем внутри этого partial (как сейчас). Это устраняет ошибки «WaferController не содержит…».&#x20;
+* Предпросмотр маршрута вызывать через `routePreview.DrawRoutePreview(...)`, а не `RoutePreview.Draw`. Уже так — оставить.&#x20;
+* Добавить прорисовку «указателя» (кросс-hair) поверх карты — требование ТЗ.
+
+### Form1.Movement.cs
+
+* Поле `pointerMm` должно быть определено только здесь (убрать дубли из других partial, чтобы не было «Неоднозначность между Form1.pointerMm»).&#x20;
+* Использовать обработчики `buttonMoveUp/Down/Left/Right` — они уже есть.&#x20;
+* Движение отправляем байтовыми командами в `MyserialPort` через `TrySendAsync` (как сейчас). Оставить; никаких `SerialPortController.MoveUp/…` — убрать такие вызовы, если где-то остались (они и вызывают ошибки «не содержит определения MoveUp…»).&#x20;
+
+### Calibration.cs
+
+* Использовать введённые здесь методы: `InitializeCalibrationUiState()`, `UpdateBuildMapEnabled()`, `UpdateCalibrationLabelsAfterBuild()`. Заменить/удалить старые вызовы `UpdateCalibrationLabelsAfterSelection` — его больше нет, из-за этого и ошибки «Имя … не существует».&#x20;
+
+### Form1.LoadData.cs
+
+* Хранить единственную реализацию `LoadDefaultConfiguration()` и `SaveLastConfiguration()` (чтобы не было «Неоднозначный вызов…»).&#x20;
+* При изменении пресета вызывать `UpdateUI()` и включать кнопку «Построить карту» через `UpdateBuildMapEnabled()` (из `Calibration.cs`).&#x20;
+
+### UIController.cs
+
+* Изменить сигнатуры на приём `MaskedTextBox` (или базового `TextBoxBase`) в `ValidateInput(...)` и `ValidateWaferDiameter(...)`, чтобы убрать ошибки приведения из `Form1.cs`. Вызовы идут с `MaskedTextBox` (`SizeX/SizeY/WaferDiameter`). &#x20;
+
+### WaferController.cs
+
+* Обновить API под ТЗ: добавить `IsPresetReady()` (старая проверка `IsPresetValid` — больше не используется), а также методы/свойства, которые уже дергаются из формы: `AutoSetScaleFactor(...)`, `BuildCrystalsCached()`, `GenerateRoute(...)`, `GetStatistics()`. В рисовании этот контроллер больше не участвует — убрать старые `DrawWafer/DrawGrid/BuildMap`.&#x20;
+
+### SerialPortController.cs
+
+* Оставить управление подключением и списком портов.&#x20;
+* (Опционально по ТЗ) добавить мягкий `MoveTo(PointF mm)` — вызов из формы для «в центр», без обязательной реализации траектории.
+
+### RoutePreview\.cs
+
+* Оставить метод `DrawRoutePreview(...)` и генераторы маршрутов. Вызов `Draw` нигде не использовать (ошибка была именно из-за старого имени).&#x20;
+
+### CommandHistory.cs
+
+* Использовать `ExecuteCommand/Undo/Redo`; заменить старые вызовы `Do(...)` на `ExecuteCommand(...)`, чтобы закрыть ошибку «не содержит определения Do».&#x20;
+
+---
+
+Готов идти файлом за файлом. Пришли сначала **UIController.cs** и **WaferController.cs** (там ключевые сигнатуры и проверки) — начнём с них, потом добьём отрисовку указателя и движение.
+
+
+Готово — ТЗ зафиксировал. Ниже список **всех файлов проекта** и **очерёдность правок** под это ТЗ. Делаем строго «файл за файлом», в приоритете — **полная замена файла**.
+
+# Порядок изменений
+
+0. **CrystalTable.csproj** — (быстрая правка) включить C# 8.0 и `<Nullable>disable</Nullable>`.
+
+1. **WaferController.cs** — финализировать API под ТЗ: `SetFirst/SetLast`, `IsCalibrationReady/IsPresetReady`, `BuildMapFromReferences`, `BuildMapFromPreset`, свойства `StepXmm/StepYmm/Nx/Ny/MapLocked`.
+   *Если уже стоит моя версия — этот пункт пропускаем.*
+
+2. **DrawingController.cs** — добавить **указатель** (маркер) в координатах мм и его отрисовку поверх ваферы.
+
+3. **Form1.Movement.cs** — привязать **buttonMoveLeft/Right/Up/Down** и стрелки к дискретным шагам **PitchX/PitchY** (обновлять указатель + `Invalidate()`).
+
+4. **Calibration.cs** — использовать координаты **указателя** для `btnSelectFirst/Last`; в `btnBuildMap` — логика из ТЗ (два якоря или валидный пресет).
+
+5. **Form1.LoadData.cs** — режим **«Продолжить»** и работа с **пресетами**: загрузка PitchX/PitchY/Nx/Ny (+ опц. якоря), активация `btnBuildMap`, авто-построение при наличии обоих якорей.
+
+6. **ExportImportController.cs** — сохранить/читать поля пресета: `PitchX/Y (um)`, `Nx/Ny`, опц. `FirstRef/LastRef (мм)`; совместимость со старыми файлами.
+
+7. **UIController.cs** — статус и метки: `lblPitchX/Y`, `lblCols/Rows`, индикаторы «Якоря: 0/1/2», «Пресет: выбран/нет».
+
+8. **Form1.Drawing.cs** — убедиться, что слои рисуются в порядке: вафера → карта → **указатель**; корректный пересчёт мм→пиксели с учётом зума/скролла.
+
+9. **Form1.Designer.cs** — (при необходимости) добавить **«Новая пластина»** и **«Продолжить»**; проверить подписки на `btnSelectFirst/Last/BuildMap` и кнопки движения.
+
+10. **Form1.cs** — в `Create_Click` и «Продолжить»: включить режим калибровки, **установить указатель в (0,0)**, отправить стол в опорный центр (вызов контроллера), обновить UI.
+
+11. **WaferInfo.cs** — расширить модель сохранения (Nx, Ny, опц. FirstRef/LastRef) и единицы измерения (ум/мм).
+
+12. **SerialPortController.cs** — добавить мягкий метод `MoveTo(PointF mm)` (если порт не подключён — no-op).
+    *Логику COM не углубляем — только вызов из Form1 для «в центр».*
+
+13. **MouseController.cs** — без изменений (если только не потребуется хук на клик по карте для позиционирования указателя).
+
+14. **ZoomPanController.cs** — без изменений.
+
+15. **StatisticsForm.cs** — без изменений.
+
+16. **ExportImportController.cs** (вторая проходка, если нужно) — экспорт/импорт отчётов с новой картой.
+
+---
+
+Если согласен с порядком — начинаем с **DrawingController.cs**. Пришли текущий файл, и я верну **полностью готовую версию** с отрисовкой указателя (без diff).

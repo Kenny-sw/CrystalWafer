@@ -1,0 +1,136 @@
+
+
+# Что уже исправили (кратко по файлам)
+
+* **CrystalTable.csproj**
+
+  * добавил ссылку `System.IO.Ports`; проверил, что подключены ровно по одному экземпляру всех partial’ов.
+
+* **Controllers/UIController.cs**
+
+  * `ValidateInput/ValidateWaferDiameter` принимают `TextBoxBase` (совместимо с MaskedTextBox).
+  * `UpdateToolbarState` использует `form.BtnUndo/BtnRedo` (без прямого доступа к `toolStrip1`).
+  * `UpdateSelectionLabel` безопасно работает с `null`/1/многими элементами.
+
+* **Form1.Movement.cs**
+
+  * единая переменная **`pointerMm`** (исключили дубли).
+  * движение по кнопкам `buttonMoveLeft/Right/Up/Down` — шагами **PitchX/PitchY**.
+  * отправка в порт через `TrySendAsync(...)`; проверка границ ваферы.
+
+* **Calibration.cs**
+
+  * включение **`btnBuildMap`** при `IsCalibrationReady()` **или** `IsPresetReady()`.
+  * alias: `UpdateCalibrationLabelsAfterSelection()` → вызывает `UpdateCalibrationLabelsAfterBuild()`.
+
+* **Form1.Drawing.cs**
+
+  * обработчик переименован в **`PictureBox1_Paint`** (совпадает с Designer).
+  * `IsInputValid`: `SizeX/SizeY` → `uint`, `WaferDiameter` → `float (InvariantCulture)`.
+  * рисуем: вафера → кристаллы → предпросмотр маршрута; без вызовов `DrawWafer/DrawGrid` у контроллера.
+
+* **Form1.cs**
+
+  * парсинг диаметра как `float`; шагов — как `uint`.
+  * добавлены свойства `BtnUndo/BtnRedo` для UIController.
+  * подписка на `serialPortController.DataReceived` → вывод в **status bar** (с дросселированием).
+
+* **Controllers/SerialPortController.cs**
+
+  * есть перегрузка конструктора **без параметров** (совместимость).
+  * событие **`DataReceived`** в UI-потоке; `ToggleConnection/UpdatePortList` приведены в порядок.
+  * без всплывающих окон при каждом RX (стабильный UX).
+
+# Что осталось исправить/проверить
+
+* **Logic/RoutePreview\.cs**
+
+  * убедиться, что есть метод **`DrawRoutePreview(Graphics, IEnumerable<Crystal>, float scale, float cx, float cy)`** и он вызывается из `Form1.Drawing.cs`.
+
+* **Logic/CommandHistory.cs**
+
+  * чтобы использовались как минимум: `CanUndo()`, `CanRedo()`, `Undo()`, `Redo()`, событие `HistoryChanged`, `GetUndoDescription()/GetRedoDescription()`. (Вызовов `Do/ExecuteCommand` в текущем `Form1.cs` нет.)
+
+* **Controllers/WaferController.cs**
+
+  * финальный API: `IsCalibrationReady()`, `IsPresetReady()`, `SetFirstReference/SetLastReference(float mmX, float mmY)`, `BuildMapFromReferences()`, `BuildMapFromPreset()`, `BuildCrystalsCached()`, `GenerateRoute(RoutePreview, HashSet<int>)`, `GetStatistics()`, `AutoSetScaleFactor(int w, int h)`, свойства `StepXmm/StepYmm/Nx/Ny`.
+  * (Графические методы типа `DrawWafer/DrawGrid` в контроллере не нужны.)
+
+* **Form1.LoadData.cs**
+
+  * оставить **единственные** `LoadDefaultConfiguration/SaveLastConfiguration`; проверить, что нет дублей.
+  * при изменении полей/пресета — вызывать `UpdateBuildMapEnabled()`.
+
+* **Form1.Designer.cs**
+
+  * проверить подписку PictureBox: `this.pictureBox1.Paint += new ... (this.PictureBox1_Paint);`
+  * имена кнопок движения: `buttonMoveUp/Down/Left/Right` и подписки на них.
+
+* **Controllers/ExportImportController.cs** и **Data/WaferInfo.cs**
+
+  * убедиться, что сохраняются/загружаются: `PitchX/PitchY (µm)`, `Nx/Ny`, опционально `FirstRef/LastRef (мм)`; совместимость с предыдущими форматами.
+
+---
+
+# Обновлённое ТЗ (с учётом уже внесённых правок)
+
+## 1) Режимы построения карты
+
+* **A. Ручная калибровка по двум кристаллам:** оператор выбирает левый-верхний и правый-нижний кристаллы кнопками **«Выбрать первый/последний»** — координаты берём из **`pointerMm`** (мм).
+* **B. Из пресета:** `PitchX/PitchY (µm)`, `Nx/Ny`, опц. `FirstRef/LastRef (мм)`.
+* **Угол не используем (θ=0).** Сетка прямоугольная.
+
+## 2) Условия доступности «Построить карту»
+
+* Кнопка **`btnBuildMap`** активна, если **`IsCalibrationReady()`** или **`IsPresetReady()`**.
+* Построение делает **один** из методов: `BuildMapFromReferences()` **или** `BuildMapFromPreset()`; далее `BuildCrystalsCached()`.
+
+## 3) Единицы измерения и ввод
+
+* **SizeX/SizeY** — целые **µm (`uint`)**.
+* **WaferDiameter** — **мм (`float`, InvariantCulture)**.
+* Поля ввода — **`MaskedTextBox`**; валидация через `UIController.ValidateInput(TextBoxBase, ref uint)` и `ValidateWaferDiameter(TextBoxBase, ref float)`.
+
+## 4) Перемещение и указатель
+
+* Движение по кнопкам **`buttonMoveLeft/Right/Up/Down`**: дискретно шагами **PitchX/PitchY**.
+* Команды в контроллер стола — через **`TrySendAsync(byte cmd, uint stepUm)`** (COM-порт).
+* **`pointerMm`** — единственный источник истинного «курсора» на карте (мм), хранится в `Form1.Movement.cs`.
+* При «Создать/Продолжить» указатель устанавливается в (0,0); опционально — отправить стол в центр через `SerialPortController`.
+
+## 5) Отрисовка
+
+* Обработчик PictureBox: **`PictureBox1_Paint`**.
+* Порядок слоёв: **вафера → сетка/кристаллы → предпросмотр маршрута → UI-оверлеи**.
+* Масштаб/панорамирование: через `ZoomPanController` + `AutoSetScaleFactor(w,h)` в контроллере ваферы.
+* **RoutePreview** рисуется через `DrawRoutePreview(...)`.
+
+## 6) Маршрут и статистика
+
+* Маршрут «змейкой» строится `waferController.GenerateRoute(routePreview, selectedCrystals)`.
+* `StatisticsForm` получает отчёт через `WaferStatistics.GenerateFullReport(crystalW_mm, crystalH_mm)` и множество выбранных индексов.
+
+## 7) Экспорт/импорт и пресеты
+
+* `ExportImportController` сохраняет/читает: `PitchX/PitchY (µm)`, `Nx/Ny`, опц. `FirstRef/LastRef (мм)`.
+* Форматы: XML/CSV/JSON — совместимы с текущими структурами `WaferInfo`.
+
+## 8) COM-порт и статус-бар
+
+* Подключение: `SerialPortController.ToggleConnection(...)`, список портов — `UpdatePortList`.
+* Все входящие данные (`SerialPort.DataReceived`) прокидываются событием **`SerialPortController.DataReceived`** в UI-поток.
+* В `Form1` отображаем **последний принятый пакет** в **status bar** (короткий preview, дросселирование \~150 мс).
+* Критические ошибки (обрыв/невозможность открыть порт) — через `MessageBox` один раз.
+
+## 9) UX/устойчивость
+
+* Валидация ввода — с откатом к последнему валидному значению.
+* Все `null`-проверки в UI-обновлениях (labels/buttons) обязательны.
+* Не использовать устаревшие вызовы/имена:
+
+  * никаких `SerialPortController.MoveUp/Down/Left/Right`;
+  * никаких `RoutePreview.Draw(...)`;
+  * никаких `WaferController.DrawWafer/DrawGrid/BuildMap(...)` (рисуем в `Form1.Drawing.cs`);
+  * никаких `UpdateCalibrationLabelsAfterSelection` (есть alias, но в новом коде не использовать);
+  * никаких `CommandHistory.Do(...)`.
+

@@ -46,6 +46,7 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <!-- ��������� ��� ����� ��������� SerialPort -->
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Calibration.cs">
@@ -57,9 +58,9 @@
     <Compile Include="Controllers\UIController.cs" />
     <Compile Include="Controllers\WaferController.cs" />
     <Compile Include="Controllers\ZoomPanController.cs" />
+    <Compile Include="Controllers\DrawingController.cs" />
     <Compile Include="Data\Crystal.cs" />
     <Compile Include="Data\WaferInfo.cs" />
-    <Compile Include="Controllers\DrawingController.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>

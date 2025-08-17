@@ -1,186 +1,173 @@
-﻿using System;
+﻿using CrystalTable.Logic;
+using CrystalTable.Controllers;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
+using System.Linq;
 using System.Windows.Forms;
-using CrystalTable.Logic;
 
 namespace CrystalTable.Controllers
 {
-    /// <summary>
-    /// Контроллер для управления элементами интерфейса
-    /// </summary>
+    /// <summary>Контроллер для управления элементами интерфейса</summary>
     public class UIController
     {
         private readonly Form1 form;
 
-        public UIController(Form1 form)
-        {
-            this.form = form;
-        }
+        public UIController(Form1 form) => this.form = form;
 
-        /// <summary>
-        /// Валидация поля ввода
-        /// </summary>
-        public void ValidateInput(MaskedTextBox textBox, ref float tempValue)
+        // === ВАЛИДАЦИЯ ===
+
+        // Принимаем TextBoxBase, чтобы работали и TextBox, и MaskedTextBox
+        public void ValidateInput(TextBoxBase tb, ref uint targetUm)
         {
-            if (!float.TryParse(textBox.Text, out float value) || value <= 0)
+            if (tb == null) return;
+
+            if (uint.TryParse(tb.Text.Trim(), out var val) && val > 0)
             {
-                textBox.BackColor = Color.Red;
-                tempValue = 0;
+                targetUm = val;
             }
             else
             {
-                textBox.BackColor = Color.GreenYellow;
-                if (value != tempValue)
-                {
-                    tempValue = value;
-                }
+                // откат к последнему валидному
+                tb.Text = targetUm.ToString();
+                tb.SelectionStart = tb.Text.Length;
             }
         }
 
-        /// <summary>
-        /// Валидация диаметра пластины
-        /// </summary>
-        public void ValidateWaferDiameter(MaskedTextBox textBox, ref float tempValue)
+        public void ValidateWaferDiameter(TextBoxBase tb, ref float targetMm)
         {
-            if (!float.TryParse(textBox.Text, out float value) ||
-                value < WaferController.MinWaferDiameter ||
-                value > WaferController.MaxWaferDiameter)
+            if (tb == null) return;
+
+            if (float.TryParse(tb.Text.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out var val))
             {
-                textBox.BackColor = Color.Red;
-                tempValue = 0;
+                // ограничим допустимым диапазоном
+                if (val < WaferController.MinWaferDiameter) val = WaferController.MinWaferDiameter;
+                if (val > WaferController.MaxWaferDiameter) val = WaferController.MaxWaferDiameter;
+
+                targetMm = val;
+                tb.Text = val.ToString(CultureInfo.InvariantCulture);
+                tb.SelectionStart = tb.Text.Length;
             }
             else
             {
-                textBox.BackColor = Color.GreenYellow;
-                if (value != tempValue)
-                {
-                    tempValue = value;
-                }
+                tb.Text = targetMm.ToString(CultureInfo.InvariantCulture); // откат
+                tb.SelectionStart = tb.Text.Length;
             }
         }
 
-        /// <summary>
-        /// Обновление статусной строки
-        /// </summary>
-        public void UpdateStatusBar(WaferController waferController, ZoomPanController zoomPanController)
+        public void ClearInputFields(params TextBoxBase[] textBoxes)
         {
-            if (form.StatusLabel != null)
-            {
-                form.StatusLabel.Text = "Готово";
-            }
-
-            if (form.ZoomLabel != null)
-            {
-                form.ZoomLabel.Text = $"Масштаб: {zoomPanController.ZoomFactor:F1}x";
-            }
-
-            if (form.FillPercentageLabel != null && CrystalManager.Instance.Crystals.Count > 0)
-            {
-                var stats = waferController.GetStatistics();
-                if (stats != null)
-                {
-                    float fillPercentage = stats.CalculateFillPercentage(
-                        waferController.CrystalWidthRaw / 1000f,
-                        waferController.CrystalHeightRaw / 1000f);
-                    form.FillPercentageLabel.Text = $"Заполнение: {fillPercentage:F1}%";
-                }
-            }
-        }
-
-        /// <summary>
-        /// Обновление метки выделения
-        /// </summary>
-        public void UpdateSelectionLabel(HashSet<int> selectedCrystals)
-        {
-            if (selectedCrystals.Count == 0)
-            {
-                form.LabelSelectedCrystal.Text = "Кристаллы не выбраны";
-            }
-            else if (selectedCrystals.Count == 1)
-            {
-                form.LabelSelectedCrystal.Text = $"Выбран кристалл: {selectedCrystals.GetEnumerator().Current}";
-            }
-            else
-            {
-                form.LabelSelectedCrystal.Text = $"Выбрано кристаллов: {selectedCrystals.Count}";
-            }
-        }
-
-        /// <summary>
-        /// Обновление состояния панели инструментов
-        /// </summary>
-        /// <summary>
-        /// Обновление состояния панели инструментов
-        /// </summary>
-        public void UpdateToolbarState(CommandHistory commandHistory)
-        {
-            // Получаем кнопки из коллекции Items toolStrip1 по имени ключа
-            var btnUndo = form.toolStrip1.Items["btnUndo"] as ToolStripButton;
-            var btnRedo = form.toolStrip1.Items["btnRedo"] as ToolStripButton;
-
-            if (btnUndo != null)
-            {
-                btnUndo.Enabled = commandHistory.CanUndo();
-                if (commandHistory.CanUndo())
-                {
-                    string undoText = commandHistory.GetUndoDescription();
-                    btnUndo.ToolTipText = $"Отменить: {undoText}";
-                }
-                else
-                {
-                    btnUndo.ToolTipText = "Отменить (Ctrl+Z)";
-                }
-            }
-
-            if (btnRedo != null)
-            {
-                btnRedo.Enabled = commandHistory.CanRedo();
-                if (commandHistory.CanRedo())
-                {
-                    string redoText = commandHistory.GetRedoDescription();
-                    btnRedo.ToolTipText = $"Повторить: {redoText}";
-                }
-                else
-                {
-                    btnRedo.ToolTipText = "Повторить (Ctrl+Y)";
-                }
-            }
-        }
-
-
-        /// <summary>
-        /// Очистка полей ввода
-        /// </summary>
-        public void ClearInputFields(params MaskedTextBox[] textBoxes)
-        {
+            if (textBoxes == null) return;
             foreach (var textBox in textBoxes)
             {
+                if (textBox == null) continue;
                 textBox.Text = "";
                 textBox.BackColor = SystemColors.Window;
             }
         }
 
-        /// <summary>
-        /// Отображение информации о масштабе на PictureBox
-        /// </summary>
+        // === СТАТУС/МЕТКИ ===
+
+        /// <summary>Обновление статус-бара, счётчиков и координат указателя</summary>
+        public void UpdateStatusBar(WaferController wafer, ZoomPanController zoom)
+        {
+            if (form == null) return;
+
+            // Строка состояния
+            if (form.StatusLabel != null)
+                form.StatusLabel.Text = "Готово";
+
+            // Масштаб
+            if (form.ZoomLabel != null && zoom != null)
+                form.ZoomLabel.Text = $"Масштаб: {zoom.ZoomFactor:F1}x";
+
+            // Кол-во кристаллов
+            int count = CrystalManager.Instance.Crystals.Count;
+            if (form.LabelTotalCrystals != null)
+                form.LabelTotalCrystals.Text = $"Общее количество кристаллов: {count}";
+
+            // Заполнение площади (приблизительно)
+            if (form.FillPercentageLabel != null && wafer != null)
+            {
+                float cw = wafer.CrystalWidthRaw / 1000f;
+                float ch = wafer.CrystalHeightRaw / 1000f;
+                float waferArea = (float)(Math.PI * Math.Pow(wafer.WaferDiameter / 2f, 2));
+                float fill = waferArea > 0 ? Math.Min(100f, Math.Max(0f, (count * cw * ch) / waferArea * 100f)) : 0f;
+                form.FillPercentageLabel.Text = $"Заполнение: {fill:F1}%";
+            }
+
+            // Координаты указателя
+            var p = form.GetPointerMm();
+            if (form.CoordinatesLabel != null)
+                form.CoordinatesLabel.Text = $"X: {p.X:F3} мм, Y: {p.Y:F3} мм";
+        }
+
+        /// <summary>Обновление метки выбранных кристаллов (индексация с 1 для UI)</summary>
+        public void UpdateSelectionLabel(HashSet<int> selected)
+        {
+            if (form?.LabelSelectedCrystal == null) return;
+
+            if (selected == null || selected.Count == 0)
+            {
+                form.LabelSelectedCrystal.Text = "Кристаллы не выбраны";
+            }
+            else if (selected.Count == 1)
+            {
+                int idx = selected.First();
+                form.LabelSelectedCrystal.Text = $"Выбран кристалл: {idx + 1}";
+            }
+            else
+            {
+                var head = selected.OrderBy(i => i).Take(5).Select(i => (i + 1).ToString());
+                string headStr = string.Join(", ", head);
+                string suffix = selected.Count > 5 ? "…" : "";
+                form.LabelSelectedCrystal.Text = $"Выбрано: {selected.Count} ({headStr}{suffix})";
+            }
+        }
+
+        // === ТУЛБАР ===
+
+        public void UpdateToolbarState(CommandHistory history)
+        {
+            if (history == null || form == null) return;
+
+            if (form.BtnUndo != null)
+            {
+                bool canUndo = history.CanUndo();
+                form.BtnUndo.Enabled = canUndo;
+                form.BtnUndo.ToolTipText = canUndo
+                    ? $"Отменить: {history.GetUndoDescription()}"
+                    : "Отменить (Ctrl+Z)";
+            }
+
+            if (form.BtnRedo != null)
+            {
+                bool canRedo = history.CanRedo();
+                form.BtnRedo.Enabled = canRedo;
+                form.BtnRedo.ToolTipText = canRedo
+                    ? $"Повторить: {history.GetRedoDescription()}"
+                    : "Повторить (Ctrl+Y)";
+            }
+        }
+
+        // === Оверлей масштаба на картинке ===
+
         public void DrawZoomInfo(Graphics g, float zoomFactor)
         {
-            string zoomText = $"Масштаб: {zoomFactor:F1}x";
-            using (Font font = new Font("Arial", 10))
+            if (g == null || form?.PictureBox == null) return;
+
+            string zoomText = $"Zoom: {zoomFactor:F1}x";
+            using (Font font = new Font("Segoe UI", 9f))
             using (Brush brush = new SolidBrush(Color.Black))
+            using (Brush bg = new SolidBrush(Color.FromArgb(210, Color.White)))
+            using (Pen pen = new Pen(Color.Gray))
             {
-                SizeF textSize = g.MeasureString(zoomText, font);
-                float x = form.PictureBox.Width - textSize.Width - 10;
-                float y = form.PictureBox.Height - textSize.Height - 10;
-
-                // Фон для текста
-                using (Brush bgBrush = new SolidBrush(Color.FromArgb(200, Color.White)))
-                {
-                    g.FillRectangle(bgBrush, x - 5, y - 5, textSize.Width + 10, textSize.Height + 10);
-                }
-
-                g.DrawString(zoomText, font, brush, x, y);
+                SizeF sz = g.MeasureString(zoomText, font);
+                float x = 10, y = 10;
+                g.FillRectangle(bg, x, y, sz.Width + 10, sz.Height + 6);
+                g.DrawRectangle(pen, x, y, sz.Width + 10, sz.Height + 6);
+                g.DrawString(zoomText, font, brush, x + 5, y + 3);
             }
         }
     }

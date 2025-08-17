@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Windows.Forms;
+using System.Globalization;
 using CrystalTable.Logic;
 
 namespace CrystalTable
@@ -58,7 +59,7 @@ namespace CrystalTable
                 string[] sampleData = new string[]
                 {
                     "# Формат: Название : SizeX, SizeY, WaferDiameter",
-                    "# SizeX и SizeY в микрометрах, WaferDiameter в миллиметрах",
+                    "# SizeX и SizeY в микрометрах (целые), WaferDiameter в миллиметрах (вещественное)",
                     "",
                     "Стандартный 100мм : 5000, 5000, 100",
                     "Стандартный 150мм : 5000, 5000, 150",
@@ -119,38 +120,46 @@ namespace CrystalTable
 
                         if (parameters.Length == 3)
                         {
-                            // Сохраняем старые значения
-                            float oldSizeX = waferController.CrystalWidthRaw;
-                            float oldSizeY = waferController.CrystalHeightRaw;
-                            float oldDiameter = waferController.WaferDiameter;
+                            // Парсим как: SizeX/SizeY — uint (мкм), Diameter — float (мм)
+                            if (!uint.TryParse(parameters[0].Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out uint newSizeXum) ||
+                                !uint.TryParse(parameters[1].Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out uint newSizeYum) ||
+                                !float.TryParse(parameters[2].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out float newDiameterMm))
+                            {
+                                MessageBox.Show("Некорректный формат записи. Ожидается: SizeX(uint), SizeY(uint), WaferDiameter(float).",
+                                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                return;
+                            }
 
-                            // Устанавливаем новые значения
-                            SizeX.Text = parameters[0].Trim();
-                            SizeY.Text = parameters[1].Trim();
-                            WaferDiameter.Text = parameters[2].Trim();
+                            // Сохраняем старые (для истории), как float — так и было
+                            float oldSizeX = waferController.CrystalWidthRaw;   // uint -> float (неявно)
+                            float oldSizeY = waferController.CrystalHeightRaw;  // uint -> float
+                            float oldDiameter = waferController.WaferDiameter;  // float
 
-                            float newSizeX = float.Parse(parameters[0].Trim());
-                            float newSizeY = float.Parse(parameters[1].Trim());
-                            float newDiameter = float.Parse(parameters[2].Trim());
+                            // Устанавливаем в поля UI
+                            SizeX.Text = newSizeXum.ToString(CultureInfo.InvariantCulture);
+                            SizeY.Text = newSizeYum.ToString(CultureInfo.InvariantCulture);
+                            WaferDiameter.Text = newDiameterMm.ToString(CultureInfo.InvariantCulture);
 
-                            // Обновляем контроллер
-                            waferController.CrystalWidthRaw = newSizeX;
-                            waferController.CrystalHeightRaw = newSizeY;
-                            waferController.WaferDiameter = newDiameter;
+                            // Обновляем контроллер (явные приведения где нужно)
+                            waferController.CrystalWidthRaw = newSizeXum;
+                            waferController.CrystalHeightRaw = newSizeYum;
+                            waferController.WaferDiameter = newDiameterMm;
 
                             // Добавляем в историю, если значения изменились
-                            if (oldSizeX != newSizeX || oldSizeY != newSizeY || oldDiameter != newDiameter)
+                            if (oldSizeX != newSizeXum || oldSizeY != newSizeYum || Math.Abs(oldDiameter - newDiameterMm) > 1e-6f)
                             {
                                 commandHistory.ExecuteCommand(
                                     new ChangeWaferParametersCommand(
                                         oldSizeX, oldSizeY, oldDiameter,
-                                        newSizeX, newSizeY, newDiameter,
-                                        (x, y, d) => {
-                                            SizeX.Text = x.ToString();
-                                            SizeY.Text = y.ToString();
-                                            WaferDiameter.Text = d.ToString();
-                                            waferController.CrystalWidthRaw = x;
-                                            waferController.CrystalHeightRaw = y;
+                                        newSizeXum, newSizeYum, newDiameterMm,
+                                        (x, y, d) =>
+                                        {
+                                            // x,y здесь float — приводим к uint для контроллера
+                                            SizeX.Text = ((uint)x).ToString(CultureInfo.InvariantCulture);
+                                            SizeY.Text = ((uint)y).ToString(CultureInfo.InvariantCulture);
+                                            WaferDiameter.Text = d.ToString(CultureInfo.InvariantCulture);
+                                            waferController.CrystalWidthRaw = (uint)x;
+                                            waferController.CrystalHeightRaw = (uint)y;
                                             waferController.WaferDiameter = d;
                                         },
                                         () => UpdateUI()

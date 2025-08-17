@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using CrystalTable.Data;
@@ -7,318 +8,466 @@ using CrystalTable.Logic;
 namespace CrystalTable.Controllers
 {
     /// <summary>
-    /// Контроллер для управления отрисовкой
+    /// Высокопроизводительный контроллер отрисовки вафли/кристаллов/маршрута.
+    /// Комбинирует читаемую структуру (v1) + кэш ресурсов/батчинг (v2) + клип/лимиты/быстрые режимы (v3).
     /// </summary>
-    public class DrawingController
+    public class DrawingController : IDisposable
     {
-        private readonly WaferController waferController;
-        private readonly ZoomPanController zoomPanController;
-        private readonly MouseController mouseController;
-        private readonly RoutePreview routePreview;
+        private readonly WaferController _wafer;
+        private readonly ZoomPanController _zoom;
+        private readonly MouseController _mouse;
+        private readonly RoutePreview _routePreview;
 
-        public DrawingController(WaferController waferController,
-            ZoomPanController zoomPanController,
-            MouseController mouseController,
-            RoutePreview routePreview)
+        // --- Кэш ресурсов, ключи учитывают DashStyle ---
+        private readonly Dictionary<Color, SolidBrush> _brushCache = new Dictionary<Color, SolidBrush>();
+        private readonly Dictionary<(Color color, float width, DashStyle style), Pen> _penCache =
+            new Dictionary<(Color, float, DashStyle), Pen>();
+        private readonly Dictionary<float, Font> _fontCache = new Dictionary<float, Font>();
+
+        // --- Константы отображения ---
+        private const float MinZoomForNumbers = 1.5f;
+        private const float MinZoomForAllNumbers = 3.0f;
+        private const float PointerCrossScale = 0.35f;  // от min(cellW, cellH)
+        private const float PointerRingScale = 0.22f;  // от min(cellW, cellH)
+        private const float TextSizeThreshold = 0.8f;   // текст должен помещаться в 80% ячейки
+
+        private bool _disposed;
+
+        /// <summary> Текущая позиция указателя в мм (система ваферы). </summary>
+        public PointF? PointerMm { get; set; }
+
+        /// <summary> Показывать ли указатель. </summary>
+        public bool ShowPointer { get; set; } = true;
+
+        /// <summary> Гибкие настройки производительности/визуализации. </summary>
+        public DrawingPerformanceSettings Performance { get; set; } = new DrawingPerformanceSettings();
+
+        public DrawingController(WaferController wafer,
+                                 ZoomPanController zoom,
+                                 MouseController mouse,
+                                 RoutePreview routePreview)
         {
-            this.waferController = waferController;
-            this.zoomPanController = zoomPanController;
-            this.mouseController = mouseController;
-            this.routePreview = routePreview;
+            _wafer = wafer ?? throw new ArgumentNullException(nameof(wafer));
+            _zoom = zoom ?? throw new ArgumentNullException(nameof(zoom));
+            _mouse = mouse ?? throw new ArgumentNullException(nameof(mouse));
+            _routePreview = routePreview; // опционально
         }
 
         /// <summary>
-        /// Основной метод отрисовки
+        /// Главный метод отрисовки, вызывается из OnPaint.
         /// </summary>
         public void Draw(Graphics g, int width, int height, bool showRoute)
         {
-            // Очистка фона
+            if (g == null) throw new ArgumentNullException(nameof(g));
+            if (width <= 0 || height <= 0) return;
+
+            ConfigureGraphicsQuality(g);
             g.Clear(Color.White);
 
-            // Сохраняем состояние
-            GraphicsState originalState = g.Save();
-
-            // Применяем трансформации
-            ApplyTransformations(g);
-
-            // Рисуем содержимое
-            DrawContent(g, width, height, showRoute);
-
-            // Восстанавливаем состояние
-            g.Restore(originalState);
-
-            // Рисуем UI элементы
-            DrawUIOverlay(g, width, height);
-        }
-
-        /// <summary>
-        /// Применение трансформаций
-        /// </summary>
-        private void ApplyTransformations(Graphics g)
-        {
-            g.TranslateTransform(zoomPanController.PanOffset.X, zoomPanController.PanOffset.Y);
-            g.ScaleTransform(zoomPanController.ZoomFactor, zoomPanController.ZoomFactor);
-            g.SmoothingMode = SmoothingMode.AntiAlias;
-        }
-
-        /// <summary>
-        /// Отрисовка основного содержимого
-        /// </summary>
-        private void DrawContent(Graphics g, int width, int height, bool showRoute)
-        {
-            waferController.AutoSetScaleFactor(width, height);
-
-            // Рисуем пластину
-            DrawWafer(g, width, height);
-
-            // Строим и рисуем кристаллы
-            waferController.BuildCrystalsCached();
-            DrawCrystals(g, width, height);
-
-            // Рисуем маршрут
-            if (showRoute && routePreview != null)
+            // Сохраняем трансформации/клип для мира
+            var state = g.Save();
+            try
             {
-                float centerX = width / 2;
-                float centerY = height / 2;
-                routePreview.DrawRoutePreview(g, CrystalManager.Instance.Crystals,
-                    waferController.ScaleFactor, centerX, centerY);
+                ApplyTransformations(g);
+                DrawWorld(g, width, height, showRoute);
             }
+            finally
+            {
+                g.Restore(state);
+            }
+
+            // UI поверх (экранные координаты)
+            DrawOverlay(g, width, height);
         }
 
-        /// <summary>
-        /// Отрисовка пластины
-        /// </summary>
-        private void DrawWafer(Graphics g, int width, int height)
+        // ---------- Настройки качества ----------
+        private void ConfigureGraphicsQuality(Graphics g)
         {
-            float centerX = width / 2;
-            float centerY = height / 2;
-            float radius = waferController.WaferDiameter / 2;
-            float displayRadius = radius * waferController.ScaleFactor;
-
-            if (waferController.WaferDisplayMode)
+            if (Performance.HighQualityRendering)
             {
-                using (Pen pen = new Pen(Color.Black, 2))
-                {
-                    g.DrawEllipse(pen,
-                        centerX - displayRadius,
-                        centerY - displayRadius,
-                        displayRadius * 2,
-                        displayRadius * 2);
-                }
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+                g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
+                g.CompositingQuality = CompositingQuality.HighQuality;
             }
             else
             {
-                using (Brush fillBrush = new SolidBrush(Color.LightGreen))
-                {
-                    g.FillEllipse(fillBrush,
-                        centerX - displayRadius,
-                        centerY - displayRadius,
-                        displayRadius * 2,
-                        displayRadius * 2);
-                }
+                g.SmoothingMode = SmoothingMode.HighSpeed;
+                g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SingleBitPerPixelGridFit;
+                g.CompositingQuality = CompositingQuality.HighSpeed;
+            }
+        }
 
-                using (Pen pen = new Pen(Color.DarkGreen, 2))
+        // ---------- Трансформации ----------
+        private void ApplyTransformations(Graphics g)
+        {
+            g.TranslateTransform(_zoom.PanOffset.X, _zoom.PanOffset.Y);
+            g.ScaleTransform(_zoom.ZoomFactor, _zoom.ZoomFactor);
+        }
+
+        // ---------- Мир (вафля, кристаллы, маршрут, указатель) ----------
+        private void DrawWorld(Graphics g, int width, int height, bool showRoute)
+        {
+            _wafer.AutoSetScaleFactor(width, height);
+
+            DrawWafer(g, width, height);
+
+            _wafer.BuildCrystalsCached();
+            DrawCrystalsOptimized(g, width, height);
+
+            if (showRoute && _routePreview != null)
+            {
+                var center = new PointF(width / 2f, height / 2f);
+                _routePreview.DrawRoutePreview(
+                    g,
+                    CrystalManager.Instance.Crystals,
+                    _wafer.ScaleFactor,
+                    center.X, center.Y);
+            }
+
+            DrawPointer(g, width, height);
+        }
+
+        private void DrawWafer(Graphics g, int width, int height)
+        {
+            var center = new PointF(width / 2f, height / 2f);
+            float rMm = _wafer.WaferDiameter / 2f;
+            float rPx = rMm * _wafer.ScaleFactor;
+
+            var bounds = new RectangleF(center.X - rPx, center.Y - rPx, rPx * 2, rPx * 2);
+
+            if (_wafer.WaferDisplayMode)
+            {
+                using (var pen = GetPen(Color.Black, 2f))
+                    g.DrawEllipse(pen, bounds);
+            }
+            else
+            {
+                using (var fill = GetBrush(Color.LightGreen))
+                using (var pen = GetPen(Color.DarkGreen, 2f))
                 {
-                    g.DrawEllipse(pen,
-                        centerX - displayRadius,
-                        centerY - displayRadius,
-                        displayRadius * 2,
-                        displayRadius * 2);
+                    g.FillEllipse(fill, bounds);
+                    g.DrawEllipse(pen, bounds);
                 }
             }
         }
 
-        /// <summary>
-        /// Отрисовка кристаллов с оптимизацией
-        /// </summary>
-        private void DrawCrystals(Graphics g, int width, int height)
+        private void DrawCrystalsOptimized(Graphics g, int width, int height)
         {
-            float displayCrystalWidth = (waferController.CrystalWidthRaw / 1000f) * waferController.ScaleFactor;
-            float displayCrystalHeight = (waferController.CrystalHeightRaw / 1000f) * waferController.ScaleFactor;
-            float centerX = width / 2;
-            float centerY = height / 2;
+            var cell = GetDisplayCellSize();
+            var center = new PointF(width / 2f, height / 2f);
+            var visible = GetVisibleArea(width, height);
 
-            // Определяем видимую область с учетом трансформаций
-            RectangleF visibleArea = GetVisibleArea(width, height);
-
-            foreach (var crystal in CrystalManager.Instance.Crystals)
+            // Необязательный клип по окружности вафли: ускоряет, если сетка большая
+            Region prevClip = null;
+            if (Performance.ClipToWafer)
             {
-                // Вычисляем позицию кристалла
-                float halfW = displayCrystalWidth / 2;
-                float halfH = displayCrystalHeight / 2;
-                float scaledCrystalX = crystal.RealX * waferController.ScaleFactor + centerX;
-                float scaledCrystalY = crystal.RealY * waferController.ScaleFactor + centerY;
-
-                // Сохраняем координаты
-                crystal.DisplayX = scaledCrystalX;
-                crystal.DisplayY = scaledCrystalY;
-                crystal.DisplayLeft = scaledCrystalX - halfW;
-                crystal.DisplayRight = scaledCrystalX + halfW;
-                crystal.DisplayTop = scaledCrystalY - halfH;
-                crystal.DisplayBottom = scaledCrystalY + halfH;
-
-                // Пропускаем кристаллы вне видимой области
-                if (!IsInVisibleArea(crystal, visibleArea))
-                    continue;
-
-                // Рисуем кристалл
-                DrawCrystal(g, crystal, displayCrystalWidth, displayCrystalHeight);
-            }
-        }
-
-        /// <summary>
-        /// Отрисовка одного кристалла
-        /// </summary>
-        private void DrawCrystal(Graphics g, Crystal crystal, float width, float height)
-        {
-            bool isSelected = mouseController.SelectedCrystals.Contains(crystal.Index);
-
-            // Определяем цвета
-            Color fillColor = isSelected ? Color.Yellow : Color.Empty;
-            Color borderColor = isSelected ? Color.DarkBlue : Color.Blue;
-            float borderWidth = isSelected ? 2 : 1;
-
-            // Заливка
-            if (fillColor != Color.Empty)
-            {
-                using (Brush fillBrush = new SolidBrush(fillColor))
+                prevClip = g.Clip?.Clone();
+                using (var gp = new GraphicsPath())
                 {
-                    g.FillRectangle(fillBrush,
-                        crystal.DisplayLeft,
-                        crystal.DisplayTop,
-                        width,
-                        height);
+                    float rPx = (_wafer.WaferDiameter / 2f) * _wafer.ScaleFactor;
+                    gp.AddEllipse(new RectangleF(center.X - rPx, center.Y - rPx, rPx * 2, rPx * 2));
+                    g.SetClip(gp, CombineMode.Intersect);
                 }
             }
 
-            // Контур
-            using (Pen pen = new Pen(borderColor, borderWidth))
+            // Грубое ускорение линий прямоугольников
+            var oldSmooth = g.SmoothingMode;
+            if (Performance.FastGridLines) g.SmoothingMode = SmoothingMode.None;
+
+            int emitted = 0;
+            // Группируем по состоянию рендеринга (выбран / показывать номер)
+            var groups = new Dictionary<CrystalRenderState, List<Crystal>>();
+
+            foreach (var c in CrystalManager.Instance.Crystals)
             {
-                g.DrawRectangle(pen,
-                    crystal.DisplayLeft,
-                    crystal.DisplayTop,
-                    width,
-                    height);
+                UpdateCrystalDisplayCoordinates(c, center, cell);
+                if (!IsInVisibleArea(c, visible)) continue;
+
+                var state = new CrystalRenderState(
+                    _mouse.SelectedCrystals.Contains(c.Index),
+                    ShouldShowNumber(c, cell));
+
+                if (!groups.TryGetValue(state, out var list))
+                    groups[state] = list = new List<Crystal>();
+                list.Add(c);
+
+                emitted++;
+                if (emitted >= Performance.MaxVisibleCrystals) break;
             }
 
-            // Номер кристалла с учетом масштаба
-            DrawCrystalNumber(g, crystal, width, height);
+            // Батч-рендеринг
+            foreach (var kv in groups)
+                DrawCrystalGroup(g, kv.Key, kv.Value, cell);
+
+            g.SmoothingMode = oldSmooth;
+
+            if (Performance.ClipToWafer)
+            {
+                g.Clip = prevClip;
+                prevClip?.Dispose();
+            }
         }
 
-        /// <summary>
-        /// Отрисовка номера кристалла с оптимизацией
-        /// </summary>
-        private void DrawCrystalNumber(Graphics g, Crystal crystal, float width, float height)
+        private SizeF GetDisplayCellSize()
         {
-            float zoom = zoomPanController.ZoomFactor;
+            float w = (_wafer.CrystalWidthRaw / 1000f) * _wafer.ScaleFactor;
+            float h = (_wafer.CrystalHeightRaw / 1000f) * _wafer.ScaleFactor;
+            return new SizeF(w, h);
+        }
 
-            // Не показываем номера при мелком масштабе
-            if (zoom < 1.5f)
+        private void UpdateCrystalDisplayCoordinates(Crystal c, PointF center, SizeF cell)
+        {
+            float sx = c.RealX * _wafer.ScaleFactor + center.X;
+            float sy = c.RealY * _wafer.ScaleFactor + center.Y;
+            float hw = cell.Width / 2f;
+            float hh = cell.Height / 2f;
+
+            c.DisplayX = sx; c.DisplayY = sy;
+            c.DisplayLeft = sx - hw; c.DisplayRight = sx + hw;
+            c.DisplayTop = sy - hh; c.DisplayBottom = sy + hh;
+        }
+
+        private bool ShouldShowNumber(Crystal c, SizeF cell)
+        {
+            float zoom = _zoom.ZoomFactor;
+            if (zoom < MinZoomForNumbers) return false;
+
+            // Дешёвая ранняя отсечка: если ячейка слишком маленькая — не меряем текст вовсе
+            if (cell.Width < Performance.MinCellPixelsForNumbers ||
+                cell.Height < Performance.MinCellPixelsForNumbers)
+                return false;
+
+            if (zoom >= MinZoomForAllNumbers) return true;
+            return (c.Index % 4) == 0;
+        }
+
+        private void DrawCrystalGroup(Graphics g, CrystalRenderState state, List<Crystal> list, SizeF cell)
+        {
+            var (fillColor, borderColor, borderWidth) = state.IsSelected
+                ? (Color.Yellow, Color.DarkBlue, 2f)
+                : (Color.Empty, Color.Blue, 1f);
+
+            using var fill = (fillColor == Color.Empty) ? null : GetBrush(fillColor);
+            using var pen = GetPen(borderColor, borderWidth);
+
+            foreach (var c in list)
+            {
+                // Заливка
+                if (fill != null) g.FillRectangle(fill, c.DisplayLeft, c.DisplayTop, cell.Width, cell.Height);
+
+                // Контур (float-координаты без округления)
+                g.DrawRectangle(pen, c.DisplayLeft, c.DisplayTop, cell.Width, cell.Height);
+
+                // Номер
+                if (state.ShowNumber) DrawCrystalNumber(g, c, cell);
+            }
+        }
+
+        private void DrawCrystalNumber(Graphics g, Crystal c, SizeF cell)
+        {
+            float zoom = _zoom.ZoomFactor;
+            // Адаптивный квантованный размер шрифта
+            float fs = QuantizeFontSize(Math.Max(6f, Math.Min(12f, 8f * zoom)));
+
+            using var font = GetFont(fs);
+            using var brush = GetBrush(Color.Black);
+
+            string text = c.Index.ToString();
+            var size = g.MeasureString(text, font);
+            if (size.Width > cell.Width * TextSizeThreshold ||
+                size.Height > cell.Height * TextSizeThreshold)
                 return;
 
-            // Адаптивный размер шрифта
-            float fontSize = Math.Max(6, Math.Min(12, 8 * zoom));
+            float tx = c.DisplayX - size.Width / 2f;
+            float ty = c.DisplayY - size.Height / 2f;
+            g.DrawString(text, font, brush, new PointF(tx, ty));
+        }
 
-            // Показываем только каждый N-й номер при среднем масштабе
-            if (zoom < 3.0f && crystal.Index % 4 != 0)
-                return;
+        private float QuantizeFontSize(float s)
+        {
+            var q = (float)Math.Round(s * 2f) / 2f; // шаг 0.5 pt
+            return Math.Max(6f, Math.Min(18f, q));
+        }
 
-            using (Font font = new Font("Arial", fontSize))
-            using (Brush textBrush = new SolidBrush(Color.Black))
+        private void DrawPointer(Graphics g, int width, int height)
+        {
+            if (!ShowPointer || !PointerMm.HasValue) return;
+
+            var center = new PointF(width / 2f, height / 2f);
+            float scale = _wafer.ScaleFactor;
+            var mm = PointerMm.Value;
+
+            var screen = new PointF(center.X + mm.X * scale, center.Y + mm.Y * scale);
+
+            // Геометрия от min(cellW, cellH)
+            float cellWmm = Math.Max(_wafer.CrystalWidthRaw / 1000f, 0.05f);
+            float cellHmm = Math.Max(_wafer.CrystalHeightRaw / 1000f, 0.05f);
+            float cellMin = Math.Min(cellWmm, cellHmm);
+
+            float crossHalf = PointerCrossScale * cellMin * scale;
+            float ringR = PointerRingScale * cellMin * scale;
+
+            using var solid = GetPen(Color.Red, 2f);
+            using var dashed = GetPen(Color.FromArgb(160, Color.Red), 1f, DashStyle.Dot);
+            using var fill = GetBrush(Color.FromArgb(30, Color.Red));
+
+            var ring = new RectangleF(screen.X - ringR, screen.Y - ringR, ringR * 2, ringR * 2);
+            g.FillEllipse(fill, ring);
+            g.DrawEllipse(solid, ring);
+
+            g.DrawLine(solid, screen.X - crossHalf, screen.Y, screen.X + crossHalf, screen.Y);
+            g.DrawLine(solid, screen.X, screen.Y - crossHalf, screen.X, screen.Y + crossHalf);
+
+            if (Performance.ShowPointerGuides)
             {
-                string text = crystal.Index.ToString();
-                SizeF textSize = g.MeasureString(text, font);
-
-                // Проверяем, помещается ли текст в кристалл
-                if (textSize.Width > width * 0.8f || textSize.Height > height * 0.8f)
-                    return;
-
-                float textX = crystal.DisplayX - textSize.Width / 2;
-                float textY = crystal.DisplayY - textSize.Height / 2;
-                g.DrawString(text, font, textBrush, textX, textY);
+                float rPx = (_wafer.WaferDiameter / 2f) * scale;
+                float left = center.X - rPx, right = center.X + rPx;
+                float top = center.Y - rPx, bottom = center.Y + rPx;
+                g.DrawLine(dashed, left, screen.Y, right, screen.Y);
+                g.DrawLine(dashed, screen.X, top, screen.X, bottom);
             }
         }
 
-        /// <summary>
-        /// Отрисовка UI элементов поверх основного содержимого
-        /// </summary>
-        private void DrawUIOverlay(Graphics g, int width, int height)
+        // ---------- Overlay (экранные координаты) ----------
+        private void DrawOverlay(Graphics g, int width, int height)
         {
-            // Прямоугольник выделения
-            DrawSelectionRectangle(g);
-
-            // Информация о масштабе
+            DrawSelection(g);
             DrawZoomInfo(g, width, height);
         }
 
-        /// <summary>
-        /// Отрисовка прямоугольника выделения
-        /// </summary>
-        private void DrawSelectionRectangle(Graphics g)
+        private void DrawSelection(Graphics g)
         {
-            var selectionRect = mouseController.GetSelectionRectangle();
-            if (!selectionRect.IsEmpty)
-            {
-                using (Pen selectionPen = new Pen(Color.FromArgb(128, Color.Blue), 2))
-                {
-                    selectionPen.DashStyle = DashStyle.Dash;
-                    g.DrawRectangle(selectionPen, selectionRect);
-                }
+            var r = _mouse.GetSelectionRectangle();
+            if (r.IsEmpty) return;
 
-                using (Brush selectionBrush = new SolidBrush(Color.FromArgb(30, Color.Blue)))
-                {
-                    g.FillRectangle(selectionBrush, selectionRect);
-                }
-            }
+            using var pen = GetPen(Color.FromArgb(128, Color.Blue), 2f, DashStyle.Dash);
+            using var br = GetBrush(Color.FromArgb(30, Color.Blue));
+            g.FillRectangle(br, r);
+            g.DrawRectangle(pen, r);
         }
 
-        /// <summary>
-        /// Отображение информации о масштабе
-        /// </summary>
         private void DrawZoomInfo(Graphics g, int width, int height)
         {
-            string zoomText = $"Масштаб: {zoomPanController.ZoomFactor:F1}x";
-            using (Font font = new Font("Arial", 10))
-            using (Brush brush = new SolidBrush(Color.Black))
-            {
-                SizeF textSize = g.MeasureString(zoomText, font);
-                float x = width - textSize.Width - 10;
-                float y = height - textSize.Height - 10;
+            if (!Performance.ShowZoomInfo) return;
 
-                using (Brush bgBrush = new SolidBrush(Color.FromArgb(200, Color.White)))
-                {
-                    g.FillRectangle(bgBrush, x - 5, y - 5, textSize.Width + 10, textSize.Height + 10);
-                }
+            string text = $"Масштаб: {_zoom.ZoomFactor:F1}x";
+            using var font = GetFont(QuantizeFontSize(10f));
+            using var fg = GetBrush(Color.Black);
+            using var bg = GetBrush(Color.FromArgb(200, Color.White));
 
-                g.DrawString(zoomText, font, brush, x, y);
-            }
+            var size = g.MeasureString(text, font);
+            float x = width - size.Width - 10;
+            float y = height - size.Height - 10;
+            g.FillRectangle(bg, x - 5, y - 5, size.Width + 10, size.Height + 10);
+            g.DrawString(text, font, fg, new PointF(x, y));
         }
 
-        /// <summary>
-        /// Получение видимой области с учетом трансформаций
-        /// </summary>
+        // ---------- Геометрия видимости ----------
         private RectangleF GetVisibleArea(int width, int height)
         {
-            PointF topLeft = zoomPanController.TransformPoint(new PointF(0, 0));
-            PointF bottomRight = zoomPanController.TransformPoint(new PointF(width, height));
-
-            return new RectangleF(
-                topLeft.X,
-                topLeft.Y,
-                bottomRight.X - topLeft.X,
-                bottomRight.Y - topLeft.Y
-            );
+            var tl = _zoom.TransformPoint(new PointF(0, 0));
+            var br = _zoom.TransformPoint(new PointF(width, height));
+            return new RectangleF(tl.X, tl.Y, br.X - tl.X, br.Y - tl.Y);
         }
 
-        /// <summary>
-        /// Проверка, находится ли кристалл в видимой области
-        /// </summary>
-        private bool IsInVisibleArea(Crystal crystal, RectangleF visibleArea)
+        private static bool IsInVisibleArea(Crystal c, RectangleF area)
         {
-            return crystal.DisplayLeft <= visibleArea.Right &&
-                   crystal.DisplayRight >= visibleArea.Left &&
-                   crystal.DisplayTop <= visibleArea.Bottom &&
-                   crystal.DisplayBottom >= visibleArea.Top;
+            return c.DisplayLeft <= area.Right &&
+                   c.DisplayRight >= area.Left &&
+                   c.DisplayTop <= area.Bottom &&
+                   c.DisplayBottom >= area.Top;
+        }
+
+        // ---------- Кэш ресурсов ----------
+        private SolidBrush GetBrush(Color color)
+        {
+            if (!_brushCache.TryGetValue(color, out var b))
+                _brushCache[color] = b = new SolidBrush(color);
+            return b;
+        }
+
+        private Pen GetPen(Color color, float width, DashStyle style = DashStyle.Solid)
+        {
+            var key = (color, width, style);
+            if (!_penCache.TryGetValue(key, out var p))
+            {
+                p = new Pen(color, width) { DashStyle = style };
+                _penCache[key] = p;
+            }
+            return p;
+        }
+
+        private Font GetFont(float size)
+        {
+            if (!_fontCache.TryGetValue(size, out var f))
+                _fontCache[size] = f = new Font("Arial", size);
+            return f;
+        }
+
+        // ---------- IDisposable ----------
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed) return;
+            if (disposing)
+            {
+                foreach (var b in _brushCache.Values) b?.Dispose();
+                foreach (var p in _penCache.Values) p?.Dispose();
+                foreach (var f in _fontCache.Values) f?.Dispose();
+                _brushCache.Clear();
+                _penCache.Clear();
+                _fontCache.Clear();
+            }
+            _disposed = true;
+        }
+    }
+
+    /// <summary> Настройки производительности/визуализации. </summary>
+    public class DrawingPerformanceSettings
+    {
+        public bool HighQualityRendering { get; set; } = true;
+        public bool ShowPointerGuides { get; set; } = true;
+        public bool ShowZoomInfo { get; set; } = true;
+
+        /// <summary> Клип по окружности вафли. </summary>
+        public bool ClipToWafer { get; set; } = true;
+
+        /// <summary> Сглаживание линий прямоугольников отключать для скорости. </summary>
+        public bool FastGridLines { get; set; } = true;
+
+        /// <summary> Лимит кристаллов за кадр. </summary>
+        public int MaxVisibleCrystals { get; set; } = 10000;
+
+        /// <summary> Минимальные размеры ячейки (px) для рисования номеров. </summary>
+        public float MinCellPixelsForNumbers { get; set; } = 12f;
+    }
+
+    /// <summary> Состояние рендеринга кристалла (для батч-рендеринга). </summary>
+    public readonly struct CrystalRenderState : IEquatable<CrystalRenderState>
+    {
+        public CrystalRenderState(bool isSelected, bool showNumber)
+        {
+            IsSelected = isSelected;
+            ShowNumber = showNumber;
+        }
+
+        public bool IsSelected { get; }
+        public bool ShowNumber { get; }
+
+        public bool Equals(CrystalRenderState other) =>
+            IsSelected == other.IsSelected && ShowNumber == other.ShowNumber;
+
+        public override bool Equals(object obj) =>
+            obj is CrystalRenderState s && Equals(s);
+
+        public override int GetHashCode()
+        {
+            unchecked { return (IsSelected.GetHashCode() * 397) ^ ShowNumber.GetHashCode(); }
         }
     }
 }

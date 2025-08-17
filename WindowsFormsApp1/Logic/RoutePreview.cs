@@ -7,15 +7,10 @@ using CrystalTable.Data;
 
 namespace CrystalTable.Logic
 {
-    /// <summary>
-    /// Класс для предварительного просмотра маршрута сканирования
-    /// </summary>
+    /// <summary>Предварительный просмотр маршрута сканирования</summary>
     public class RoutePreview
     {
-        // Текущий маршрут
         private List<Crystal> route;
-
-        // Текущий шаг в маршруте для анимации
         private int currentStep = 0;
 
         // Настройки отображения
@@ -23,46 +18,25 @@ namespace CrystalTable.Logic
         private bool showArrows = true;
         private bool animateRoute = false;
 
-        // Таймер для анимации
-        private System.Windows.Forms.Timer animationTimer;
+        private readonly System.Windows.Forms.Timer animationTimer;
 
-        /// <summary>
-        /// Событие изменения текущего шага маршрута
-        /// </summary>
         public event EventHandler RouteStepChanged;
 
-        /// <summary>
-        /// Текущий маршрут
-        /// </summary>
         public List<Crystal> Route => route;
-
-        /// <summary>
-        /// Текущий шаг в маршруте
-        /// </summary>
         public int CurrentStep => currentStep;
-
-        /// <summary>
-        /// Общее количество шагов в маршруте
-        /// </summary>
         public int TotalSteps => route?.Count ?? 0;
 
-        /// <summary>
-        /// Конструктор
-        /// </summary>
         public RoutePreview()
         {
-            // Инициализация таймера для анимации
-            animationTimer = new System.Windows.Forms.Timer();
-            animationTimer.Interval = 500; // 500мс между шагами
+            animationTimer = new System.Windows.Forms.Timer
+            {
+                Interval = 500 // мс между шагами
+            };
             animationTimer.Tick += AnimationTimer_Tick;
         }
 
-        /// <summary>
-        /// Генерирует оптимальный маршрут сканирования
-        /// </summary>
-        /// <param name="crystals">Список кристаллов для маршрутизации</param>
-        /// <param name="routeType">Тип маршрута</param>
-        /// <returns>Упорядоченный список кристаллов</returns>
+        // ==== Генерация маршрутов (на будущее; сейчас сетка строится в контроллере) ====
+
         public List<Crystal> GenerateScanRoute(List<Crystal> crystals, RouteType routeType)
         {
             if (crystals == null || crystals.Count == 0)
@@ -70,87 +44,51 @@ namespace CrystalTable.Logic
 
             switch (routeType)
             {
-                case RouteType.RowByRow:
-                    return GenerateRowByRowRoute(crystals);
-
-                case RouteType.Spiral:
-                    return GenerateSpiralRoute(crystals);
-
-                case RouteType.Shortest:
-                    return GenerateShortestPathRoute(crystals);
-
-                case RouteType.SnakePattern:
-                    return GenerateSnakePatternRoute(crystals);
-
-                case RouteType.OutsideIn:
-                    return GenerateOutsideInRoute(crystals);
-
-                default:
-                    return crystals.ToList();
+                case RouteType.RowByRow: return GenerateRowByRowRoute(crystals);
+                case RouteType.Spiral: return GenerateSpiralRoute(crystals);
+                case RouteType.Shortest: return GenerateShortestPathRoute(crystals);
+                case RouteType.SnakePattern: return GenerateSnakePatternRoute(crystals);
+                case RouteType.OutsideIn: return GenerateOutsideInRoute(crystals);
+                default: return crystals.ToList();
             }
         }
 
-        /// <summary>
-        /// Генерирует маршрут построчного сканирования (зигзаг)
-        /// </summary>
         private List<Crystal> GenerateRowByRowRoute(List<Crystal> crystals)
         {
             var result = new List<Crystal>();
-
-            // Группируем кристаллы по строкам (по Y координате)
             var rows = crystals
-                .GroupBy(c => Math.Round(c.RealY, 1)) // Округляем для группировки
+                .GroupBy(c => Math.Round(c.RealY, 1))
                 .OrderBy(g => g.Key)
                 .ToList();
 
             bool reverseRow = false;
-
             foreach (var row in rows)
             {
                 var rowCrystals = row.OrderBy(c => c.RealX).ToList();
-
-                // Каждую вторую строку проходим в обратном направлении
-                if (reverseRow)
-                {
-                    rowCrystals.Reverse();
-                }
-
+                if (reverseRow) rowCrystals.Reverse();
                 result.AddRange(rowCrystals);
                 reverseRow = !reverseRow;
             }
-
             return result;
         }
 
-        /// <summary>
-        /// Генерирует спиральный маршрут от центра к краю
-        /// </summary>
         private List<Crystal> GenerateSpiralRoute(List<Crystal> crystals)
         {
-            // Сортируем по расстоянию от центра и углу
             return crystals.OrderBy(c =>
             {
-                double distance = Math.Sqrt(c.RealX * c.RealX + c.RealY * c.RealY);
-                double angle = Math.Atan2(c.RealY, c.RealX);
-
-                // Комбинируем расстояние и угол для спирального порядка
-                return distance * 10 + angle;
+                double d = Math.Sqrt(c.RealX * c.RealX + c.RealY * c.RealY);
+                double a = Math.Atan2(c.RealY, c.RealX);
+                return d * 10 + a;
             }).ToList();
         }
 
-        /// <summary>
-        /// Генерирует маршрут с минимальным общим расстоянием
-        /// (упрощенный алгоритм ближайшего соседа)
-        /// </summary>
         private List<Crystal> GenerateShortestPathRoute(List<Crystal> crystals)
         {
-            if (crystals.Count <= 2)
-                return crystals.ToList();
+            if (crystals.Count <= 2) return crystals.ToList();
 
             var result = new List<Crystal>();
             var remaining = crystals.ToList();
 
-            // Начинаем с кристалла ближайшего к центру
             var current = remaining
                 .OrderBy(c => Math.Sqrt(c.RealX * c.RealX + c.RealY * c.RealY))
                 .First();
@@ -158,72 +96,56 @@ namespace CrystalTable.Logic
             result.Add(current);
             remaining.Remove(current);
 
-            // Жадный алгоритм: всегда выбираем ближайший кристалл
             while (remaining.Count > 0)
             {
                 var nearest = remaining.OrderBy(c =>
                     Math.Sqrt(Math.Pow(c.RealX - current.RealX, 2) +
-                             Math.Pow(c.RealY - current.RealY, 2))).First();
+                              Math.Pow(c.RealY - current.RealY, 2))).First();
 
                 result.Add(nearest);
                 remaining.Remove(nearest);
                 current = nearest;
             }
-
             return result;
         }
 
-        /// <summary>
-        /// Генерирует змеевидный маршрут (более плавный зигзаг)
-        /// </summary>
         private List<Crystal> GenerateSnakePatternRoute(List<Crystal> crystals)
         {
             var result = new List<Crystal>();
-
-            // Делим на вертикальные колонки
             var columns = crystals
                 .GroupBy(c => Math.Round(c.RealX, 1))
                 .OrderBy(g => g.Key)
                 .ToList();
 
-            bool reverseColumn = false;
-
-            foreach (var column in columns)
+            bool reverse = false;
+            foreach (var col in columns)
             {
-                var columnCrystals = column.OrderBy(c => c.RealY).ToList();
-
-                if (reverseColumn)
-                {
-                    columnCrystals.Reverse();
-                }
-
-                result.AddRange(columnCrystals);
-                reverseColumn = !reverseColumn;
+                var list = col.OrderBy(c => c.RealY).ToList();
+                if (reverse) list.Reverse();
+                result.AddRange(list);
+                reverse = !reverse;
             }
-
             return result;
         }
 
-        /// <summary>
-        /// Генерирует маршрут от края к центру
-        /// </summary>
         private List<Crystal> GenerateOutsideInRoute(List<Crystal> crystals)
         {
-            // Сортируем по расстоянию от центра (от большего к меньшему)
             return crystals
                 .OrderByDescending(c => Math.Sqrt(c.RealX * c.RealX + c.RealY * c.RealY))
                 .ToList();
         }
 
+        // ==== Рисование ====
+
         /// <summary>
-        /// Рисует предварительный просмотр маршрута
+        /// Рисует предварительный просмотр маршрута (совместимо с вызовом из Form1.Drawing.cs)
         /// </summary>
         public void DrawRoutePreview(Graphics g, List<Crystal> crystals,
-            float scaleFactor, float centerX, float centerY)
+                                     float scaleFactor, float centerX, float centerY)
         {
+            if (g == null) return;
             if (route == null || route.Count < 2) return;
 
-            // Настройки рисования
             using (Pen routePen = new Pen(Color.Red, 2))
             using (Pen highlightPen = new Pen(Color.Orange, 3))
             using (Font font = new Font("Arial", 8))
@@ -232,7 +154,7 @@ namespace CrystalTable.Logic
                 routePen.StartCap = LineCap.Round;
                 routePen.EndCap = LineCap.Round;
 
-                // Рисуем линии маршрута
+                // линии маршрута
                 for (int i = 0; i < route.Count - 1; i++)
                 {
                     var from = route[i];
@@ -243,177 +165,123 @@ namespace CrystalTable.Logic
                     float x2 = to.RealX * scaleFactor + centerX;
                     float y2 = to.RealY * scaleFactor + centerY;
 
-                    // Выделяем текущий сегмент при анимации
                     if (animateRoute && i == currentStep)
-                    {
                         g.DrawLine(highlightPen, x1, y1, x2, y2);
-                    }
                     else
-                    {
                         g.DrawLine(routePen, x1, y1, x2, y2);
-                    }
 
-                    // Рисуем стрелку направления
-                    if (showArrows && i % 5 == 0) // Каждая 5-я стрелка для читаемости
-                    {
+                    if (showArrows && i % 5 == 0) // каждая 5-я стрелка
                         DrawArrow(g, x1, y1, x2, y2, routePen.Color);
-                    }
                 }
 
-                // Рисуем номера порядка на кристаллах
+                // номера первых точек
                 if (showNumbers)
                 {
                     using (Brush numberBrush = new SolidBrush(Color.DarkRed))
                     using (Brush bgBrush = new SolidBrush(Color.FromArgb(200, Color.White)))
                     {
-                        for (int i = 0; i < Math.Min(route.Count, 20); i++) // Первые 20
+                        for (int i = 0; i < Math.Min(route.Count, 20); i++)
                         {
-                            var crystal = route[i];
-                            float x = crystal.RealX * scaleFactor + centerX;
-                            float y = crystal.RealY * scaleFactor + centerY;
+                            var c = route[i];
+                            float x = c.RealX * scaleFactor + centerX;
+                            float y = c.RealY * scaleFactor + centerY;
 
-                            string number = (i + 1).ToString();
-                            SizeF textSize = g.MeasureString(number, font);
+                            string num = (i + 1).ToString();
+                            SizeF sz = g.MeasureString(num, font);
 
-                            // Фон для числа
-                            g.FillEllipse(bgBrush,
-                                x - textSize.Width / 2 - 2,
-                                y - textSize.Height / 2 - 2,
-                                textSize.Width + 4,
-                                textSize.Height + 4);
-
-                            // Число
-                            g.DrawString(number, font, numberBrush,
-                                x - textSize.Width / 2,
-                                y - textSize.Height / 2);
+                            g.FillEllipse(bgBrush, x - sz.Width / 2 - 2, y - sz.Height / 2 - 2, sz.Width + 4, sz.Height + 4);
+                            g.DrawString(num, font, numberBrush, x - sz.Width / 2, y - sz.Height / 2);
                         }
                     }
                 }
 
-                // Подсвечиваем текущий кристалл при анимации
+                // подсветка текущей точки при анимации + прогресс
                 if (animateRoute && currentStep < route.Count)
                 {
-                    var current = route[currentStep];
-                    float x = current.RealX * scaleFactor + centerX;
-                    float y = current.RealY * scaleFactor + centerY;
+                    var cur = route[currentStep];
+                    float x = cur.RealX * scaleFactor + centerX;
+                    float y = cur.RealY * scaleFactor + centerY;
 
-                    using (Brush highlightBrush = new SolidBrush(Color.FromArgb(128, Color.Yellow)))
-                    {
-                        g.FillEllipse(highlightBrush, x - 15, y - 15, 30, 30);
-                    }
+                    using (Brush hb = new SolidBrush(Color.FromArgb(128, Color.Yellow)))
+                        g.FillEllipse(hb, x - 15, y - 15, 30, 30);
 
-                    // Рисуем прогресс
                     DrawProgress(g, centerX, centerY);
                 }
 
-                // Отображаем статистику маршрута
                 DrawRouteStatistics(g);
             }
         }
 
-        /// <summary>
-        /// Рисует стрелку направления
-        /// </summary>
         private void DrawArrow(Graphics g, float x1, float y1, float x2, float y2, Color color)
         {
             float angle = (float)Math.Atan2(y2 - y1, x2 - x1);
-            float arrowLength = 10;
-            float arrowAngle = (float)(Math.PI / 6); // 30 градусов
+            float L = 10f;
+            float A = (float)(Math.PI / 6); // 30°
 
-            // Находим середину линии для размещения стрелки
-            float midX = (x1 + x2) / 2;
-            float midY = (y1 + y2) / 2;
+            float midX = (x1 + x2) / 2f;
+            float midY = (y1 + y2) / 2f;
 
-            using (Pen arrowPen = new Pen(color, 2))
+            using (Pen p = new Pen(color, 2))
             {
-                arrowPen.StartCap = LineCap.Round;
-                arrowPen.EndCap = LineCap.Round;
+                p.StartCap = LineCap.Round;
+                p.EndCap = LineCap.Round;
 
-                g.DrawLine(arrowPen,
-                    midX,
-                    midY,
-                    midX - arrowLength * (float)Math.Cos(angle - arrowAngle),
-                    midY - arrowLength * (float)Math.Sin(angle - arrowAngle));
-
-                g.DrawLine(arrowPen,
-                    midX,
-                    midY,
-                    midX - arrowLength * (float)Math.Cos(angle + arrowAngle),
-                    midY - arrowLength * (float)Math.Sin(angle + arrowAngle));
+                g.DrawLine(p, midX, midY, midX - L * (float)Math.Cos(angle - A), midY - L * (float)Math.Sin(angle - A));
+                g.DrawLine(p, midX, midY, midX - L * (float)Math.Cos(angle + A), midY - L * (float)Math.Sin(angle + A));
             }
         }
 
-        /// <summary>
-        /// Отображает прогресс прохождения маршрута
-        /// </summary>
         private void DrawProgress(Graphics g, float centerX, float centerY)
         {
             if (route == null || route.Count == 0) return;
 
-            string progressText = $"Шаг {currentStep + 1} из {route.Count}";
+            string text = $"Шаг {currentStep + 1} из {route.Count}";
             float progress = (float)(currentStep + 1) / route.Count;
 
             using (Font font = new Font("Arial", 10, FontStyle.Bold))
-            using (Brush textBrush = new SolidBrush(Color.Black))
-            using (Brush bgBrush = new SolidBrush(Color.FromArgb(200, Color.White)))
-            using (Brush progressBrush = new SolidBrush(Color.LightGreen))
-            using (Pen borderPen = new Pen(Color.DarkGray, 1))
+            using (Brush tb = new SolidBrush(Color.Black))
+            using (Brush bg = new SolidBrush(Color.FromArgb(200, Color.White)))
+            using (Brush pb = new SolidBrush(Color.LightGreen))
+            using (Pen border = new Pen(Color.DarkGray, 1))
             {
-                // Позиция прогресс-бара
-                float barWidth = 200;
-                float barHeight = 20;
-                float x = 10;
-                float y = 10;
+                float barW = 200, barH = 20, x = 10, y = 10;
+                g.FillRectangle(bg, x, y, barW + 60, barH + 30);
+                g.DrawRectangle(border, x, y, barW + 60, barH + 30);
 
-                // Фон
-                g.FillRectangle(bgBrush, x, y, barWidth + 60, barHeight + 30);
-                g.DrawRectangle(borderPen, x, y, barWidth + 60, barHeight + 30);
+                g.DrawRectangle(border, x + 10, y + 25, barW, barH);
+                g.FillRectangle(pb, x + 10, y + 25, barW * progress, barH);
 
-                // Прогресс-бар
-                g.DrawRectangle(borderPen, x + 10, y + 25, barWidth, barHeight);
-                g.FillRectangle(progressBrush, x + 10, y + 25, barWidth * progress, barHeight);
-
-                // Текст
-                g.DrawString(progressText, font, textBrush, x + 10, y + 5);
+                g.DrawString(text, font, tb, x + 10, y + 5);
             }
         }
 
-        /// <summary>
-        /// Отображает статистику маршрута
-        /// </summary>
         private void DrawRouteStatistics(Graphics g)
         {
             if (route == null || route.Count < 2) return;
 
-            // Вычисляем общую длину маршрута
-            float totalDistance = 0;
+            float total = 0f;
             for (int i = 0; i < route.Count - 1; i++)
             {
-                var from = route[i];
-                var to = route[i + 1];
-                totalDistance += (float)Math.Sqrt(
-                    Math.Pow(to.RealX - from.RealX, 2) +
-                    Math.Pow(to.RealY - from.RealY, 2));
+                var a = route[i];
+                var b = route[i + 1];
+                total += (float)Math.Sqrt(Math.Pow(b.RealX - a.RealX, 2) + Math.Pow(b.RealY - a.RealY, 2));
             }
 
-            string stats = $"Длина маршрута: {totalDistance:F1} мм";
+            string stats = $"Длина маршрута: {total:F1} мм";
 
             using (Font font = new Font("Arial", 9))
-            using (Brush textBrush = new SolidBrush(Color.Black))
-            using (Brush bgBrush = new SolidBrush(Color.FromArgb(200, Color.White)))
+            using (Brush tb = new SolidBrush(Color.Black))
+            using (Brush bg = new SolidBrush(Color.FromArgb(200, Color.White)))
             {
-                SizeF textSize = g.MeasureString(stats, font);
-                float x = 10;
-                float y = 70;
-
-                g.FillRectangle(bgBrush, x, y, textSize.Width + 10, textSize.Height + 10);
-                g.DrawString(stats, font, textBrush, x + 5, y + 5);
+                SizeF sz = g.MeasureString(stats, font);
+                float x = 10, y = 70;
+                g.FillRectangle(bg, x, y, sz.Width + 10, sz.Height + 10);
+                g.DrawString(stats, font, tb, x + 5, y + 5);
             }
         }
 
-        /// <summary>
-        /// Устанавливает маршрут для предпросмотра
-        /// </summary>
+        // ==== Управление ====
+
         public void SetRoute(List<Crystal> newRoute)
         {
             route = newRoute;
@@ -421,11 +289,9 @@ namespace CrystalTable.Logic
             OnRouteStepChanged();
         }
 
-        /// <summary>
-        /// Переход к следующему шагу маршрута
-        /// </summary>
         public void NextStep()
         {
+            if (route == null || route.Count == 0) return;
             if (currentStep < route.Count - 1)
             {
                 currentStep++;
@@ -433,11 +299,9 @@ namespace CrystalTable.Logic
             }
         }
 
-        /// <summary>
-        /// Переход к предыдущему шагу маршрута
-        /// </summary>
         public void PreviousStep()
         {
+            if (route == null || route.Count == 0) return;
             if (currentStep > 0)
             {
                 currentStep--;
@@ -445,79 +309,38 @@ namespace CrystalTable.Logic
             }
         }
 
-        /// <summary>
-        /// Сброс к началу маршрута
-        /// </summary>
         public void Reset()
         {
             currentStep = 0;
             OnRouteStepChanged();
         }
 
-        /// <summary>
-        /// Запускает анимацию маршрута
-        /// </summary>
         public void StartAnimation()
         {
             animateRoute = true;
             animationTimer.Start();
         }
 
-        /// <summary>
-        /// Останавливает анимацию
-        /// </summary>
         public void StopAnimation()
         {
             animateRoute = false;
             animationTimer.Stop();
         }
 
-        /// <summary>
-        /// Обработчик таймера анимации
-        /// </summary>
         private void AnimationTimer_Tick(object sender, EventArgs e)
         {
             NextStep();
-
-            // Если достигли конца, начинаем сначала
-            if (currentStep >= route.Count - 1)
-            {
+            if (route != null && currentStep >= route.Count - 1)
                 Reset();
-            }
         }
 
-        /// <summary>
-        /// Вызывает событие изменения шага маршрута
-        /// </summary>
-        private void OnRouteStepChanged()
-        {
-            RouteStepChanged?.Invoke(this, EventArgs.Empty);
-        }
+        private void OnRouteStepChanged() => RouteStepChanged?.Invoke(this, EventArgs.Empty);
 
-        /// <summary>
-        /// Настройки отображения
-        /// </summary>
-        public bool ShowNumbers
-        {
-            get => showNumbers;
-            set => showNumbers = value;
-        }
+        // ==== Настройки отображения ====
+        public bool ShowNumbers { get => showNumbers; set => showNumbers = value; }
+        public bool ShowArrows { get => showArrows; set => showArrows = value; }
+        public bool AnimateRoute { get => animateRoute; set => animateRoute = value; }
 
-        public bool ShowArrows
-        {
-            get => showArrows;
-            set => showArrows = value;
-        }
-
-        public bool AnimateRoute
-        {
-            get => animateRoute;
-            set => animateRoute = value;
-        }
-
-        /// <summary>
-        /// Получает информацию о текущем кристалле
-        /// </summary>
         public Crystal GetCurrentCrystal()
         {
             if (route != null && currentStep < route.Count)
@@ -526,34 +349,12 @@ namespace CrystalTable.Logic
         }
     }
 
-    /// <summary>
-    /// Типы маршрутов сканирования
-    /// </summary>
     public enum RouteType
     {
-        /// <summary>
-        /// Построчное сканирование (зигзаг по строкам)
-        /// </summary>
         RowByRow,
-
-        /// <summary>
-        /// Спиральное сканирование от центра
-        /// </summary>
         Spiral,
-
-        /// <summary>
-        /// Кратчайший путь (приближенный)
-        /// </summary>
         Shortest,
-
-        /// <summary>
-        /// Змеевидный паттерн (по колонкам)
-        /// </summary>
         SnakePattern,
-
-        /// <summary>
-        /// От края к центру
-        /// </summary>
         OutsideIn
     }
 }
