@@ -78,7 +78,6 @@
     </Compile>
     <Compile Include="Logic\CommandHistory.cs" />
     <Compile Include="Logic\CrystalManager.cs" />
-    <Compile Include="Logic\CrystalMouseHandler.cs" />
     <Compile Include="Logic\CrystalCache.cs" />
     <Compile Include="Logic\DataExporter.cs" />
     <Compile Include="Logic\RoutePreview.cs" />
