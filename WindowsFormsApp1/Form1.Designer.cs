@@ -153,7 +153,7 @@
             this.toolStripMenuItem2,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(59, 24);
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(59, 26);
             this.fileToolStripMenuItem.Text = "Файл";
             // 
             // newToolStripMenuItem
@@ -162,6 +162,7 @@
             this.newToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
             this.newToolStripMenuItem.Size = new System.Drawing.Size(226, 26);
             this.newToolStripMenuItem.Text = "Новый";
+            this.newToolStripMenuItem.Click += new System.EventHandler(this.newToolStripMenuItem_Click);
             // 
             // openToolStripMenuItem
             // 
@@ -169,6 +170,7 @@
             this.openToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
             this.openToolStripMenuItem.Size = new System.Drawing.Size(226, 26);
             this.openToolStripMenuItem.Text = "Открыть...";
+            this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
             // saveToolStripMenuItem
             // 
@@ -176,12 +178,14 @@
             this.saveToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
             this.saveToolStripMenuItem.Size = new System.Drawing.Size(226, 26);
             this.saveToolStripMenuItem.Text = "Сохранить";
+            this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
             // 
             // saveAsToolStripMenuItem
             // 
             this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
             this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(226, 26);
             this.saveAsToolStripMenuItem.Text = "Сохранить как...";
+            this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.saveAsToolStripMenuItem_Click);
             // 
             // toolStripMenuItem1
             // 
@@ -194,6 +198,7 @@
             this.exportToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.E)));
             this.exportToolStripMenuItem.Size = new System.Drawing.Size(226, 26);
             this.exportToolStripMenuItem.Text = "Экспорт...";
+            this.exportToolStripMenuItem.Click += new System.EventHandler(this.exportToolStripMenuItem_Click);
             // 
             // importToolStripMenuItem
             // 
@@ -201,6 +206,7 @@
             this.importToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.I)));
             this.importToolStripMenuItem.Size = new System.Drawing.Size(226, 26);
             this.importToolStripMenuItem.Text = "Импорт...";
+            this.importToolStripMenuItem.Click += new System.EventHandler(this.importToolStripMenuItem_Click);
             // 
             // toolStripMenuItem2
             // 
@@ -213,6 +219,7 @@
             this.exitToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
             this.exitToolStripMenuItem.Size = new System.Drawing.Size(226, 26);
             this.exitToolStripMenuItem.Text = "Выход";
+            this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
             // editToolStripMenuItem
             // 
@@ -223,7 +230,7 @@
             this.selectAllToolStripMenuItem,
             this.clearSelectionToolStripMenuItem});
             this.editToolStripMenuItem.Name = "editToolStripMenuItem";
-            this.editToolStripMenuItem.Size = new System.Drawing.Size(74, 24);
+            this.editToolStripMenuItem.Size = new System.Drawing.Size(74, 26);
             this.editToolStripMenuItem.Text = "Правка";
             // 
             // undoToolStripMenuItem
@@ -232,6 +239,7 @@
             this.undoToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Z)));
             this.undoToolStripMenuItem.Size = new System.Drawing.Size(276, 26);
             this.undoToolStripMenuItem.Text = "Отменить";
+            this.undoToolStripMenuItem.Click += new System.EventHandler(this.undoToolStripMenuItem_Click);
             // 
             // redoToolStripMenuItem
             // 
@@ -239,6 +247,7 @@
             this.redoToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Y)));
             this.redoToolStripMenuItem.Size = new System.Drawing.Size(276, 26);
             this.redoToolStripMenuItem.Text = "Повторить";
+            this.redoToolStripMenuItem.Click += new System.EventHandler(this.redoToolStripMenuItem_Click);
             // 
             // toolStripMenuItem3
             // 
@@ -251,6 +260,7 @@
             this.selectAllToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.A)));
             this.selectAllToolStripMenuItem.Size = new System.Drawing.Size(276, 26);
             this.selectAllToolStripMenuItem.Text = "Выделить всё";
+            this.selectAllToolStripMenuItem.Click += new System.EventHandler(this.selectAllToolStripMenuItem_Click);
             // 
             // clearSelectionToolStripMenuItem
             // 
@@ -258,6 +268,7 @@
             this.clearSelectionToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.D)));
             this.clearSelectionToolStripMenuItem.Size = new System.Drawing.Size(276, 26);
             this.clearSelectionToolStripMenuItem.Text = "Снять выделение";
+            this.clearSelectionToolStripMenuItem.Click += new System.EventHandler(this.clearSelectionToolStripMenuItem_Click);
             // 
             // viewToolStripMenuItem
             // 
@@ -269,7 +280,7 @@
             this.zoomOutToolStripMenuItem,
             this.resetZoomToolStripMenuItem});
             this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
-            this.viewToolStripMenuItem.Size = new System.Drawing.Size(49, 24);
+            this.viewToolStripMenuItem.Size = new System.Drawing.Size(49, 26);
             this.viewToolStripMenuItem.Text = "Вид";
             // 
             // showRouteToolStripMenuItem
@@ -279,6 +290,7 @@
             this.showRouteToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.R)));
             this.showRouteToolStripMenuItem.Size = new System.Drawing.Size(295, 26);
             this.showRouteToolStripMenuItem.Text = "Показать маршрут";
+            this.showRouteToolStripMenuItem.Click += new System.EventHandler(this.showRouteToolStripMenuItem_Click);
             // 
             // showStatisticsToolStripMenuItem
             // 
@@ -286,6 +298,7 @@
             this.showStatisticsToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.T)));
             this.showStatisticsToolStripMenuItem.Size = new System.Drawing.Size(295, 26);
             this.showStatisticsToolStripMenuItem.Text = "Показать статистику";
+            this.showStatisticsToolStripMenuItem.Click += new System.EventHandler(this.showStatisticsToolStripMenuItem_Click);
             // 
             // toolStripMenuItem4
             // 
@@ -298,6 +311,7 @@
             this.zoomInToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Oemplus)));
             this.zoomInToolStripMenuItem.Size = new System.Drawing.Size(295, 26);
             this.zoomInToolStripMenuItem.Text = "Увеличить";
+            this.zoomInToolStripMenuItem.Click += new System.EventHandler(this.zoomInToolStripMenuItem_Click);
             // 
             // zoomOutToolStripMenuItem
             // 
@@ -305,6 +319,7 @@
             this.zoomOutToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.OemMinus)));
             this.zoomOutToolStripMenuItem.Size = new System.Drawing.Size(295, 26);
             this.zoomOutToolStripMenuItem.Text = "Уменьшить";
+            this.zoomOutToolStripMenuItem.Click += new System.EventHandler(this.zoomOutToolStripMenuItem_Click);
             // 
             // resetZoomToolStripMenuItem
             // 
@@ -312,6 +327,7 @@
             this.resetZoomToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.D0)));
             this.resetZoomToolStripMenuItem.Size = new System.Drawing.Size(295, 26);
             this.resetZoomToolStripMenuItem.Text = "Сбросить масштаб";
+            this.resetZoomToolStripMenuItem.Click += new System.EventHandler(this.resetZoomToolStripMenuItem_Click);
             // 
             // toolStrip1
             // 
@@ -338,18 +354,22 @@
             // btnUndo
             // 
             this.btnUndo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnUndo.Image = global::CrystalTable.Properties.Resources.undo;
             this.btnUndo.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnUndo.Name = "btnUndo";
             this.btnUndo.Size = new System.Drawing.Size(29, 28);
             this.btnUndo.Text = "Отменить (Ctrl+Z)";
+            this.btnUndo.Click += new System.EventHandler(this.btnUndo_Click);
             // 
             // btnRedo
             // 
             this.btnRedo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnRedo.Image = global::CrystalTable.Properties.Resources.redo;
             this.btnRedo.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnRedo.Name = "btnRedo";
             this.btnRedo.Size = new System.Drawing.Size(29, 28);
             this.btnRedo.Text = "Повторить (Ctrl+Y)";
+            this.btnRedo.Click += new System.EventHandler(this.btnRedo_Click);
             // 
             // toolStripSeparator1
             // 
@@ -359,18 +379,22 @@
             // btnExport
             // 
             this.btnExport.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnExport.Image = global::CrystalTable.Properties.Resources.export;
             this.btnExport.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnExport.Name = "btnExport";
             this.btnExport.Size = new System.Drawing.Size(29, 28);
             this.btnExport.Text = "Экспорт (Ctrl+E)";
+            this.btnExport.Click += new System.EventHandler(this.btnExport_Click);
             // 
             // btnImport
             // 
             this.btnImport.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnImport.Image = global::CrystalTable.Properties.Resources.import;
             this.btnImport.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnImport.Name = "btnImport";
             this.btnImport.Size = new System.Drawing.Size(29, 28);
             this.btnImport.Text = "Импорт (Ctrl+I)";
+            this.btnImport.Click += new System.EventHandler(this.btnImport_Click);
             // 
             // toolStripSeparator2
             // 
@@ -381,18 +405,22 @@
             // 
             this.btnRoutePreview.CheckOnClick = true;
             this.btnRoutePreview.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnRoutePreview.Image = global::CrystalTable.Properties.Resources.route;
             this.btnRoutePreview.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnRoutePreview.Name = "btnRoutePreview";
             this.btnRoutePreview.Size = new System.Drawing.Size(29, 28);
             this.btnRoutePreview.Text = "Маршрут (Ctrl+R)";
+            this.btnRoutePreview.Click += new System.EventHandler(this.btnRoutePreview_Click);
             // 
             // btnStatistics
             // 
             this.btnStatistics.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnStatistics.Image = global::CrystalTable.Properties.Resources.statistics;
             this.btnStatistics.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnStatistics.Name = "btnStatistics";
             this.btnStatistics.Size = new System.Drawing.Size(29, 28);
             this.btnStatistics.Text = "Статистика (Ctrl+T)";
+            this.btnStatistics.Click += new System.EventHandler(this.btnStatistics_Click);
             // 
             // toolStripSeparator3
             // 
@@ -402,26 +430,32 @@
             // btnZoomIn
             // 
             this.btnZoomIn.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnZoomIn.Image = global::CrystalTable.Properties.Resources.zoom_in;
             this.btnZoomIn.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnZoomIn.Name = "btnZoomIn";
             this.btnZoomIn.Size = new System.Drawing.Size(29, 28);
             this.btnZoomIn.Text = "Увеличить (Ctrl++)";
+            this.btnZoomIn.Click += new System.EventHandler(this.btnZoomIn_Click);
             // 
             // btnZoomOut
             // 
             this.btnZoomOut.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnZoomOut.Image = global::CrystalTable.Properties.Resources.zoom_out;
             this.btnZoomOut.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnZoomOut.Name = "btnZoomOut";
             this.btnZoomOut.Size = new System.Drawing.Size(29, 28);
             this.btnZoomOut.Text = "Уменьшить (Ctrl+-)";
+            this.btnZoomOut.Click += new System.EventHandler(this.btnZoomOut_Click);
             // 
             // btnZoomReset
             // 
             this.btnZoomReset.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnZoomReset.Image = global::CrystalTable.Properties.Resources.zoom_reset;
             this.btnZoomReset.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnZoomReset.Name = "btnZoomReset";
             this.btnZoomReset.Size = new System.Drawing.Size(29, 28);
             this.btnZoomReset.Text = "Сбросить масштаб (Ctrl+0)";
+            this.btnZoomReset.Click += new System.EventHandler(this.btnZoomReset_Click);
             // 
             // statusStrip1
             // 
@@ -461,6 +495,10 @@
             this.coordinatesLabel.Size = new System.Drawing.Size(63, 20);
             this.coordinatesLabel.Text = "X: 0, Y: 0";
             // 
+            // MyserialPort
+            // 
+            this.MyserialPort.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(this.MyserialPort_DataReceived);
+            // 
             // mainPanel
             // 
             this.mainPanel.Controls.Add(this.pictureBox1);
@@ -482,8 +520,10 @@
             this.pictureBox1.Size = new System.Drawing.Size(932, 534);
             this.pictureBox1.TabIndex = 1;
             this.pictureBox1.TabStop = false;
-            // ВАЖНО: подписка на существующий метод с точным именем (заглавная P)
             this.pictureBox1.Paint += new System.Windows.Forms.PaintEventHandler(this.PictureBox1_Paint);
+            this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
+            this.pictureBox1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseMove);
+            this.pictureBox1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseUp);
             // 
             // topInfoPanel
             // 
@@ -547,7 +587,7 @@
             // 
             // btnBuildMap
             // 
-            this.btnBuildMap.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.btnBuildMap.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.btnBuildMap.Location = new System.Drawing.Point(9, 196);
             this.btnBuildMap.Name = "btnBuildMap";
@@ -555,6 +595,7 @@
             this.btnBuildMap.TabIndex = 2;
             this.btnBuildMap.Text = "Построить карту";
             this.btnBuildMap.UseVisualStyleBackColor = true;
+            this.btnBuildMap.Click += new System.EventHandler(this.btnBuildMap_Click);
             // 
             // lblRows
             // 
@@ -567,7 +608,7 @@
             // 
             // btnSelectLast
             // 
-            this.btnSelectLast.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.btnSelectLast.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.btnSelectLast.Location = new System.Drawing.Point(9, 57);
             this.btnSelectLast.Name = "btnSelectLast";
@@ -575,6 +616,7 @@
             this.btnSelectLast.TabIndex = 1;
             this.btnSelectLast.Text = "Выбрать последний";
             this.btnSelectLast.UseVisualStyleBackColor = true;
+            this.btnSelectLast.Click += new System.EventHandler(this.btnSelectLast_Click);
             // 
             // lblLastRef
             // 
@@ -596,7 +638,7 @@
             // 
             // btnSelectFirst
             // 
-            this.btnSelectFirst.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.btnSelectFirst.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.btnSelectFirst.Location = new System.Drawing.Point(9, 23);
             this.btnSelectFirst.Name = "btnSelectFirst";
@@ -604,6 +646,7 @@
             this.btnSelectFirst.TabIndex = 0;
             this.btnSelectFirst.Text = "Выбрать первый";
             this.btnSelectFirst.UseVisualStyleBackColor = true;
+            this.btnSelectFirst.Click += new System.EventHandler(this.btnSelectFirst_Click);
             // 
             // lblFirstRef
             // 
@@ -673,6 +716,7 @@
             this.buttonMoveRight.TabIndex = 3;
             this.buttonMoveRight.Text = "→";
             this.buttonMoveRight.UseVisualStyleBackColor = true;
+            this.buttonMoveRight.Click += new System.EventHandler(this.buttonMoveRight_Click);
             // 
             // buttonMoveUp
             // 
@@ -683,6 +727,7 @@
             this.buttonMoveUp.TabIndex = 0;
             this.buttonMoveUp.Text = "↑";
             this.buttonMoveUp.UseVisualStyleBackColor = true;
+            this.buttonMoveUp.Click += new System.EventHandler(this.buttonMoveUp_Click);
             // 
             // buttonMoveLeft
             // 
@@ -693,6 +738,7 @@
             this.buttonMoveLeft.TabIndex = 2;
             this.buttonMoveLeft.Text = "←";
             this.buttonMoveLeft.UseVisualStyleBackColor = true;
+            this.buttonMoveLeft.Click += new System.EventHandler(this.buttonMoveLeft_Click);
             // 
             // buttonMoveDown
             // 
@@ -703,6 +749,7 @@
             this.buttonMoveDown.TabIndex = 1;
             this.buttonMoveDown.Text = "↓";
             this.buttonMoveDown.UseVisualStyleBackColor = true;
+            this.buttonMoveDown.Click += new System.EventHandler(this.buttonMoveDown_Click);
             // 
             // scan
             // 
@@ -713,6 +760,7 @@
             this.scan.TabIndex = 4;
             this.scan.Text = "SCAN";
             this.scan.UseVisualStyleBackColor = true;
+            this.scan.Click += new System.EventHandler(this.scan_Click);
             // 
             // checkBoxDiscreteStep
             // 
@@ -741,7 +789,7 @@
             // 
             // tableLayoutPanel1
             // 
-            this.tableLayoutPanel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.tableLayoutPanel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tableLayoutPanel1.ColumnCount = 2;
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
@@ -768,10 +816,10 @@
             // 
             this.WaferDiameter.Dock = System.Windows.Forms.DockStyle.Fill;
             this.WaferDiameter.Location = new System.Drawing.Point(139, 96);
+            this.WaferDiameter.Mask = "000";
             this.WaferDiameter.Name = "WaferDiameter";
             this.WaferDiameter.Size = new System.Drawing.Size(136, 22);
             this.WaferDiameter.TabIndex = 7;
-            this.WaferDiameter.Mask = "000";
             // 
             // label6
             // 
@@ -813,6 +861,7 @@
             this.loadDataComboBox.Name = "loadDataComboBox";
             this.loadDataComboBox.Size = new System.Drawing.Size(136, 24);
             this.loadDataComboBox.TabIndex = 1;
+            this.loadDataComboBox.SelectedIndexChanged += new System.EventHandler(this.loadDataComboBox_SelectedIndexChanged);
             // 
             // label2
             // 
@@ -855,6 +904,7 @@
             this.Create.TabIndex = 2;
             this.Create.Text = "Создать";
             this.Create.UseVisualStyleBackColor = true;
+            this.Create.Click += new System.EventHandler(this.Create_Click);
             // 
             // checkBoxFillWafer
             // 
@@ -865,6 +915,7 @@
             this.checkBoxFillWafer.TabIndex = 1;
             this.checkBoxFillWafer.Text = "Режим схемы";
             this.checkBoxFillWafer.UseVisualStyleBackColor = true;
+            this.checkBoxFillWafer.CheckedChanged += new System.EventHandler(this.checkBoxFillWafer_CheckedChanged);
             // 
             // groupBoxConnection
             // 
@@ -888,6 +939,7 @@
             this.buttonUpdatePort.TabIndex = 1;
             this.buttonUpdatePort.Text = "🔄";
             this.buttonUpdatePort.UseVisualStyleBackColor = true;
+            this.buttonUpdatePort.Click += new System.EventHandler(this.buttonUpdatePort_Click);
             // 
             // buttonConnect
             // 
@@ -898,10 +950,11 @@
             this.buttonConnect.TabIndex = 2;
             this.buttonConnect.Text = "▶";
             this.buttonConnect.UseVisualStyleBackColor = true;
+            this.buttonConnect.Click += new System.EventHandler(this.buttonConnect_Click);
             // 
             // comboBoxPorts
             // 
-            this.comboBoxPorts.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.comboBoxPorts.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.comboBoxPorts.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxPorts.FormattingEnabled = true;
@@ -937,6 +990,7 @@
             this.saveButton.Name = "saveButton";
             this.saveButton.Size = new System.Drawing.Size(75, 23);
             this.saveButton.TabIndex = 0;
+            this.saveButton.Click += new System.EventHandler(this.SaveButton_Click);
             // 
             // Form1
             // 
@@ -953,6 +1007,8 @@
             this.Name = "Form1";
             this.Text = "CrystalTable - Управление полупроводниковыми пластинами";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
+            this.Resize += new System.EventHandler(this.Form1_Resize);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.toolStrip1.ResumeLayout(false);
@@ -977,70 +1033,6 @@
             this.ResumeLayout(false);
             this.PerformLayout();
 
-            // ====== Подписки на события (оставлены как у тебя) ======
-
-            // Основная форма
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
-            this.Resize += new System.EventHandler(this.Form1_Resize);
-
-            // PictureBox (мышь)
-            this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
-            this.pictureBox1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseMove);
-            this.pictureBox1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseUp);
-
-            // Кнопки
-            this.Create.Click += new System.EventHandler(this.Create_Click);
-            this.saveButton.Click += new System.EventHandler(this.SaveButton_Click);
-            this.checkBoxFillWafer.CheckedChanged += new System.EventHandler(this.checkBoxFillWafer_CheckedChanged);
-
-            // Меню
-            this.newToolStripMenuItem.Click += new System.EventHandler(this.newToolStripMenuItem_Click);
-            this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
-            this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
-            this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.saveAsToolStripMenuItem_Click);
-            this.exportToolStripMenuItem.Click += new System.EventHandler(this.exportToolStripMenuItem_Click);
-            this.importToolStripMenuItem.Click += new System.EventHandler(this.importToolStripMenuItem_Click);
-            this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
-            this.undoToolStripMenuItem.Click += new System.EventHandler(this.undoToolStripMenuItem_Click);
-            this.redoToolStripMenuItem.Click += new System.EventHandler(this.redoToolStripMenuItem_Click);
-            this.selectAllToolStripMenuItem.Click += new System.EventHandler(this.selectAllToolStripMenuItem_Click);
-            this.clearSelectionToolStripMenuItem.Click += new System.EventHandler(this.clearSelectionToolStripMenuItem_Click);
-            this.showRouteToolStripMenuItem.Click += new System.EventHandler(this.showRouteToolStripMenuItem_Click);
-            this.showStatisticsToolStripMenuItem.Click += new System.EventHandler(this.showStatisticsToolStripMenuItem_Click);
-            this.zoomInToolStripMenuItem.Click += new System.EventHandler(this.zoomInToolStripMenuItem_Click);
-            this.zoomOutToolStripMenuItem.Click += new System.EventHandler(this.zoomOutToolStripMenuItem_Click);
-            this.resetZoomToolStripMenuItem.Click += new System.EventHandler(this.resetZoomToolStripMenuItem_Click);
-
-            // Тулбар
-            this.btnUndo.Click += new System.EventHandler(this.btnUndo_Click);
-            this.btnRedo.Click += new System.EventHandler(this.btnRedo_Click);
-            this.btnExport.Click += new System.EventHandler(this.btnExport_Click);
-            this.btnImport.Click += new System.EventHandler(this.btnImport_Click);
-            this.btnRoutePreview.Click += new System.EventHandler(this.btnRoutePreview_Click);
-            this.btnStatistics.Click += new System.EventHandler(this.btnStatistics_Click);
-            this.btnZoomIn.Click += new System.EventHandler(this.btnZoomIn_Click);
-            this.btnZoomOut.Click += new System.EventHandler(this.btnZoomOut_Click);
-            this.btnZoomReset.Click += new System.EventHandler(this.btnZoomReset_Click);
-
-            // COM Порт
-            this.buttonConnect.Click += new System.EventHandler(this.buttonConnect_Click);
-            this.buttonUpdatePort.Click += new System.EventHandler(this.buttonUpdatePort_Click);
-            this.MyserialPort.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(this.MyserialPort_DataReceived);
-
-            // Движение
-            this.buttonMoveLeft.Click += new System.EventHandler(this.buttonMoveLeft_Click);
-            this.buttonMoveRight.Click += new System.EventHandler(this.buttonMoveRight_Click);
-            this.buttonMoveUp.Click += new System.EventHandler(this.buttonMoveUp_Click);
-            this.buttonMoveDown.Click += new System.EventHandler(this.buttonMoveDown_Click);
-            this.scan.Click += new System.EventHandler(this.scan_Click);
-
-            // Калибровка
-            this.btnSelectFirst.Click += new System.EventHandler(this.btnSelectFirst_Click);
-            this.btnSelectLast.Click += new System.EventHandler(this.btnSelectLast_Click);
-            this.btnBuildMap.Click += new System.EventHandler(this.btnBuildMap_Click);
-
-            // Загрузка данных
-            this.loadDataComboBox.SelectedIndexChanged += new System.EventHandler(this.loadDataComboBox_SelectedIndexChanged);
         }
 
         #endregion
