@@ -340,7 +340,7 @@
             this.btnUndo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.btnUndo.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnUndo.Name = "btnUndo";
-            this.btnUndo.Size = new System.Drawing.Size(29, 22);
+            this.btnUndo.Size = new System.Drawing.Size(29, 28);
             this.btnUndo.Text = "Отменить (Ctrl+Z)";
             // 
             // btnRedo
@@ -348,20 +348,20 @@
             this.btnRedo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.btnRedo.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnRedo.Name = "btnRedo";
-            this.btnRedo.Size = new System.Drawing.Size(29, 22);
+            this.btnRedo.Size = new System.Drawing.Size(29, 28);
             this.btnRedo.Text = "Повторить (Ctrl+Y)";
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 31);
             // 
             // btnExport
             // 
             this.btnExport.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.btnExport.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnExport.Name = "btnExport";
-            this.btnExport.Size = new System.Drawing.Size(29, 22);
+            this.btnExport.Size = new System.Drawing.Size(29, 28);
             this.btnExport.Text = "Экспорт (Ctrl+E)";
             // 
             // btnImport
@@ -369,13 +369,13 @@
             this.btnImport.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.btnImport.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnImport.Name = "btnImport";
-            this.btnImport.Size = new System.Drawing.Size(29, 22);
+            this.btnImport.Size = new System.Drawing.Size(29, 28);
             this.btnImport.Text = "Импорт (Ctrl+I)";
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 25);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 31);
             // 
             // btnRoutePreview
             // 
@@ -383,7 +383,7 @@
             this.btnRoutePreview.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.btnRoutePreview.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnRoutePreview.Name = "btnRoutePreview";
-            this.btnRoutePreview.Size = new System.Drawing.Size(29, 22);
+            this.btnRoutePreview.Size = new System.Drawing.Size(29, 28);
             this.btnRoutePreview.Text = "Маршрут (Ctrl+R)";
             // 
             // btnStatistics
@@ -391,20 +391,20 @@
             this.btnStatistics.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.btnStatistics.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnStatistics.Name = "btnStatistics";
-            this.btnStatistics.Size = new System.Drawing.Size(29, 22);
+            this.btnStatistics.Size = new System.Drawing.Size(29, 28);
             this.btnStatistics.Text = "Статистика (Ctrl+T)";
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 31);
             // 
             // btnZoomIn
             // 
             this.btnZoomIn.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.btnZoomIn.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnZoomIn.Name = "btnZoomIn";
-            this.btnZoomIn.Size = new System.Drawing.Size(29, 22);
+            this.btnZoomIn.Size = new System.Drawing.Size(29, 28);
             this.btnZoomIn.Text = "Увеличить (Ctrl++)";
             // 
             // btnZoomOut
@@ -412,7 +412,7 @@
             this.btnZoomOut.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.btnZoomOut.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnZoomOut.Name = "btnZoomOut";
-            this.btnZoomOut.Size = new System.Drawing.Size(29, 22);
+            this.btnZoomOut.Size = new System.Drawing.Size(29, 28);
             this.btnZoomOut.Text = "Уменьшить (Ctrl+-)";
             // 
             // btnZoomReset
@@ -420,7 +420,7 @@
             this.btnZoomReset.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.btnZoomReset.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnZoomReset.Name = "btnZoomReset";
-            this.btnZoomReset.Size = new System.Drawing.Size(29, 22);
+            this.btnZoomReset.Size = new System.Drawing.Size(29, 28);
             this.btnZoomReset.Text = "Сбросить масштаб (Ctrl+0)";
             // 
             // statusStrip1
@@ -482,6 +482,8 @@
             this.pictureBox1.Size = new System.Drawing.Size(932, 534);
             this.pictureBox1.TabIndex = 1;
             this.pictureBox1.TabStop = false;
+            // ВАЖНО: подписка на существующий метод с точным именем (заглавная P)
+            this.pictureBox1.Paint += new System.Windows.Forms.PaintEventHandler(this.PictureBox1_Paint);
             // 
             // topInfoPanel
             // 
@@ -545,7 +547,7 @@
             // 
             // btnBuildMap
             // 
-            this.btnBuildMap.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.btnBuildMap.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.btnBuildMap.Location = new System.Drawing.Point(9, 196);
             this.btnBuildMap.Name = "btnBuildMap";
@@ -565,7 +567,7 @@
             // 
             // btnSelectLast
             // 
-            this.btnSelectLast.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.btnSelectLast.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.btnSelectLast.Location = new System.Drawing.Point(9, 57);
             this.btnSelectLast.Name = "btnSelectLast";
@@ -594,7 +596,7 @@
             // 
             // btnSelectFirst
             // 
-            this.btnSelectFirst.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.btnSelectFirst.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.btnSelectFirst.Location = new System.Drawing.Point(9, 23);
             this.btnSelectFirst.Name = "btnSelectFirst";
@@ -739,7 +741,7 @@
             // 
             // tableLayoutPanel1
             // 
-            this.tableLayoutPanel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.tableLayoutPanel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tableLayoutPanel1.ColumnCount = 2;
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
@@ -766,11 +768,10 @@
             // 
             this.WaferDiameter.Dock = System.Windows.Forms.DockStyle.Fill;
             this.WaferDiameter.Location = new System.Drawing.Point(139, 96);
-            this.WaferDiameter.Mask = "000.0";
             this.WaferDiameter.Name = "WaferDiameter";
             this.WaferDiameter.Size = new System.Drawing.Size(136, 22);
             this.WaferDiameter.TabIndex = 7;
-            this.WaferDiameter.ValidatingType = typeof(int);
+            this.WaferDiameter.Mask = "000";
             // 
             // label6
             // 
@@ -900,7 +901,7 @@
             // 
             // comboBoxPorts
             // 
-            this.comboBoxPorts.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.comboBoxPorts.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.comboBoxPorts.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxPorts.FormattingEnabled = true;
@@ -976,13 +977,13 @@
             this.ResumeLayout(false);
             this.PerformLayout();
 
-           
+            // ====== Подписки на события (оставлены как у тебя) ======
+
             // Основная форма
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
             this.Resize += new System.EventHandler(this.Form1_Resize);
 
-            // PictureBox
-            this.pictureBox1.Paint += new System.Windows.Forms.PaintEventHandler(this.PictureBox1_Paint);
+            // PictureBox (мышь)
             this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
             this.pictureBox1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseMove);
             this.pictureBox1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseUp);
@@ -1040,7 +1041,6 @@
 
             // Загрузка данных
             this.loadDataComboBox.SelectedIndexChanged += new System.EventHandler(this.loadDataComboBox_SelectedIndexChanged);
-
         }
 
         #endregion

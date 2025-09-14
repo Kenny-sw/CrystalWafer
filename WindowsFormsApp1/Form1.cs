@@ -365,28 +365,71 @@ namespace CrystalTable
         // «Создать»
         private void Create_Click(object sender, EventArgs e)
         {
-            if (!uint.TryParse(SizeX.Text.Trim(), out var sizeX) ||
-                !uint.TryParse(SizeY.Text.Trim(), out var sizeY) ||
-                !float.TryParse(WaferDiameter.Text.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out var diameter) ||
-                sizeX == 0 || sizeY == 0 || diameter <= 0)
+            // Хелпер: вернуть текст из MaskedTextBox без символов маски (плейсхолдеров и литералов)
+            string ReadMasked(MaskedTextBox box)
             {
-                MessageBox.Show("Укажи корректные шаги (SizeX/SizeY, мкм) и диаметр пластины (мм).",
-                    "Новая пластина", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                var prev = box.TextMaskFormat;
+                try
+                {
+                    box.TextMaskFormat = MaskFormat.ExcludePromptAndLiterals;
+                    return (box.Text ?? string.Empty).Trim();
+                }
+                finally
+                {
+                    box.TextMaskFormat = prev;
+                }
+            }
+
+            // 1) Читаем «чистые» строки из полей
+            string sizeXRaw = ReadMasked(SizeX);         // ожидаем целое число (мкм)
+            string sizeYRaw = ReadMasked(SizeY);         // ожидаем целое число (мкм)
+            string diaRaw = ReadMasked(WaferDiameter); // ожидаем целое число (мм), без точек/запятых
+
+            // 2) Базовая проверка: все поля должны быть непустыми
+            if (string.IsNullOrWhiteSpace(sizeXRaw) ||
+                string.IsNullOrWhiteSpace(sizeYRaw) ||
+                string.IsNullOrWhiteSpace(diaRaw))
+            {
+                ShowInvalidInput();
                 return;
             }
 
-            waferController.CrystalWidthRaw = sizeX;     // µm
-            waferController.CrystalHeightRaw = sizeY;     // µm
-            waferController.WaferDiameter = diameter;  // mm
+            // 3) Пытаемся распарсить. Выносим TryParse отдельно — так гарантируется присваивание
+            //    и компилятор не ругается на «переменной не присвоено значение».
+            bool okX = uint.TryParse(sizeXRaw, NumberStyles.Integer, CultureInfo.InvariantCulture, out uint sizeX);
+            bool okY = uint.TryParse(sizeYRaw, NumberStyles.Integer, CultureInfo.InvariantCulture, out uint sizeY);
+            bool okD = uint.TryParse(diaRaw, NumberStyles.Integer, CultureInfo.InvariantCulture, out uint diameterMm);
 
+            // 4) Логические ограничения: ничего не должно быть нулём
+            if (!okX || !okY || !okD || sizeX == 0 || sizeY == 0 || diameterMm == 0)
+            {
+                ShowInvalidInput();
+                return;
+            }
+
+            // 5) Присваиваем контроллеру. Диаметр — целые мм; при необходимости — неявно в float.
+            waferController.CrystalWidthRaw = sizeX;                 // мкм
+            waferController.CrystalHeightRaw = sizeY;                 // мкм
+            waferController.WaferDiameter = diameterMm;            // мм (целые)
+
+            // 6) Перестроение карты и обновление интерфейса
             waferController.CreateNewWafer();
-            CenterPointerAndView(); // <— центр
-
-            try { InitializeCalibrationUiState(); } catch { }
+            CenterPointerAndView();
+            try { InitializeCalibrationUiState(); } catch { /* не критично */ }
 
             pictureBox1?.Invalidate();
             UpdateUI();
+
+            // Унифицированный показ сообщения об ошибке
+            void ShowInvalidInput() => MessageBox.Show(
+                "Укажите корректные шаги (Размер X/Размер Y, мкм) и диаметр пластины (целые мм).",
+                "Новая пластина",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning
+            );
         }
+
+
 
         // «Выбрать первый»
         private void btnSelectFirst_Click(object sender, EventArgs e)
