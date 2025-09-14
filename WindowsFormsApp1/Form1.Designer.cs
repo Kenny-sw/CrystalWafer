@@ -976,6 +976,71 @@
             this.ResumeLayout(false);
             this.PerformLayout();
 
+           
+            // Основная форма
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
+            this.Resize += new System.EventHandler(this.Form1_Resize);
+
+            // PictureBox
+            this.pictureBox1.Paint += new System.Windows.Forms.PaintEventHandler(this.PictureBox1_Paint);
+            this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
+            this.pictureBox1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseMove);
+            this.pictureBox1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseUp);
+
+            // Кнопки
+            this.Create.Click += new System.EventHandler(this.Create_Click);
+            this.saveButton.Click += new System.EventHandler(this.SaveButton_Click);
+            this.checkBoxFillWafer.CheckedChanged += new System.EventHandler(this.checkBoxFillWafer_CheckedChanged);
+
+            // Меню
+            this.newToolStripMenuItem.Click += new System.EventHandler(this.newToolStripMenuItem_Click);
+            this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
+            this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
+            this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.saveAsToolStripMenuItem_Click);
+            this.exportToolStripMenuItem.Click += new System.EventHandler(this.exportToolStripMenuItem_Click);
+            this.importToolStripMenuItem.Click += new System.EventHandler(this.importToolStripMenuItem_Click);
+            this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
+            this.undoToolStripMenuItem.Click += new System.EventHandler(this.undoToolStripMenuItem_Click);
+            this.redoToolStripMenuItem.Click += new System.EventHandler(this.redoToolStripMenuItem_Click);
+            this.selectAllToolStripMenuItem.Click += new System.EventHandler(this.selectAllToolStripMenuItem_Click);
+            this.clearSelectionToolStripMenuItem.Click += new System.EventHandler(this.clearSelectionToolStripMenuItem_Click);
+            this.showRouteToolStripMenuItem.Click += new System.EventHandler(this.showRouteToolStripMenuItem_Click);
+            this.showStatisticsToolStripMenuItem.Click += new System.EventHandler(this.showStatisticsToolStripMenuItem_Click);
+            this.zoomInToolStripMenuItem.Click += new System.EventHandler(this.zoomInToolStripMenuItem_Click);
+            this.zoomOutToolStripMenuItem.Click += new System.EventHandler(this.zoomOutToolStripMenuItem_Click);
+            this.resetZoomToolStripMenuItem.Click += new System.EventHandler(this.resetZoomToolStripMenuItem_Click);
+
+            // Тулбар
+            this.btnUndo.Click += new System.EventHandler(this.btnUndo_Click);
+            this.btnRedo.Click += new System.EventHandler(this.btnRedo_Click);
+            this.btnExport.Click += new System.EventHandler(this.btnExport_Click);
+            this.btnImport.Click += new System.EventHandler(this.btnImport_Click);
+            this.btnRoutePreview.Click += new System.EventHandler(this.btnRoutePreview_Click);
+            this.btnStatistics.Click += new System.EventHandler(this.btnStatistics_Click);
+            this.btnZoomIn.Click += new System.EventHandler(this.btnZoomIn_Click);
+            this.btnZoomOut.Click += new System.EventHandler(this.btnZoomOut_Click);
+            this.btnZoomReset.Click += new System.EventHandler(this.btnZoomReset_Click);
+
+            // COM Порт
+            this.buttonConnect.Click += new System.EventHandler(this.buttonConnect_Click);
+            this.buttonUpdatePort.Click += new System.EventHandler(this.buttonUpdatePort_Click);
+            this.MyserialPort.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(this.MyserialPort_DataReceived);
+
+            // Движение
+            this.buttonMoveLeft.Click += new System.EventHandler(this.buttonMoveLeft_Click);
+            this.buttonMoveRight.Click += new System.EventHandler(this.buttonMoveRight_Click);
+            this.buttonMoveUp.Click += new System.EventHandler(this.buttonMoveUp_Click);
+            this.buttonMoveDown.Click += new System.EventHandler(this.buttonMoveDown_Click);
+            this.scan.Click += new System.EventHandler(this.scan_Click);
+
+            // Калибровка
+            this.btnSelectFirst.Click += new System.EventHandler(this.btnSelectFirst_Click);
+            this.btnSelectLast.Click += new System.EventHandler(this.btnSelectLast_Click);
+            this.btnBuildMap.Click += new System.EventHandler(this.btnBuildMap_Click);
+
+            // Загрузка данных
+            this.loadDataComboBox.SelectedIndexChanged += new System.EventHandler(this.loadDataComboBox_SelectedIndexChanged);
+
         }
 
         #endregion
