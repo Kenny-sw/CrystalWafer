@@ -482,12 +482,9 @@ namespace CrystalTable
             try { CenterPointer(); } catch { }   // из Form1.Movement.cs
             zoomPanController.Reset();           // центр и 1.0x
         }
-
-        private void labelSelectedCrystal_Click(object sender, EventArgs e)
-        {
-            // This handler is required by the designer, but no action is needed.
-        }
     }
 }
+
+       
 
         

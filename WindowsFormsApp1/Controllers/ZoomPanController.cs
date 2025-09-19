@@ -36,10 +36,10 @@ namespace CrystalTable.Controllers
 
             if (oldZoom != ZoomFactor)
             {
-                float newZoom = ZoomFactor;
+                float zoomRatio = ZoomFactor / oldZoom;
                 PanOffset = new PointF(
-                    PanOffset.X + mousePos.X * (1 / newZoom - 1 / oldZoom),
-                    PanOffset.Y + mousePos.Y * (1 / newZoom - 1 / oldZoom)
+                    mousePos.X - (mousePos.X - PanOffset.X) * zoomRatio,
+                    mousePos.Y - (mousePos.Y - PanOffset.Y) * zoomRatio
                 );
             }
         }
@@ -48,27 +48,23 @@ namespace CrystalTable.Controllers
         {
             float centerX = form.PictureBox.Width / 2;
             float centerY = form.PictureBox.Height / 2;
-            PointF centerPos = new PointF(centerX, centerY);
 
             float oldZoom = ZoomFactor;
             ZoomFactor = Math.Max(MinZoom, Math.Min(MaxZoom, ZoomFactor + delta));
 
             if (oldZoom != ZoomFactor)
             {
-                float newZoom = ZoomFactor;
+                float zoomRatio = ZoomFactor / oldZoom;
                 PanOffset = new PointF(
-                    PanOffset.X + centerPos.X * (1 / newZoom - 1 / oldZoom),
-                    PanOffset.Y + centerPos.Y * (1 / newZoom - 1 / oldZoom)
+                    centerX - (centerX - PanOffset.X) * zoomRatio,
+                    centerY - (centerY - PanOffset.Y) * zoomRatio
                 );
             }
         }
 
         public void Pan(float deltaX, float deltaY)
         {
-            PanOffset = new PointF(
-                PanOffset.X + deltaX / ZoomFactor,
-                PanOffset.Y + deltaY / ZoomFactor
-            );
+            PanOffset = new PointF(PanOffset.X + deltaX, PanOffset.Y + deltaY);
         }
 
         public void Reset()
@@ -94,16 +90,16 @@ namespace CrystalTable.Controllers
         public PointF TransformPoint(PointF point)
         {
             return new PointF(
-                (point.X / ZoomFactor) - PanOffset.X,
-                (point.Y / ZoomFactor) - PanOffset.Y
+                (point.X - PanOffset.X) / ZoomFactor,
+                (point.Y - PanOffset.Y) / ZoomFactor
             );
         }
 
         public PointF InverseTransformPoint(PointF point)
         {
             return new PointF(
-                (point.X + PanOffset.X) * ZoomFactor,
-                (point.Y + PanOffset.Y) * ZoomFactor
+                point.X * ZoomFactor + PanOffset.X,
+                point.Y * ZoomFactor + PanOffset.Y
             );
         }
     }

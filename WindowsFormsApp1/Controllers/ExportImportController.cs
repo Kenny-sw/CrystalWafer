@@ -7,9 +7,6 @@ using CrystalTable.Logic;
 
 namespace CrystalTable.Controllers
 {
-    /// <summary>
-    /// Управляет сохранением и загрузкой настроек пластины и карт кристаллов.
-    /// </summary>
     public class ExportImportController
     {
         private readonly Form1 form;
@@ -38,13 +35,13 @@ namespace CrystalTable.Controllers
                 var serializer = new Serializer();
                 serializer.Serialize(waferInfo);
 
-                MessageBox.Show("Параметры успешно сохранены!", "Сохранение",
+                MessageBox.Show("РџР°СЂР°РјРµС‚СЂС‹ СЃРѕС…СЂР°РЅРµРЅС‹!", "РЈРІРµРґРѕРјР»РµРЅРёРµ",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при сохранении: {ex.Message}",
-                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"РћС€РёР±РєР° РїСЂРё СЃРѕС…СЂР°РЅРµРЅРёРё: {ex.Message}",
+                    "РћС€РёР±РєР°", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -52,16 +49,16 @@ namespace CrystalTable.Controllers
         {
             if (CrystalManager.Instance.Crystals.Count == 0)
             {
-                MessageBox.Show("Нет данных для экспорта!", "Предупреждение",
+                MessageBox.Show("РќРµС‚ РґР°РЅРЅС‹С… РґР»СЏ СЌРєСЃРїРѕСЂС‚Р°!", "РџСЂРµРґСѓРїСЂРµР¶РґРµРЅРёРµ",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             using var saveDialog = new SaveFileDialog
             {
-                Filter = "Компактный XML (*.xml)|*.xml|Подробный XML (*.xml)|*.xml|" +
-                         "CSV файл (*.csv)|*.csv|JSON файл (*.json)|*.json",
-                Title = "Экспортировать карту"
+                Filter = "РљРѕРјРїР°РєС‚РЅС‹Р№ XML (*.xml)|*.xml|Р”РµС‚Р°Р»СЊРЅС‹Р№ XML (*.xml)|*.xml|" +
+                         "CSV С„Р°Р№Р» (*.csv)|*.csv|JSON С„Р°Р№Р» (*.json)|*.json",
+                Title = "Р­РєСЃРїРѕСЂС‚РёСЂРѕРІР°С‚СЊ РґР°РЅРЅС‹Рµ"
             };
 
             if (saveDialog.ShowDialog() != DialogResult.OK)
@@ -90,12 +87,12 @@ namespace CrystalTable.Controllers
                         break;
                 }
 
-                MessageBox.Show("Экспорт успешно завершён!", "Экспорт",
+                MessageBox.Show("Р”Р°РЅРЅС‹Рµ СѓСЃРїРµС€РЅРѕ СЌРєСЃРїРѕСЂС‚РёСЂРѕРІР°РЅС‹!", "РЈСЃРїРµС…",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при экспорте: {ex.Message}", "Ошибка",
+                MessageBox.Show($"РћС€РёР±РєР° РїСЂРё СЌРєСЃРїРѕСЂС‚Рµ: {ex.Message}", "РћС€РёР±РєР°",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -104,8 +101,8 @@ namespace CrystalTable.Controllers
         {
             using var openDialog = new OpenFileDialog
             {
-                Filter = "XML файлы (*.xml)|*.xml|CSV файлы (*.csv)|*.csv|Все файлы (*.*)|*.*",
-                Title = "Импорт карты"
+                Filter = "XML С„Р°Р№Р»С‹ (*.xml)|*.xml|CSV С„Р°Р№Р»С‹ (*.csv)|*.csv|Р’СЃРµ С„Р°Р№Р»С‹ (*.*)|*.*",
+                Title = "РРјРїРѕСЂС‚ РґР°РЅРЅС‹С…"
             };
 
             if (openDialog.ShowDialog() != DialogResult.OK)
@@ -126,12 +123,12 @@ namespace CrystalTable.Controllers
                 var result = exporter.ImportFromCompactXml(openDialog.FileName);
                 CrystalManager.Instance.Crystals.Clear();
                 CrystalManager.Instance.Crystals.AddRange(result.crystals);
-                ApplyWaferInfo(result.info);
+                ApplyWaferInfo(result.info, false); // РќРµ РїРµСЂРµСЃС‚СЂР°РёРІР°С‚СЊ РєСЂРёСЃС‚Р°Р»Р»С‹
                 return result;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при импорте: {ex.Message}", "Ошибка",
+                MessageBox.Show($"РћС€РёР±РєР° РїСЂРё РёРјРїРѕСЂС‚Рµ: {ex.Message}", "РћС€РёР±РєР°",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return null;
             }
@@ -141,8 +138,8 @@ namespace CrystalTable.Controllers
         {
             using var openDialog = new OpenFileDialog
             {
-                Filter = "XML файлы (*.xml)|*.xml|Все файлы (*.*)|*.*",
-                Title = "Открыть карту"
+                Filter = "XML С„Р°Р№Р»С‹ (*.xml)|*.xml|Р’СЃРµ С„Р°Р№Р»С‹ (*.*)|*.*",
+                Title = "РћС‚РєСЂС‹С‚СЊ С„Р°Р№Р»"
             };
 
             if (openDialog.ShowDialog() != DialogResult.OK)
@@ -155,16 +152,16 @@ namespace CrystalTable.Controllers
                 var result = exporter.ImportFromCompactXml(openDialog.FileName);
                 CrystalManager.Instance.Crystals.Clear();
                 CrystalManager.Instance.Crystals.AddRange(result.crystals);
-                ApplyWaferInfo(result.info);
+                ApplyWaferInfo(result.info, false); // РќРµ РїРµСЂРµСЃС‚СЂР°РёРІР°С‚СЊ РєСЂРёСЃС‚Р°Р»Р»С‹
 
-                MessageBox.Show("Карта успешно загружена!", "Загрузка",
+                MessageBox.Show("Р¤Р°Р№Р» СѓСЃРїРµС€РЅРѕ Р·Р°РіСЂСѓР¶РµРЅ!", "РЈРІРµРґРѕРјР»РµРЅРёРµ",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 return result;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при чтении файла: {ex.Message}", "Ошибка",
+                MessageBox.Show($"РћС€РёР±РєР° РїСЂРё РѕС‚РєСЂС‹С‚РёРё С„Р°Р№Р»Р°: {ex.Message}", "РћС€РёР±РєР°",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return null;
             }
@@ -174,8 +171,8 @@ namespace CrystalTable.Controllers
         {
             using var saveDialog = new SaveFileDialog
             {
-                Filter = "XML файлы (*.xml)|*.xml|Все файлы (*.*)|*.*",
-                Title = "Сохранить карту как",
+                Filter = "XML С„Р°Р№Р»С‹ (*.xml)|*.xml|Р’СЃРµ С„Р°Р№Р»С‹ (*.*)|*.*",
+                Title = "РЎРѕС…СЂР°РЅРёС‚СЊ С„Р°Р№Р» РєР°Рє",
                 DefaultExt = "xml"
             };
 
@@ -189,12 +186,12 @@ namespace CrystalTable.Controllers
                 var info = BuildCurrentWaferInfo();
                 exporter.ExportToCompactXml(saveDialog.FileName, info, CrystalManager.Instance.Crystals);
 
-                MessageBox.Show("Карта сохранена!", "Сохранение",
+                MessageBox.Show("Р¤Р°Р№Р» СЃРѕС…СЂР°РЅРµРЅ!", "РЈРІРµРґРѕРјР»РµРЅРёРµ",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при сохранении: {ex.Message}", "Ошибка",
+                MessageBox.Show($"РћС€РёР±РєР° РїСЂРё СЃРѕС…СЂР°РЅРµРЅРёРё: {ex.Message}", "РћС€РёР±РєР°",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -235,7 +232,7 @@ namespace CrystalTable.Controllers
             return info;
         }
 
-        private void ApplyWaferInfo(WaferInfo info)
+        private void ApplyWaferInfo(WaferInfo info, bool buildCrystals = true)
         {
             if (info == null)
             {
@@ -257,7 +254,10 @@ namespace CrystalTable.Controllers
                 waferController.ClearReferences();
             }
 
-            waferController.BuildCrystalsCached();
+            if (buildCrystals)
+            {
+                waferController.BuildCrystalsCached();
+            }
 
             form.ZoomPanController.SetState(info.ZoomFactor, new PointF(info.PanOffsetX, info.PanOffsetY));
             form.SetPointerMm(info.PointerXmm, info.PointerYmm);

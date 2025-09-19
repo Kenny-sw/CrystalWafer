@@ -18,8 +18,8 @@ namespace CrystalTable
 
             // трансформации
             var st = g.Save();
-            g.ScaleTransform(zoomPanController.ZoomFactor, zoomPanController.ZoomFactor);
             g.TranslateTransform(zoomPanController.PanOffset.X, zoomPanController.PanOffset.Y);
+            g.ScaleTransform(zoomPanController.ZoomFactor, zoomPanController.ZoomFactor);
             g.SmoothingMode = SmoothingMode.AntiAlias;
 
             waferController.AutoSetScaleFactor(pictureBox1.Width, pictureBox1.Height);
