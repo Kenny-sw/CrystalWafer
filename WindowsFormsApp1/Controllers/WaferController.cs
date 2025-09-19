@@ -1,43 +1,38 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using CrystalTable.Data;
 using CrystalTable.Logic;
 
 namespace CrystalTable.Controllers
 {
-    /// <summary>
-    /// Логика ваферы: параметры, калибровка, построение сетки кристаллов и маршрут.
-    /// Отрисовки здесь нет — она в Form1.Drawing.cs.
-    /// </summary>
     public class WaferController
     {
         private readonly Form1 form;
 
-        // Диапазоны
-        public const float MinWaferDiameter = 50f;   // мм
-        public const float MaxWaferDiameter = 450f;  // мм
+        public const float MinWaferDiameter = 50f;
+        public const float MaxWaferDiameter = 450f;
 
-        // Ввод
-        public uint CrystalWidthRaw { get; set; }   // µm
-        public uint CrystalHeightRaw { get; set; }   // µm
-        public float WaferDiameter { get; set; }   // mm
+        public uint CrystalWidthRaw { get; set; }
+        public uint CrystalHeightRaw { get; set; }
+        public float WaferDiameter { get; set; }
 
-        // Буферы для UI-вакуума
         public uint SizeXtemp, SizeYtemp;
         public float WaferDiameterTemp;
 
-        // Производные
-        public float StepXmm { get; private set; }   // мм (если 0 — берём из размеров кристалла)
-        public float StepYmm { get; private set; }   // мм
+        public float StepXmm { get; private set; }
+        public float StepYmm { get; private set; }
         public int CrystalsPerRow { get; private set; }
         public int RowsTotal { get; private set; }
         public float ScaleFactor { get; private set; } = 1f;
-        public bool WaferDisplayMode { get; set; } = false;
+        public bool WaferDisplayMode { get; set; }
+        public float RotationAngleDeg { get; private set; }
 
-        // Опорные точки (для подсветки до построения)
-        private bool firstRefSet, lastRefSet;
-        private PointF firstRefMm, lastRefMm;
+        private bool firstRefSet;
+        private bool lastRefSet;
+        private PointF firstRefMm;
+        private PointF lastRefMm;
 
         public bool HasFirstRef => firstRefSet;
         public bool HasLastRef => lastRefSet;
@@ -52,147 +47,370 @@ namespace CrystalTable.Controllers
             WaferDiameterTemp = 100f;
         }
 
-        // Масштаб под размер viewport’а
         public void AutoSetScaleFactor(int viewportWidth, int viewportHeight)
         {
             float d = WaferDiameter > 0 ? WaferDiameter : 200f;
-            if (d <= 0) { ScaleFactor = 1f; return; }
-
-            float pad = 20f;
-            float usableW = Math.Max(1, viewportWidth - pad * 2);
-            float usableH = Math.Max(1, viewportHeight - pad * 2);
-
-            float sx = usableW / d;
-            float sy = usableH / d;
-            ScaleFactor = Math.Max(1f, Math.Min(sx, sy));
-        }
-
-        // Создать/очистить вафер
-        public void CreateNewWafer()
-        {
-            firstRefSet = lastRefSet = false;
-            StepXmm = StepYmm = 0f;
-            BuildCrystalsCached();
-        }
-
-        /// <summary>
-        /// Построить «ковёр» кристаллов по кругу ваферы. Ничего не рисует.
-        /// </summary>
-        public void BuildCrystalsCached()
-        {
-            var cm = CrystalManager.Instance;
-            cm.Crystals.Clear();
-
-            float stepX = StepXmm > 0f ? StepXmm : (CrystalWidthRaw / 1000f);
-            float stepY = StepYmm > 0f ? StepYmm : (CrystalHeightRaw / 1000f);
-
-            if (stepX <= 0f || stepY <= 0f || WaferDiameter <= 0f)
+            if (d <= 0)
             {
-                CrystalsPerRow = 0; RowsTotal = 0;
+                ScaleFactor = 1f;
                 return;
             }
 
-            float r = WaferDiameter / 2f;
-            int index = 1, rows = 0, maxPerRow = 0;
+            const float padding = 20f;
+            float usableWidth = Math.Max(1, viewportWidth - padding * 2);
+            float usableHeight = Math.Max(1, viewportHeight - padding * 2);
 
-            for (float y = -r; y <= r + 1e-6f; y += stepY)
+            float sx = usableWidth / d;
+            float sy = usableHeight / d;
+            ScaleFactor = Math.Max(1f, Math.Min(sx, sy));
+        }
+
+        public void CreateNewWafer()
+        {
+            firstRefSet = false;
+            lastRefSet = false;
+            StepXmm = 0f;
+            StepYmm = 0f;
+            RotationAngleDeg = 0f;
+            BuildCrystalsCached();
+        }
+
+        public void BuildCrystalsCached()
+        {
+            var crystals = CrystalManager.Instance.Crystals;
+            crystals.Clear();
+
+            float stepX = StepXmm > 0f ? StepXmm : CrystalWidthRaw / 1000f;
+            float stepY = StepYmm > 0f ? StepYmm : CrystalHeightRaw / 1000f;
+
+            if (stepX <= 0f || stepY <= 0f || WaferDiameter <= 0f)
             {
-                var xs = new List<float>();
-                for (float x = -r; x <= r + 1e-6f; x += stepX)
-                    if (x * x + y * y <= r * r + 1e-6f)
-                        xs.Add(x);
+                CrystalsPerRow = 0;
+                RowsTotal = 0;
+                return;
+            }
 
-                if (xs.Count == 0) continue;
-
-                if ((rows & 1) == 1) xs.Reverse(); // змейка
-
-                foreach (var x in xs)
+            if (HasFirstRef && HasLastRef)
+            {
+                RotationAngleDeg = BuildCalibratedGrid(crystals, stepX, stepY);
+                if (crystals.Count == 0)
                 {
-                    cm.Crystals.Add(new Crystal
+                    RotationAngleDeg = 0f;
+                    BuildDefaultGrid(crystals, stepX, stepY);
+                }
+            }
+            else
+            {
+                RotationAngleDeg = 0f;
+                BuildDefaultGrid(crystals, stepX, stepY);
+            }
+        }
+
+        public void SetFirstReference(float xMm, float yMm)
+        {
+            firstRefMm = new PointF(xMm, yMm);
+            firstRefSet = true;
+        }
+
+        public void SetLastReference(float xMm, float yMm)
+        {
+            lastRefMm = new PointF(xMm, yMm);
+            lastRefSet = true;
+        }
+        public void ClearReferences()
+        {
+            firstRefSet = false;
+            lastRefSet = false;
+        }
+
+
+        public bool IsCalibrationReady() => firstRefSet && lastRefSet;
+
+        public bool IsPresetReady()
+        {
+            if (StepXmm > 0f && StepYmm > 0f)
+            {
+                return true;
+            }
+
+            return CrystalWidthRaw > 0 && CrystalHeightRaw > 0;
+        }
+
+        public void BuildMapFromReferences()
+        {
+            if (StepXmm <= 0f)
+            {
+                StepXmm = CrystalWidthRaw / 1000f;
+            }
+
+            if (StepYmm <= 0f)
+            {
+                StepYmm = CrystalHeightRaw / 1000f;
+            }
+
+            BuildCrystalsCached();
+        }
+
+        public void BuildMapFromPreset()
+        {
+            if (StepXmm <= 0f)
+            {
+                StepXmm = CrystalWidthRaw / 1000f;
+            }
+
+            if (StepYmm <= 0f)
+            {
+                StepYmm = CrystalHeightRaw / 1000f;
+            }
+
+            BuildCrystalsCached();
+        }
+
+        public void GenerateRoute(RoutePreview preview, HashSet<int> selectedCrystals)
+        {
+            if (preview == null)
+            {
+                return;
+            }
+
+            var source = CrystalManager.Instance.Crystals;
+            List<Crystal> route;
+
+            if (selectedCrystals != null && selectedCrystals.Count > 0)
+            {
+                route = source.Where(c => selectedCrystals.Contains(c.Index)).ToList();
+            }
+            else
+            {
+                route = new List<Crystal>(source);
+            }
+
+            route.Sort((a, b) =>
+            {
+                int byY = a.RealY.CompareTo(b.RealY);
+                if (byY != 0)
+                {
+                    return byY;
+                }
+
+                float stepY = StepYmm > 0 ? StepYmm : Math.Max(0.0001f, CrystalHeightRaw / 1000f);
+                int rowIndex = (int)Math.Round((a.RealY - (-WaferDiameter / 2f)) / stepY);
+                bool reverse = (rowIndex & 1) == 1;
+                return reverse ? b.RealX.CompareTo(a.RealX) : a.RealX.CompareTo(b.RealX);
+            });
+
+            preview.SetRoute(route);
+        }
+
+        public WaferStatistics GetStatistics()
+        {
+            return new WaferStatistics(CrystalManager.Instance.Crystals, WaferDiameter);
+        }
+
+        public float StepXmmOrDefault => StepXmm > 0f ? StepXmm : CrystalWidthRaw / 1000f;
+        public float StepYmmOrDefault => StepYmm > 0f ? StepYmm : CrystalHeightRaw / 1000f;
+
+        public void SetSteps(float stepXmm, float stepYmm)
+        {
+            StepXmm = Math.Max(0f, stepXmm);
+            StepYmm = Math.Max(0f, stepYmm);
+        }
+
+        private void BuildDefaultGrid(List<Crystal> crystals, float stepXmm, float stepYmm)
+        {
+            float radius = WaferDiameter / 2f;
+            int index = 0;
+            int rows = 0;
+            int maxPerRow = 0;
+
+            for (float y = -radius; y <= radius + 1e-6f; y += stepYmm)
+            {
+                var rowPoints = new List<float>();
+                for (float x = -radius; x <= radius + 1e-6f; x += stepXmm)
+                {
+                    if (IsInsideWafer(x, y, radius))
+                    {
+                        rowPoints.Add(x);
+                    }
+                }
+
+                if (rowPoints.Count == 0)
+                {
+                    continue;
+                }
+
+                if ((rows & 1) == 1)
+                {
+                    rowPoints.Reverse();
+                }
+
+                foreach (var x in rowPoints)
+                {
+                    crystals.Add(new Crystal
                     {
                         Index = index++,
                         RealX = x,
-                        RealY = y
+                        RealY = y,
+                        Color = Color.Blue
                     });
                 }
 
                 rows++;
-                if (xs.Count > maxPerRow) maxPerRow = xs.Count;
+                if (rowPoints.Count > maxPerRow)
+                {
+                    maxPerRow = rowPoints.Count;
+                }
             }
 
             CrystalsPerRow = maxPerRow;
             RowsTotal = rows;
         }
 
-        // Калибровка
-        public void SetFirstReference(float xMm, float yMm) { firstRefMm = new PointF(xMm, yMm); firstRefSet = true; }
-        public void SetLastReference(float xMm, float yMm) { lastRefMm = new PointF(xMm, yMm); lastRefSet = true; }
-
-        public bool IsCalibrationReady() => firstRefSet && lastRefSet;
-        public bool IsPresetReady()
+        private float BuildCalibratedGrid(List<Crystal> crystals, float stepXmm, float stepYmm)
         {
-            if (StepXmm > 0f && StepYmm > 0f) return true;
-            return (CrystalWidthRaw > 0 && CrystalHeightRaw > 0);
-        }
+            PointF baseline = new PointF(lastRefMm.X - firstRefMm.X, lastRefMm.Y - firstRefMm.Y);
+            double baselineLength = Math.Sqrt(baseline.X * baseline.X + baseline.Y * baseline.Y);
 
-        public void BuildMapFromReferences()
-        {
-            if (StepXmm <= 0f) StepXmm = CrystalWidthRaw / 1000f;
-            if (StepYmm <= 0f) StepYmm = CrystalHeightRaw / 1000f;
-            BuildCrystalsCached();
-        }
-
-        public void BuildMapFromPreset()
-        {
-            if (StepXmm <= 0f) StepXmm = CrystalWidthRaw / 1000f;
-            if (StepYmm <= 0f) StepYmm = CrystalHeightRaw / 1000f;
-            BuildCrystalsCached();
-        }
-
-        // Маршрут
-        public void GenerateRoute(RoutePreview preview, HashSet<int> selectedCrystals)
-        {
-            if (preview == null) return;
-
-            var all = CrystalManager.Instance.Crystals;
-            List<Crystal> list;
-
-            if (selectedCrystals != null && selectedCrystals.Count > 0)
+            if (baselineLength < 1e-6)
             {
-                list = new List<Crystal>(selectedCrystals.Count);
-                foreach (var c in all) if (selectedCrystals.Contains(c.Index)) list.Add(c);
-            }
-            else
-            {
-                list = new List<Crystal>(all);
+                return 0f;
             }
 
-            // сортируем змейкой по рядам (Y), внутри — по X
-            list.Sort((a, b) =>
+            PointF rowUnit = Normalize(baseline);
+            PointF normalUnit = new PointF(-rowUnit.Y, rowUnit.X);
+
+            float radius = WaferDiameter / 2f;
+            int maxStepsAlongRow = (int)Math.Ceiling(WaferDiameter / stepXmm) + 4;
+            int maxRowOffset = (int)Math.Ceiling(WaferDiameter / stepYmm) + 4;
+
+            int index = 0;
+            int maxPerRow = 0;
+            int rowsTotal = 0;
+            bool reverse = false;
+
+            for (int offset = 0; offset <= maxRowOffset; offset++)
             {
-                int yCmp = a.RealY.CompareTo(b.RealY);
-                if (yCmp != 0) return yCmp;
+                bool anyRowCreated = false;
+                int[] offsets = offset == 0 ? new[] { 0 } : new[] { offset, -offset };
 
-                float stepY = StepYmm > 0 ? StepYmm : Math.Max(0.0001f, CrystalHeightRaw / 1000f);
-                int rowIdxA = (int)Math.Round((a.RealY - (-WaferDiameter / 2f)) / stepY);
-                bool reverse = (rowIdxA & 1) == 1;
+                foreach (int signedOffset in offsets)
+                {
+                    PointF rowOrigin = new PointF(
+                        firstRefMm.X + normalUnit.X * stepYmm * signedOffset,
+                        firstRefMm.Y + normalUnit.Y * stepYmm * signedOffset);
 
-                return reverse ? b.RealX.CompareTo(a.RealX) : a.RealX.CompareTo(b.RealX);
-            });
+                    var rowCrystals = GenerateCalibratedRow(rowOrigin, rowUnit, stepXmm, radius, maxStepsAlongRow, ref index);
+                    if (rowCrystals.Count == 0)
+                    {
+                        continue;
+                    }
 
-            preview.SetRoute(list);
+                    anyRowCreated = true;
+                    if (reverse)
+                    {
+                        rowCrystals.Reverse();
+                    }
+
+                    crystals.AddRange(rowCrystals);
+
+                    if (rowCrystals.Count > maxPerRow)
+                    {
+                        maxPerRow = rowCrystals.Count;
+                    }
+
+                    rowsTotal++;
+                    reverse = !reverse;
+                }
+
+                if (!anyRowCreated && offset > 0)
+                {
+                    break;
+                }
+            }
+
+            CrystalsPerRow = maxPerRow;
+            RowsTotal = rowsTotal;
+            return (float)(Math.Atan2(rowUnit.Y, rowUnit.X) * 180.0 / Math.PI);
         }
 
-        public WaferStatistics GetStatistics() => new WaferStatistics(CrystalManager.Instance.Crystals, WaferDiameter);
-
-        // Удобные свойства для UI
-        public float StepXmmOrDefault => StepXmm > 0f ? StepXmm : (CrystalWidthRaw / 1000f);
-        public float StepYmmOrDefault => StepYmm > 0f ? StepYmm : (CrystalHeightRaw / 1000f);
-
-        public void SetSteps(float stepXmm, float stepYmm)
+        private static List<Crystal> GenerateCalibratedRow(
+            PointF origin,
+            PointF rowUnit,
+            float stepXmm,
+            float radius,
+            int maxSteps,
+            ref int index)
         {
-            StepXmm = Math.Max(0f, stepXmm);
-            StepYmm = Math.Max(0f, stepYmm);
+            var candidates = new List<(float offset, Crystal crystal)>();
+
+            for (int step = -maxSteps; step <= maxSteps; step++)
+            {
+                float offset = step * stepXmm;
+                float x = origin.X + rowUnit.X * offset;
+                float y = origin.Y + rowUnit.Y * offset;
+
+                if (!IsInsideWafer(x, y, radius))
+                {
+                    continue;
+                }
+
+                candidates.Add((offset, new Crystal
+                {
+                    Index = index++,
+                    RealX = x,
+                    RealY = y,
+                    Color = Color.Blue
+                }));
+            }
+
+            candidates.Sort((a, b) => a.offset.CompareTo(b.offset));
+            return candidates.Select(item => item.crystal).ToList();
+        }
+
+        private static PointF Normalize(PointF vector)
+        {
+            float length = (float)Math.Sqrt(vector.X * vector.X + vector.Y * vector.Y);
+            if (length < 1e-6f)
+            {
+                return new PointF(1f, 0f);
+            }
+
+            return new PointF(vector.X / length, vector.Y / length);
+        }
+
+        private static bool IsInsideWafer(float x, float y, float radius)
+        {
+            return x * x + y * y <= radius * radius + 1e-6f;
+        }
+
+        public bool CreateWaferFromInput(string sizeXRaw, string sizeYRaw, string diaRaw, out string errorMessage)
+        {
+            errorMessage = string.Empty;
+
+            if (string.IsNullOrWhiteSpace(sizeXRaw) ||
+                string.IsNullOrWhiteSpace(sizeYRaw) ||
+                string.IsNullOrWhiteSpace(diaRaw))
+            {
+                errorMessage = "Все поля должны быть заполнены.";
+                return false;
+            }
+
+            bool okX = uint.TryParse(sizeXRaw, System.Globalization.NumberStyles.Integer, CrystalTable.CultureSettings.NumericCulture, out uint sizeX);
+            bool okY = uint.TryParse(sizeYRaw, System.Globalization.NumberStyles.Integer, CrystalTable.CultureSettings.NumericCulture, out uint sizeY);
+            bool okD = uint.TryParse(diaRaw, System.Globalization.NumberStyles.Integer, CrystalTable.CultureSettings.NumericCulture, out uint diameterMm);
+
+            if (!okX || !okY || !okD || sizeX == 0 || sizeY == 0 || diameterMm == 0)
+            {
+                errorMessage = "Укажите корректные шаги (Размер X/Размер Y, мкм) и диаметр пластины (целые мм).";
+                return false;
+            }
+
+            CrystalWidthRaw = sizeX;
+            CrystalHeightRaw = sizeY;
+            WaferDiameter = diameterMm;
+
+            CreateNewWafer();
+            return true;
         }
     }
 }

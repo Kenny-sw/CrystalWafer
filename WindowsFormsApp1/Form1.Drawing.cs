@@ -1,4 +1,4 @@
-﻿using CrystalTable.Logic;
+using CrystalTable.Logic;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -18,8 +18,8 @@ namespace CrystalTable
 
             // трансформации
             var st = g.Save();
-            g.TranslateTransform(zoomPanController.PanOffset.X, zoomPanController.PanOffset.Y);
             g.ScaleTransform(zoomPanController.ZoomFactor, zoomPanController.ZoomFactor);
+            g.TranslateTransform(zoomPanController.PanOffset.X, zoomPanController.PanOffset.Y);
             g.SmoothingMode = SmoothingMode.AntiAlias;
 
             waferController.AutoSetScaleFactor(pictureBox1.Width, pictureBox1.Height);
@@ -52,7 +52,7 @@ namespace CrystalTable
         {
             if (!uint.TryParse(SizeX.Text.Trim(), out var w)) return false;
             if (!uint.TryParse(SizeY.Text.Trim(), out var h)) return false;
-            if (!float.TryParse(WaferDiameter.Text.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out var d)) return false;
+            if (!float.TryParse(WaferDiameter.Text.Trim(), NumberStyles.Float, CultureSettings.NumericCulture, out var d)) return false;
 
             if (w == 0 || h == 0) return false;
             if (d < Controllers.WaferController.MinWaferDiameter || d > Controllers.WaferController.MaxWaferDiameter) return false;
@@ -207,14 +207,19 @@ namespace CrystalTable
         private int GetHoveredCrystalIndex()
         {
             if (pictureBox1 == null) return -1;
-            var m = pictureBox1.PointToClient(Cursor.Position);
+
+            var mouseScreen = pictureBox1.PointToClient(Cursor.Position);
+            var transformed = zoomPanController.TransformPoint(new PointF(mouseScreen.X, mouseScreen.Y));
 
             foreach (var c in CrystalManager.Instance.Crystals)
             {
-                if (m.X >= c.DisplayLeft && m.X <= c.DisplayRight &&
-                    m.Y >= c.DisplayTop && m.Y <= c.DisplayBottom)
+                if (transformed.X >= c.DisplayLeft && transformed.X <= c.DisplayRight &&
+                    transformed.Y >= c.DisplayTop && transformed.Y <= c.DisplayBottom)
+                {
                     return c.Index;
+                }
             }
+
             return -1;
         }
     }

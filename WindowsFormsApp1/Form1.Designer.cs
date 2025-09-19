@@ -90,6 +90,7 @@
             this.buttonMoveLeft = new System.Windows.Forms.Button();
             this.buttonMoveDown = new System.Windows.Forms.Button();
             this.scan = new System.Windows.Forms.Button();
+            this.buttonStart = new System.Windows.Forms.Button();
             this.checkBoxDiscreteStep = new System.Windows.Forms.CheckBox();
             this.groupBoxParameters = new System.Windows.Forms.GroupBox();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
@@ -136,7 +137,7 @@
             this.viewToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1262, 30);
+            this.menuStrip1.Size = new System.Drawing.Size(1262, 28);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -153,7 +154,7 @@
             this.toolStripMenuItem2,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(59, 26);
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(59, 24);
             this.fileToolStripMenuItem.Text = "Файл";
             // 
             // newToolStripMenuItem
@@ -230,7 +231,7 @@
             this.selectAllToolStripMenuItem,
             this.clearSelectionToolStripMenuItem});
             this.editToolStripMenuItem.Name = "editToolStripMenuItem";
-            this.editToolStripMenuItem.Size = new System.Drawing.Size(74, 26);
+            this.editToolStripMenuItem.Size = new System.Drawing.Size(74, 24);
             this.editToolStripMenuItem.Text = "Правка";
             // 
             // undoToolStripMenuItem
@@ -280,7 +281,7 @@
             this.zoomOutToolStripMenuItem,
             this.resetZoomToolStripMenuItem});
             this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
-            this.viewToolStripMenuItem.Size = new System.Drawing.Size(49, 26);
+            this.viewToolStripMenuItem.Size = new System.Drawing.Size(49, 24);
             this.viewToolStripMenuItem.Text = "Вид";
             // 
             // showRouteToolStripMenuItem
@@ -345,9 +346,9 @@
             this.btnZoomIn,
             this.btnZoomOut,
             this.btnZoomReset});
-            this.toolStrip1.Location = new System.Drawing.Point(0, 30);
+            this.toolStrip1.Location = new System.Drawing.Point(0, 28);
             this.toolStrip1.Name = "toolStrip1";
-            this.toolStrip1.Size = new System.Drawing.Size(1262, 31);
+            this.toolStrip1.Size = new System.Drawing.Size(1262, 27);
             this.toolStrip1.TabIndex = 1;
             this.toolStrip1.Text = "toolStrip1";
             // 
@@ -357,7 +358,7 @@
             this.btnUndo.Image = global::CrystalTable.Properties.Resources.undo;
             this.btnUndo.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnUndo.Name = "btnUndo";
-            this.btnUndo.Size = new System.Drawing.Size(29, 28);
+            this.btnUndo.Size = new System.Drawing.Size(29, 24);
             this.btnUndo.Text = "Отменить (Ctrl+Z)";
             this.btnUndo.Click += new System.EventHandler(this.btnUndo_Click);
             // 
@@ -367,14 +368,14 @@
             this.btnRedo.Image = global::CrystalTable.Properties.Resources.redo;
             this.btnRedo.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnRedo.Name = "btnRedo";
-            this.btnRedo.Size = new System.Drawing.Size(29, 28);
+            this.btnRedo.Size = new System.Drawing.Size(29, 24);
             this.btnRedo.Text = "Повторить (Ctrl+Y)";
             this.btnRedo.Click += new System.EventHandler(this.btnRedo_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 31);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 27);
             // 
             // btnExport
             // 
@@ -382,7 +383,7 @@
             this.btnExport.Image = global::CrystalTable.Properties.Resources.export;
             this.btnExport.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnExport.Name = "btnExport";
-            this.btnExport.Size = new System.Drawing.Size(29, 28);
+            this.btnExport.Size = new System.Drawing.Size(29, 24);
             this.btnExport.Text = "Экспорт (Ctrl+E)";
             this.btnExport.Click += new System.EventHandler(this.btnExport_Click);
             // 
@@ -392,14 +393,14 @@
             this.btnImport.Image = global::CrystalTable.Properties.Resources.import;
             this.btnImport.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnImport.Name = "btnImport";
-            this.btnImport.Size = new System.Drawing.Size(29, 28);
+            this.btnImport.Size = new System.Drawing.Size(29, 24);
             this.btnImport.Text = "Импорт (Ctrl+I)";
             this.btnImport.Click += new System.EventHandler(this.btnImport_Click);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 31);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 27);
             // 
             // btnRoutePreview
             // 
@@ -408,7 +409,7 @@
             this.btnRoutePreview.Image = global::CrystalTable.Properties.Resources.route;
             this.btnRoutePreview.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnRoutePreview.Name = "btnRoutePreview";
-            this.btnRoutePreview.Size = new System.Drawing.Size(29, 28);
+            this.btnRoutePreview.Size = new System.Drawing.Size(29, 24);
             this.btnRoutePreview.Text = "Маршрут (Ctrl+R)";
             this.btnRoutePreview.Click += new System.EventHandler(this.btnRoutePreview_Click);
             // 
@@ -418,14 +419,14 @@
             this.btnStatistics.Image = global::CrystalTable.Properties.Resources.statistics;
             this.btnStatistics.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnStatistics.Name = "btnStatistics";
-            this.btnStatistics.Size = new System.Drawing.Size(29, 28);
+            this.btnStatistics.Size = new System.Drawing.Size(29, 24);
             this.btnStatistics.Text = "Статистика (Ctrl+T)";
             this.btnStatistics.Click += new System.EventHandler(this.btnStatistics_Click);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 31);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 27);
             // 
             // btnZoomIn
             // 
@@ -433,7 +434,7 @@
             this.btnZoomIn.Image = global::CrystalTable.Properties.Resources.zoom_in;
             this.btnZoomIn.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnZoomIn.Name = "btnZoomIn";
-            this.btnZoomIn.Size = new System.Drawing.Size(29, 28);
+            this.btnZoomIn.Size = new System.Drawing.Size(29, 24);
             this.btnZoomIn.Text = "Увеличить (Ctrl++)";
             this.btnZoomIn.Click += new System.EventHandler(this.btnZoomIn_Click);
             // 
@@ -443,7 +444,7 @@
             this.btnZoomOut.Image = global::CrystalTable.Properties.Resources.zoom_out;
             this.btnZoomOut.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnZoomOut.Name = "btnZoomOut";
-            this.btnZoomOut.Size = new System.Drawing.Size(29, 28);
+            this.btnZoomOut.Size = new System.Drawing.Size(29, 24);
             this.btnZoomOut.Text = "Уменьшить (Ctrl+-)";
             this.btnZoomOut.Click += new System.EventHandler(this.btnZoomOut_Click);
             // 
@@ -453,7 +454,7 @@
             this.btnZoomReset.Image = global::CrystalTable.Properties.Resources.zoom_reset;
             this.btnZoomReset.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnZoomReset.Name = "btnZoomReset";
-            this.btnZoomReset.Size = new System.Drawing.Size(29, 28);
+            this.btnZoomReset.Size = new System.Drawing.Size(29, 24);
             this.btnZoomReset.Text = "Сбросить масштаб (Ctrl+0)";
             this.btnZoomReset.Click += new System.EventHandler(this.btnZoomReset_Click);
             // 
@@ -504,10 +505,10 @@
             this.mainPanel.Controls.Add(this.pictureBox1);
             this.mainPanel.Controls.Add(this.topInfoPanel);
             this.mainPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.mainPanel.Location = new System.Drawing.Point(0, 61);
+            this.mainPanel.Location = new System.Drawing.Point(0, 55);
             this.mainPanel.Name = "mainPanel";
             this.mainPanel.Padding = new System.Windows.Forms.Padding(10);
-            this.mainPanel.Size = new System.Drawing.Size(952, 586);
+            this.mainPanel.Size = new System.Drawing.Size(952, 592);
             this.mainPanel.TabIndex = 4;
             // 
             // pictureBox1
@@ -517,7 +518,7 @@
             this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pictureBox1.Location = new System.Drawing.Point(10, 42);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(932, 534);
+            this.pictureBox1.Size = new System.Drawing.Size(932, 540);
             this.pictureBox1.TabIndex = 1;
             this.pictureBox1.TabStop = false;
             this.pictureBox1.Paint += new System.Windows.Forms.PaintEventHandler(this.PictureBox1_Paint);
@@ -543,6 +544,7 @@
             this.labelSelectedCrystal.Size = new System.Drawing.Size(158, 16);
             this.labelSelectedCrystal.TabIndex = 1;
             this.labelSelectedCrystal.Text = "Кристаллы не выбраны";
+            this.labelSelectedCrystal.Click += new System.EventHandler(this.labelSelectedCrystal_Click);
             // 
             // labelTotalCrystals
             // 
@@ -560,10 +562,10 @@
             this.rightPanel.Controls.Add(this.groupBoxParameters);
             this.rightPanel.Controls.Add(this.groupBoxConnection);
             this.rightPanel.Dock = System.Windows.Forms.DockStyle.Right;
-            this.rightPanel.Location = new System.Drawing.Point(952, 61);
+            this.rightPanel.Location = new System.Drawing.Point(952, 55);
             this.rightPanel.Name = "rightPanel";
             this.rightPanel.Padding = new System.Windows.Forms.Padding(10, 10, 10, 0);
-            this.rightPanel.Size = new System.Drawing.Size(310, 586);
+            this.rightPanel.Size = new System.Drawing.Size(310, 592);
             this.rightPanel.TabIndex = 3;
             // 
             // groupBoxCalibration
@@ -578,7 +580,7 @@
             this.groupBoxCalibration.Controls.Add(this.lblPitchY);
             this.groupBoxCalibration.Controls.Add(this.lblPitchX);
             this.groupBoxCalibration.Dock = System.Windows.Forms.DockStyle.Top;
-            this.groupBoxCalibration.Location = new System.Drawing.Point(10, 421);
+            this.groupBoxCalibration.Location = new System.Drawing.Point(10, 493);
             this.groupBoxCalibration.Name = "groupBoxCalibration";
             this.groupBoxCalibration.Size = new System.Drawing.Size(290, 240);
             this.groupBoxCalibration.TabIndex = 3;
@@ -682,7 +684,7 @@
             this.groupBoxManualControl.Dock = System.Windows.Forms.DockStyle.Top;
             this.groupBoxManualControl.Location = new System.Drawing.Point(10, 303);
             this.groupBoxManualControl.Name = "groupBoxManualControl";
-            this.groupBoxManualControl.Size = new System.Drawing.Size(290, 118);
+            this.groupBoxManualControl.Size = new System.Drawing.Size(290, 190);
             this.groupBoxManualControl.TabIndex = 2;
             this.groupBoxManualControl.TabStop = false;
             this.groupBoxManualControl.Text = "Ручное управление";
@@ -698,13 +700,15 @@
             this.tableLayoutPanel2.Controls.Add(this.buttonMoveLeft, 0, 1);
             this.tableLayoutPanel2.Controls.Add(this.buttonMoveDown, 1, 2);
             this.tableLayoutPanel2.Controls.Add(this.scan, 1, 1);
+            this.tableLayoutPanel2.Controls.Add(this.buttonStart, 0, 3);
             this.tableLayoutPanel2.Location = new System.Drawing.Point(9, 21);
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
-            this.tableLayoutPanel2.RowCount = 3;
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(193, 91);
+            this.tableLayoutPanel2.RowCount = 4;
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(193, 122);
             this.tableLayoutPanel2.TabIndex = 0;
             // 
             // buttonMoveRight
@@ -714,7 +718,7 @@
             this.buttonMoveRight.Name = "buttonMoveRight";
             this.buttonMoveRight.Size = new System.Drawing.Size(59, 24);
             this.buttonMoveRight.TabIndex = 3;
-            this.buttonMoveRight.Text = "→";
+            this.buttonMoveRight.Text = ">";
             this.buttonMoveRight.UseVisualStyleBackColor = true;
             this.buttonMoveRight.Click += new System.EventHandler(this.buttonMoveRight_Click);
             // 
@@ -725,7 +729,7 @@
             this.buttonMoveUp.Name = "buttonMoveUp";
             this.buttonMoveUp.Size = new System.Drawing.Size(58, 24);
             this.buttonMoveUp.TabIndex = 0;
-            this.buttonMoveUp.Text = "↑";
+            this.buttonMoveUp.Text = "^";
             this.buttonMoveUp.UseVisualStyleBackColor = true;
             this.buttonMoveUp.Click += new System.EventHandler(this.buttonMoveUp_Click);
             // 
@@ -736,7 +740,7 @@
             this.buttonMoveLeft.Name = "buttonMoveLeft";
             this.buttonMoveLeft.Size = new System.Drawing.Size(58, 24);
             this.buttonMoveLeft.TabIndex = 2;
-            this.buttonMoveLeft.Text = "←";
+            this.buttonMoveLeft.Text = "<";
             this.buttonMoveLeft.UseVisualStyleBackColor = true;
             this.buttonMoveLeft.Click += new System.EventHandler(this.buttonMoveLeft_Click);
             // 
@@ -745,9 +749,9 @@
             this.buttonMoveDown.Dock = System.Windows.Forms.DockStyle.Fill;
             this.buttonMoveDown.Location = new System.Drawing.Point(67, 63);
             this.buttonMoveDown.Name = "buttonMoveDown";
-            this.buttonMoveDown.Size = new System.Drawing.Size(58, 25);
+            this.buttonMoveDown.Size = new System.Drawing.Size(58, 24);
             this.buttonMoveDown.TabIndex = 1;
-            this.buttonMoveDown.Text = "↓";
+            this.buttonMoveDown.Text = "v";
             this.buttonMoveDown.UseVisualStyleBackColor = true;
             this.buttonMoveDown.Click += new System.EventHandler(this.buttonMoveDown_Click);
             // 
@@ -762,12 +766,25 @@
             this.scan.UseVisualStyleBackColor = true;
             this.scan.Click += new System.EventHandler(this.scan_Click);
             // 
+            // buttonStart
+            // 
+            this.tableLayoutPanel2.SetColumnSpan(this.buttonStart, 3);
+            this.buttonStart.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.buttonStart.Location = new System.Drawing.Point(3, 96);
+            this.buttonStart.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
+            this.buttonStart.Name = "buttonStart";
+            this.buttonStart.Size = new System.Drawing.Size(187, 26);
+            this.buttonStart.TabIndex = 4;
+            this.buttonStart.Text = "Старт";
+            this.buttonStart.UseVisualStyleBackColor = true;
+            this.buttonStart.Click += new System.EventHandler(this.buttonStart_Click);
+            // 
             // checkBoxDiscreteStep
             // 
             this.checkBoxDiscreteStep.AutoSize = true;
             this.checkBoxDiscreteStep.Checked = true;
             this.checkBoxDiscreteStep.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBoxDiscreteStep.Location = new System.Drawing.Point(208, 59);
+            this.checkBoxDiscreteStep.Location = new System.Drawing.Point(208, 21);
             this.checkBoxDiscreteStep.Name = "checkBoxDiscreteStep";
             this.checkBoxDiscreteStep.Size = new System.Drawing.Size(81, 20);
             this.checkBoxDiscreteStep.TabIndex = 1;
@@ -937,7 +954,7 @@
             this.buttonUpdatePort.Name = "buttonUpdatePort";
             this.buttonUpdatePort.Size = new System.Drawing.Size(35, 24);
             this.buttonUpdatePort.TabIndex = 1;
-            this.buttonUpdatePort.Text = "🔄";
+            this.buttonUpdatePort.Text = "??";
             this.buttonUpdatePort.UseVisualStyleBackColor = true;
             this.buttonUpdatePort.Click += new System.EventHandler(this.buttonUpdatePort_Click);
             // 
@@ -948,7 +965,7 @@
             this.buttonConnect.Name = "buttonConnect";
             this.buttonConnect.Size = new System.Drawing.Size(59, 24);
             this.buttonConnect.TabIndex = 2;
-            this.buttonConnect.Text = "▶";
+            this.buttonConnect.Text = "?";
             this.buttonConnect.UseVisualStyleBackColor = true;
             this.buttonConnect.Click += new System.EventHandler(this.buttonConnect_Click);
             // 
@@ -1108,6 +1125,7 @@
         private System.Windows.Forms.Button buttonMoveUp;
         private System.Windows.Forms.Button buttonMoveLeft;
         private System.Windows.Forms.Button buttonMoveDown;
+        private System.Windows.Forms.Button buttonStart;
         private System.Windows.Forms.Button scan;
         private System.Windows.Forms.CheckBox checkBoxDiscreteStep;
         private System.Windows.Forms.GroupBox groupBoxCalibration;
@@ -1127,3 +1145,14 @@
         private System.Windows.Forms.Button saveButton;
     }
 }
+
+
+
+
+
+
+
+
+
+
+

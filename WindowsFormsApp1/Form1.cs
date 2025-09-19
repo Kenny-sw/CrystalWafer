@@ -1,4 +1,4 @@
-﻿using CrystalTable.Data;
+using CrystalTable.Data;
 using CrystalTable.Logic;
 using CrystalTable.Controllers;
 using System;
@@ -32,6 +32,8 @@ namespace CrystalTable
         public Form1()
         {
             InitializeComponent();
+            buttonStart.Text = "Старт";
+            buttonStart.Visible = true;
 
             // Устраняем мерцания при перерисовке
             try
@@ -49,7 +51,7 @@ namespace CrystalTable
             exportImportController = new ExportImportController(this, waferController);
             serialPortController = new SerialPortController(MyserialPort);
 
-            // RX/STATE → статус-бар
+            // RX/STATE > статус-бар
             serialPortController.DataReceived += SerialPort_DataReceived;
             serialPortController.ConnectionStateChanged += SerialPort_ConnectionStateChanged;
 
@@ -98,7 +100,7 @@ namespace CrystalTable
             }
         }
 
-        private void UpdateUI()
+        public void UpdateUI()
         {
             pictureBox1.Invalidate();
             uiController.UpdateStatusBar(waferController, zoomPanController);
@@ -259,20 +261,10 @@ namespace CrystalTable
             var result = exportImportController.OpenFile();
             if (result.HasValue)
             {
-                SizeX.Text = result.Value.info.SizeX.ToString();
-                SizeY.Text = result.Value.info.SizeY.ToString();
-                WaferDiameter.Text = result.Value.info.WaferDiameter.ToString(CultureInfo.InvariantCulture);
-
-                waferController.CrystalWidthRaw = (uint)result.Value.info.SizeX;
-                waferController.CrystalHeightRaw = (uint)result.Value.info.SizeY;
-                waferController.WaferDiameter = result.Value.info.WaferDiameter;
-
-                waferController.BuildCrystalsCached();
-                CenterPointerAndView();   // <— по центру
+                ApplyWaferInfoToUi(result.Value.info);
                 UpdateUI();
             }
         }
-
         private void ImportData()
         {
             var result = exportImportController.ImportData();
@@ -280,20 +272,12 @@ namespace CrystalTable
             {
                 if (result.Value.info != null)
                 {
-                    SizeX.Text = result.Value.info.SizeX.ToString();
-                    SizeY.Text = result.Value.info.SizeY.ToString();
-                    WaferDiameter.Text = result.Value.info.WaferDiameter.ToString(CultureInfo.InvariantCulture);
-
-                    waferController.CrystalWidthRaw = (uint)result.Value.info.SizeX;
-                    waferController.CrystalHeightRaw = (uint)result.Value.info.SizeY;
-                    waferController.WaferDiameter = result.Value.info.WaferDiameter;
+                    ApplyWaferInfoToUi(result.Value.info);
                 }
-                waferController.BuildCrystalsCached();
-                CenterPointerAndView();
+
                 UpdateUI();
             }
         }
-
         private void ExitApplication()
         {
             if (MessageBox.Show("Вы уверены, что хотите выйти?", "Выход",
@@ -303,6 +287,45 @@ namespace CrystalTable
             }
         }
 
+        private void ApplyWaferInfoToUi(WaferInfo info)
+        {
+            if (info == null)
+            {
+                return;
+            }
+
+            SizeX.Text = info.SizeX.ToString();
+            SizeY.Text = info.SizeY.ToString();
+            WaferDiameter.Text = info.WaferDiameter.ToString(CultureSettings.NumericCulture);
+
+            if (info.HasCalibration)
+            {
+                try
+                {
+                    if (lblFirstRef != null)
+                    {
+                        lblFirstRef.Text = $"Первый: {info.FirstReferenceX:F3} мм; {info.FirstReferenceY:F3} мм";
+                    }
+
+                    if (lblLastRef != null)
+                    {
+                        lblLastRef.Text = $"Последний: {info.LastReferenceX:F3} мм; {info.LastReferenceY:F3} мм";
+                    }
+                }
+                catch
+                {
+                    // UI элемент может отсутствовать в режиме тестов
+                }
+            }
+
+            try
+            {
+                UpdateCalibrationLabelsAfterBuild();
+            }
+            catch
+            {
+            }
+        }
         private void UpdateWaferVisualization() => pictureBox1.Refresh();
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
@@ -314,6 +337,8 @@ namespace CrystalTable
         public PictureBox PictureBox => pictureBox1;
         public CommandHistory CommandHistory => commandHistory;
         public RoutePreview RoutePreview => routePreview;
+        public ZoomPanController ZoomPanController => zoomPanController;
+        public WaferController WaferController => waferController;
         public bool ShowRoutePreview => showRoutePreview;
         public Label LabelX => label3;
         public Label LabelY => label4;
@@ -331,7 +356,7 @@ namespace CrystalTable
         public ToolStripButton BtnUndo => btnUndo;
         public ToolStripButton BtnRedo => btnRedo;
 
-        // ====== RX → статус-бар ======
+        // ====== RX > статус-бар ======
         private void SerialPort_DataReceived(string data)
         {
             var now = DateTime.Now;
@@ -365,7 +390,6 @@ namespace CrystalTable
         // «Создать»
         private void Create_Click(object sender, EventArgs e)
         {
-            // Хелпер: вернуть текст из MaskedTextBox без символов маски (плейсхолдеров и литералов)
             string ReadMasked(MaskedTextBox box)
             {
                 var prev = box.TextMaskFormat;
@@ -380,53 +404,20 @@ namespace CrystalTable
                 }
             }
 
-            // 1) Читаем «чистые» строки из полей
-            string sizeXRaw = ReadMasked(SizeX);         // ожидаем целое число (мкм)
-            string sizeYRaw = ReadMasked(SizeY);         // ожидаем целое число (мкм)
-            string diaRaw = ReadMasked(WaferDiameter); // ожидаем целое число (мм), без точек/запятых
+            string sizeXRaw = ReadMasked(SizeX);
+            string sizeYRaw = ReadMasked(SizeY);
+            string diaRaw = ReadMasked(WaferDiameter);
 
-            // 2) Базовая проверка: все поля должны быть непустыми
-            if (string.IsNullOrWhiteSpace(sizeXRaw) ||
-                string.IsNullOrWhiteSpace(sizeYRaw) ||
-                string.IsNullOrWhiteSpace(diaRaw))
+            if (waferController.CreateWaferFromInput(sizeXRaw, sizeYRaw, diaRaw, out string errorMessage))
             {
-                ShowInvalidInput();
-                return;
+                CenterPointerAndView();
+                try { InitializeCalibrationUiState(); } catch { /* не критично */ }
+                UpdateUI();
             }
-
-            // 3) Пытаемся распарсить. Выносим TryParse отдельно — так гарантируется присваивание
-            //    и компилятор не ругается на «переменной не присвоено значение».
-            bool okX = uint.TryParse(sizeXRaw, NumberStyles.Integer, CultureInfo.InvariantCulture, out uint sizeX);
-            bool okY = uint.TryParse(sizeYRaw, NumberStyles.Integer, CultureInfo.InvariantCulture, out uint sizeY);
-            bool okD = uint.TryParse(diaRaw, NumberStyles.Integer, CultureInfo.InvariantCulture, out uint diameterMm);
-
-            // 4) Логические ограничения: ничего не должно быть нулём
-            if (!okX || !okY || !okD || sizeX == 0 || sizeY == 0 || diameterMm == 0)
+            else
             {
-                ShowInvalidInput();
-                return;
+                MessageBox.Show(errorMessage, "Новая пластина", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
-
-            // 5) Присваиваем контроллеру. Диаметр — целые мм; при необходимости — неявно в float.
-            waferController.CrystalWidthRaw = sizeX;                 // мкм
-            waferController.CrystalHeightRaw = sizeY;                 // мкм
-            waferController.WaferDiameter = diameterMm;            // мм (целые)
-
-            // 6) Перестроение карты и обновление интерфейса
-            waferController.CreateNewWafer();
-            CenterPointerAndView();
-            try { InitializeCalibrationUiState(); } catch { /* не критично */ }
-
-            pictureBox1?.Invalidate();
-            UpdateUI();
-
-            // Унифицированный показ сообщения об ошибке
-            void ShowInvalidInput() => MessageBox.Show(
-                "Укажите корректные шаги (Размер X/Размер Y, мкм) и диаметр пластины (целые мм).",
-                "Новая пластина",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Warning
-            );
         }
 
 
@@ -491,5 +482,12 @@ namespace CrystalTable
             try { CenterPointer(); } catch { }   // из Form1.Movement.cs
             zoomPanController.Reset();           // центр и 1.0x
         }
+
+        private void labelSelectedCrystal_Click(object sender, EventArgs e)
+        {
+            // This handler is required by the designer, but no action is needed.
+        }
     }
 }
+
+        

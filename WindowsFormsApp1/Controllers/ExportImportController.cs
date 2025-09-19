@@ -1,5 +1,6 @@
-п»їusing System;
+using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Windows.Forms;
 using CrystalTable.Data;
 using CrystalTable.Logic;
@@ -7,7 +8,7 @@ using CrystalTable.Logic;
 namespace CrystalTable.Controllers
 {
     /// <summary>
-    /// РљРѕРЅС‚СЂРѕР»Р»РµСЂ РґР»СЏ СЌРєСЃРїРѕСЂС‚Р° Рё РёРјРїРѕСЂС‚Р° РґР°РЅРЅС‹С…
+    /// Управляет сохранением и загрузкой настроек пластины и карт кристаллов.
     /// </summary>
     public class ExportImportController
     {
@@ -21,202 +22,245 @@ namespace CrystalTable.Controllers
             this.waferController = waferController;
         }
 
-        /// <summary>
-        /// РЎРѕС…СЂР°РЅРёС‚СЊ РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ РїР»Р°СЃС‚РёРЅРµ
-        /// </summary>
         public void SaveWaferInfo(string sizeX, string sizeY, string diameter)
         {
             try
             {
-                uint.TryParse(sizeX, out var x);
-                uint.TryParse(sizeY, out var y);
-                uint.TryParse(diameter, out var d);
+                uint.TryParse(sizeX, out var parsedSizeX);
+                uint.TryParse(sizeY, out var parsedSizeY);
+                uint.TryParse(diameter, out var parsedDiameter);
 
-                var waferInfo = new WaferInfo
-                {
-                    SizeX = x,
-                    SizeY = y,
-                    WaferDiameter = d,
-                };
+                var waferInfo = BuildCurrentWaferInfo();
+                waferInfo.SizeX = parsedSizeX;
+                waferInfo.SizeY = parsedSizeY;
+                waferInfo.WaferDiameter = parsedDiameter;
 
                 var serializer = new Serializer();
                 serializer.Serialize(waferInfo);
 
-                MessageBox.Show("Р”Р°РЅРЅС‹Рµ СѓСЃРїРµС€РЅРѕ СЃРѕС…СЂР°РЅРµРЅС‹!", "РЈСЃРїРµС…",
+                MessageBox.Show("Параметры успешно сохранены!", "Сохранение",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"РћС€РёР±РєР° РїСЂРё СЃРѕС…СЂР°РЅРµРЅРёРё: {ex.Message}",
-                    "РћС€РёР±РєР°", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Ошибка при сохранении: {ex.Message}",
+                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        /// <summary>
-        /// Р­РєСЃРїРѕСЂС‚РёСЂРѕРІР°С‚СЊ РґР°РЅРЅС‹Рµ
-        /// </summary>
         public void ExportData()
         {
             if (CrystalManager.Instance.Crystals.Count == 0)
             {
-                MessageBox.Show("РќРµС‚ РґР°РЅРЅС‹С… РґР»СЏ СЌРєСЃРїРѕСЂС‚Р°!", "РџСЂРµРґСѓРїСЂРµР¶РґРµРЅРёРµ",
+                MessageBox.Show("Нет данных для экспорта!", "Предупреждение",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            SaveFileDialog saveDialog = new SaveFileDialog();
-            saveDialog.Filter = "РљРѕРјРїР°РєС‚РЅС‹Р№ XML (*.xml)|*.xml|Р”РµС‚Р°Р»СЊРЅС‹Р№ XML (*.xml)|*.xml|" +
-                               "CSV С„Р°Р№Р» (*.csv)|*.csv|JSON С„Р°Р№Р» (*.json)|*.json";
-            saveDialog.Title = "Р­РєСЃРїРѕСЂС‚ РґР°РЅРЅС‹С…";
-
-            if (saveDialog.ShowDialog() == DialogResult.OK)
+            using var saveDialog = new SaveFileDialog
             {
-                try
+                Filter = "Компактный XML (*.xml)|*.xml|Подробный XML (*.xml)|*.xml|" +
+                         "CSV файл (*.csv)|*.csv|JSON файл (*.json)|*.json",
+                Title = "Экспортировать карту"
+            };
+
+            if (saveDialog.ShowDialog() != DialogResult.OK)
+            {
+                return;
+            }
+
+            try
+            {
+                var info = BuildCurrentWaferInfo();
+
+                switch (saveDialog.FilterIndex)
                 {
-                    var info = CreateWaferInfo();
-
-                    switch (saveDialog.FilterIndex)
-                    {
-                        case 1: // РљРѕРјРїР°РєС‚РЅС‹Р№ XML
-                            exporter.ExportToCompactXml(saveDialog.FileName, info,
-                                CrystalManager.Instance.Crystals);
-                            break;
-
-                        case 2: // Р”РµС‚Р°Р»СЊРЅС‹Р№ XML
-                            var stats = waferController.GetStatistics();
-                            exporter.ExportToDetailedXml(saveDialog.FileName, info,
-                                CrystalManager.Instance.Crystals, stats);
-                            break;
-
-                        case 3: // CSV
-                            exporter.ExportToCsv(saveDialog.FileName,
-                                CrystalManager.Instance.Crystals, info);
-                            break;
-
-                        case 4: // JSON
-                            exporter.ExportToJson(saveDialog.FileName, info,
-                                CrystalManager.Instance.Crystals);
-                            break;
-                    }
-
-                    MessageBox.Show("Р”Р°РЅРЅС‹Рµ СѓСЃРїРµС€РЅРѕ СЌРєСЃРїРѕСЂС‚РёСЂРѕРІР°РЅС‹!", "РЈСЃРїРµС…",
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    case 1:
+                        exporter.ExportToCompactXml(saveDialog.FileName, info, CrystalManager.Instance.Crystals);
+                        break;
+                    case 2:
+                        var stats = waferController.GetStatistics();
+                        exporter.ExportToDetailedXml(saveDialog.FileName, info, CrystalManager.Instance.Crystals, stats);
+                        break;
+                    case 3:
+                        exporter.ExportToCsv(saveDialog.FileName, CrystalManager.Instance.Crystals, info);
+                        break;
+                    case 4:
+                        exporter.ExportToJson(saveDialog.FileName, info, CrystalManager.Instance.Crystals);
+                        break;
                 }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"РћС€РёР±РєР° РїСЂРё СЌРєСЃРїРѕСЂС‚Рµ: {ex.Message}", "РћС€РёР±РєР°",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+
+                MessageBox.Show("Экспорт успешно завершён!", "Экспорт",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при экспорте: {ex.Message}", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        /// <summary>
-        /// РРјРїРѕСЂС‚РёСЂРѕРІР°С‚СЊ РґР°РЅРЅС‹Рµ
-        /// </summary>
         public (WaferInfo info, List<Crystal> crystals)? ImportData()
         {
-            OpenFileDialog openDialog = new OpenFileDialog();
-            openDialog.Filter = "XML С„Р°Р№Р»С‹ (*.xml)|*.xml|CSV С„Р°Р№Р»С‹ (*.csv)|*.csv|Р’СЃРµ С„Р°Р№Р»С‹ (*.*)|*.*";
-            openDialog.Title = "РРјРїРѕСЂС‚ РґР°РЅРЅС‹С…";
-
-            if (openDialog.ShowDialog() == DialogResult.OK)
+            using var openDialog = new OpenFileDialog
             {
-                try
-                {
-                    if (openDialog.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var crystals = exporter.ImportFromCsv(openDialog.FileName);
-                        CrystalManager.Instance.Crystals.Clear();
-                        CrystalManager.Instance.Crystals.AddRange(crystals);
-                        return (null, crystals);
-                    }
-                    else
-                    {
-                        var result = exporter.ImportFromCompactXml(openDialog.FileName);
-                        CrystalManager.Instance.Crystals.Clear();
-                        CrystalManager.Instance.Crystals.AddRange(result.crystals);
-                        return result;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"РћС€РёР±РєР° РїСЂРё РёРјРїРѕСЂС‚Рµ: {ex.Message}", "РћС€РёР±РєР°",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+                Filter = "XML файлы (*.xml)|*.xml|CSV файлы (*.csv)|*.csv|Все файлы (*.*)|*.*",
+                Title = "Импорт карты"
+            };
+
+            if (openDialog.ShowDialog() != DialogResult.OK)
+            {
+                return null;
             }
 
-            return null;
+            try
+            {
+                if (openDialog.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+                {
+                    var crystals = exporter.ImportFromCsv(openDialog.FileName);
+                    CrystalManager.Instance.Crystals.Clear();
+                    CrystalManager.Instance.Crystals.AddRange(crystals);
+                    return (null, crystals);
+                }
+
+                var result = exporter.ImportFromCompactXml(openDialog.FileName);
+                CrystalManager.Instance.Crystals.Clear();
+                CrystalManager.Instance.Crystals.AddRange(result.crystals);
+                ApplyWaferInfo(result.info);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при импорте: {ex.Message}", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return null;
+            }
         }
 
-        /// <summary>
-        /// РћС‚РєСЂС‹С‚СЊ С„Р°Р№Р»
-        /// </summary>
         public (WaferInfo info, List<Crystal> crystals)? OpenFile()
         {
-            OpenFileDialog openDialog = new OpenFileDialog();
-            openDialog.Filter = "XML С„Р°Р№Р»С‹ (*.xml)|*.xml|Р’СЃРµ С„Р°Р№Р»С‹ (*.*)|*.*";
-            openDialog.Title = "РћС‚РєСЂС‹С‚СЊ С„Р°Р№Р» РґР°РЅРЅС‹С…";
-
-            if (openDialog.ShowDialog() == DialogResult.OK)
+            using var openDialog = new OpenFileDialog
             {
-                try
-                {
-                    var result = exporter.ImportFromCompactXml(openDialog.FileName);
-                    CrystalManager.Instance.Crystals.Clear();
-                    CrystalManager.Instance.Crystals.AddRange(result.crystals);
+                Filter = "XML файлы (*.xml)|*.xml|Все файлы (*.*)|*.*",
+                Title = "Открыть карту"
+            };
 
-                    MessageBox.Show("Р”Р°РЅРЅС‹Рµ СѓСЃРїРµС€РЅРѕ Р·Р°РіСЂСѓР¶РµРЅС‹!", "РЈСЃРїРµС…",
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                    return result;
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"РћС€РёР±РєР° РїСЂРё Р·Р°РіСЂСѓР·РєРµ С„Р°Р№Р»Р°: {ex.Message}",
-                        "РћС€РёР±РєР°", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+            if (openDialog.ShowDialog() != DialogResult.OK)
+            {
+                return null;
             }
 
-            return null;
+            try
+            {
+                var result = exporter.ImportFromCompactXml(openDialog.FileName);
+                CrystalManager.Instance.Crystals.Clear();
+                CrystalManager.Instance.Crystals.AddRange(result.crystals);
+                ApplyWaferInfo(result.info);
+
+                MessageBox.Show("Карта успешно загружена!", "Загрузка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при чтении файла: {ex.Message}", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return null;
+            }
         }
 
-        /// <summary>
-        /// РЎРѕС…СЂР°РЅРёС‚СЊ РєР°Рє
-        /// </summary>
         public void SaveAs()
         {
-            SaveFileDialog saveDialog = new SaveFileDialog();
-            saveDialog.Filter = "XML С„Р°Р№Р»С‹ (*.xml)|*.xml|Р’СЃРµ С„Р°Р№Р»С‹ (*.*)|*.*";
-            saveDialog.Title = "РЎРѕС…СЂР°РЅРёС‚СЊ РєР°Рє";
-            saveDialog.DefaultExt = "xml";
-
-            if (saveDialog.ShowDialog() == DialogResult.OK)
+            using var saveDialog = new SaveFileDialog
             {
-                try
-                {
-                    var info = CreateWaferInfo();
-                    exporter.ExportToCompactXml(saveDialog.FileName, info,
-                        CrystalManager.Instance.Crystals);
+                Filter = "XML файлы (*.xml)|*.xml|Все файлы (*.*)|*.*",
+                Title = "Сохранить карту как",
+                DefaultExt = "xml"
+            };
 
-                    MessageBox.Show("Р”Р°РЅРЅС‹Рµ СѓСЃРїРµС€РЅРѕ СЃРѕС…СЂР°РЅРµРЅС‹!", "РЈСЃРїРµС…",
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"РћС€РёР±РєР° РїСЂРё СЃРѕС…СЂР°РЅРµРЅРёРё: {ex.Message}", "РћС€РёР±РєР°",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+            if (saveDialog.ShowDialog() != DialogResult.OK)
+            {
+                return;
+            }
+
+            try
+            {
+                var info = BuildCurrentWaferInfo();
+                exporter.ExportToCompactXml(saveDialog.FileName, info, CrystalManager.Instance.Crystals);
+
+                MessageBox.Show("Карта сохранена!", "Сохранение",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при сохранении: {ex.Message}", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        private WaferInfo CreateWaferInfo()
+        private WaferInfo BuildCurrentWaferInfo()
         {
-            return new WaferInfo
+            var zoom = form.ZoomPanController;
+            var pointer = form.GetPointerMm();
+
+            var info = new WaferInfo
             {
                 SizeX = (uint)waferController.CrystalWidthRaw,
                 SizeY = (uint)waferController.CrystalHeightRaw,
-                WaferDiameter = (uint)waferController.WaferDiameter
+                WaferDiameter = (uint)waferController.WaferDiameter,
+                HasCalibration = waferController.IsCalibrationReady(),
+                StepXmm = waferController.StepXmmOrDefault,
+                StepYmm = waferController.StepYmmOrDefault,
+                RotationAngleDeg = waferController.RotationAngleDeg,
+                ZoomFactor = zoom.ZoomFactor,
+                PanOffsetX = zoom.PanOffset.X,
+                PanOffsetY = zoom.PanOffset.Y,
+                PointerXmm = pointer.X,
+                PointerYmm = pointer.Y
             };
+
+            if (waferController.HasFirstRef)
+            {
+                info.FirstReferenceX = waferController.FirstRefMm.X;
+                info.FirstReferenceY = waferController.FirstRefMm.Y;
+            }
+
+            if (waferController.HasLastRef)
+            {
+                info.LastReferenceX = waferController.LastRefMm.X;
+                info.LastReferenceY = waferController.LastRefMm.Y;
+            }
+
+            return info;
+        }
+
+        private void ApplyWaferInfo(WaferInfo info)
+        {
+            if (info == null)
+            {
+                return;
+            }
+
+            waferController.CrystalWidthRaw = info.SizeX;
+            waferController.CrystalHeightRaw = info.SizeY;
+            waferController.WaferDiameter = info.WaferDiameter;
+            waferController.SetSteps(info.StepXmm, info.StepYmm);
+
+            if (info.HasCalibration)
+            {
+                waferController.SetFirstReference(info.FirstReferenceX, info.FirstReferenceY);
+                waferController.SetLastReference(info.LastReferenceX, info.LastReferenceY);
+            }
+            else
+            {
+                waferController.ClearReferences();
+            }
+
+            waferController.BuildCrystalsCached();
+
+            form.ZoomPanController.SetState(info.ZoomFactor, new PointF(info.PanOffsetX, info.PanOffsetY));
+            form.SetPointerMm(info.PointerXmm, info.PointerYmm);
         }
     }
 }

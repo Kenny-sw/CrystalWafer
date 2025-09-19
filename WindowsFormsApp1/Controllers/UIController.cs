@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
+using CrystalTable;
 
 namespace CrystalTable.Controllers
 {
@@ -39,19 +40,19 @@ namespace CrystalTable.Controllers
         {
             if (tb == null) return;
 
-            if (float.TryParse(tb.Text.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out var val))
+            if (float.TryParse(tb.Text.Trim(), NumberStyles.Float, CultureSettings.NumericCulture, out var val))
             {
                 // ограничим допустимым диапазоном
                 if (val < WaferController.MinWaferDiameter) val = WaferController.MinWaferDiameter;
                 if (val > WaferController.MaxWaferDiameter) val = WaferController.MaxWaferDiameter;
 
                 targetMm = val;
-                tb.Text = val.ToString(CultureInfo.InvariantCulture);
+                tb.Text = val.ToString(CultureSettings.NumericCulture);
                 tb.SelectionStart = tb.Text.Length;
             }
             else
             {
-                tb.Text = targetMm.ToString(CultureInfo.InvariantCulture); // откат
+                tb.Text = targetMm.ToString(CultureSettings.NumericCulture); // откат
                 tb.SelectionStart = tb.Text.Length;
             }
         }

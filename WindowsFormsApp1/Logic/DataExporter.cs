@@ -5,8 +5,9 @@ using System.Xml;
 using System.Xml.Serialization;
 using System.Text;
 using System.Linq;
+using System.Globalization;
+using CrystalTable;
 using CrystalTable.Data;
-
 namespace CrystalTable.Logic
 {
     /// <summary>
@@ -48,8 +49,8 @@ namespace CrystalTable.Logic
                 {
                     writer.WriteStartElement("C");
                     writer.WriteAttributeString("i", crystal.Index.ToString());
-                    writer.WriteAttributeString("x", crystal.RealX.ToString("F3"));
-                    writer.WriteAttributeString("y", crystal.RealY.ToString("F3"));
+                    writer.WriteAttributeString("x", crystal.RealX.ToString("F3", CultureSettings.NumericCulture));
+                    writer.WriteAttributeString("y", crystal.RealY.ToString("F3", CultureSettings.NumericCulture));
                     if (crystal.Color != System.Drawing.Color.Blue) // Сохраняем цвет только если не стандартный
                     {
                         writer.WriteAttributeString("color", crystal.Color.ToArgb().ToString());
@@ -100,8 +101,12 @@ namespace CrystalTable.Logic
                 writer.WriteElementString("CrystalWidth", info.SizeX.ToString());
                 writer.WriteElementString("CrystalHeight", info.SizeY.ToString());
                 writer.WriteElementString("CrystalSizeUnit", "µm");
-                writer.WriteElementString("WaferArea", (Math.PI * Math.Pow(info.WaferDiameter / 2, 2)).ToString("F2"));
-                writer.WriteElementString("AreaUnit", "mm²");
+                writer.WriteElementString("StepXmm", info.StepXmm.ToString("F3", CultureSettings.NumericCulture));
+                writer.WriteElementString("StepYmm", info.StepYmm.ToString("F3", CultureSettings.NumericCulture));
+                writer.WriteElementString("RotationDeg", info.RotationAngleDeg.ToString("F3", CultureSettings.NumericCulture));
+                writer.WriteElementString("Zoom", info.ZoomFactor.ToString("F3", CultureSettings.NumericCulture));
+                writer.WriteElementString("WaferArea", (Math.PI * Math.Pow(info.WaferDiameter / 2, 2)).ToString("F2", CultureSettings.NumericCulture));
+                writer.WriteElementString("AreaUnit", "mm2");
                 writer.WriteEndElement();
 
                 // Статистика (если предоставлена)
@@ -110,9 +115,9 @@ namespace CrystalTable.Logic
                     writer.WriteStartElement("Statistics");
                     writer.WriteElementString("TotalCrystals", crystals.Count.ToString());
                     writer.WriteElementString("FillPercentage",
-                        stats.CalculateFillPercentage(info.SizeX / 1000f, info.SizeY / 1000f).ToString("F2"));
+                        stats.CalculateFillPercentage(info.SizeX / 1000f, info.SizeY / 1000f).ToString("F2", CultureSettings.NumericCulture));
                     writer.WriteElementString("CrystalDensity",
-                        stats.GetCrystalDensity().ToString("F4"));
+                        stats.GetCrystalDensity().ToString("F4", CultureSettings.NumericCulture));
 
                     // Распределение по квадрантам
                     writer.WriteStartElement("QuadrantDistribution");
@@ -122,7 +127,7 @@ namespace CrystalTable.Logic
                         writer.WriteAttributeString("name", kvp.Key);
                         writer.WriteAttributeString("count", kvp.Value.ToString());
                         writer.WriteAttributeString("percentage",
-                            ((float)kvp.Value / crystals.Count * 100).ToString("F1"));
+                            ((float)kvp.Value / crystals.Count * 100).ToString("F1", CultureSettings.NumericCulture));
                         writer.WriteEndElement();
                     }
                     writer.WriteEndElement();
@@ -133,7 +138,7 @@ namespace CrystalTable.Logic
                     foreach (var kvp in radialDist)
                     {
                         writer.WriteStartElement("Ring");
-                        writer.WriteAttributeString("radius", kvp.Key.ToString("F1"));
+                        writer.WriteAttributeString("radius", kvp.Key.ToString("F1", CultureSettings.NumericCulture));
                         writer.WriteAttributeString("count", kvp.Value.ToString());
                         writer.WriteEndElement();
                     }
@@ -142,8 +147,8 @@ namespace CrystalTable.Logic
                     // Центр масс
                     var centerOfMass = stats.GetCenterOfMass();
                     writer.WriteStartElement("CenterOfMass");
-                    writer.WriteAttributeString("x", centerOfMass.X.ToString("F3"));
-                    writer.WriteAttributeString("y", centerOfMass.Y.ToString("F3"));
+                    writer.WriteAttributeString("x", centerOfMass.X.ToString("F3", CultureSettings.NumericCulture));
+                    writer.WriteAttributeString("y", centerOfMass.Y.ToString("F3", CultureSettings.NumericCulture));
                     writer.WriteEndElement();
 
                     writer.WriteEndElement(); // Statistics
@@ -159,8 +164,8 @@ namespace CrystalTable.Logic
                     writer.WriteAttributeString("id", crystal.Index.ToString());
 
                     writer.WriteStartElement("Position");
-                    writer.WriteAttributeString("x", crystal.RealX.ToString("F3"));
-                    writer.WriteAttributeString("y", crystal.RealY.ToString("F3"));
+                    writer.WriteAttributeString("x", crystal.RealX.ToString("F3", CultureSettings.NumericCulture));
+                    writer.WriteAttributeString("y", crystal.RealY.ToString("F3", CultureSettings.NumericCulture));
                     writer.WriteAttributeString("unit", "mm");
                     writer.WriteEndElement();
 
@@ -170,11 +175,11 @@ namespace CrystalTable.Logic
 
                     // Расстояние от центра
                     float distance = (float)Math.Sqrt(crystal.RealX * crystal.RealX + crystal.RealY * crystal.RealY);
-                    writer.WriteElementString("DistanceFromCenter", distance.ToString("F3"));
+                    writer.WriteElementString("DistanceFromCenter", distance.ToString("F3", CultureSettings.NumericCulture));
 
                     // Угол относительно центра
                     float angle = (float)(Math.Atan2(crystal.RealY, crystal.RealX) * 180 / Math.PI);
-                    writer.WriteElementString("AngleFromCenter", angle.ToString("F1"));
+                    writer.WriteElementString("AngleFromCenter", angle.ToString("F1", CultureSettings.NumericCulture));
 
                     writer.WriteEndElement(); // Properties
                     writer.WriteEndElement(); // Crystal
@@ -193,94 +198,108 @@ namespace CrystalTable.Logic
         {
             using (var writer = new StreamWriter(filePath, false, Encoding.UTF8))
             {
-                // Заголовок с информацией о пластине
                 if (info != null)
                 {
-                    writer.WriteLine($"# Wafer Diameter: {info.WaferDiameter} mm");
-                    writer.WriteLine($"# Crystal Size: {info.SizeX} x {info.SizeY} µm");
-                    writer.WriteLine($"# Total Crystals: {crystals.Count}");
-                    writer.WriteLine($"# Export Date: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+                    writer.WriteLine($"# Diameter_mm: {info.WaferDiameter.ToString(CultureSettings.NumericCulture)}");
+                    writer.WriteLine($"# Crystal_um: {info.SizeX.ToString(CultureSettings.NumericCulture)} x {info.SizeY.ToString(CultureSettings.NumericCulture)}");
+                    writer.WriteLine($"# Step_mm: {info.StepXmm.ToString("F3", CultureSettings.NumericCulture)} x {info.StepYmm.ToString("F3", CultureSettings.NumericCulture)}");
+                    writer.WriteLine($"# Rotation_deg: {info.RotationAngleDeg.ToString("F3", CultureSettings.NumericCulture)}");
+                    writer.WriteLine($"# Zoom: {info.ZoomFactor.ToString("F3", CultureSettings.NumericCulture)}");
                     writer.WriteLine();
                 }
 
-                // Заголовки колонок
-                writer.WriteLine("Index,X_Position_mm,Y_Position_mm,Distance_from_Center_mm,Angle_deg,Quadrant,Color");
+                writer.WriteLine("Index;X_mm;Y_mm;Distance_mm;Angle_deg;Quadrant;Color;VisualX;VisualY;VisualLeft;VisualTop;VisualRight;VisualBottom");
 
-                // Данные
                 foreach (var crystal in crystals)
                 {
-                    float distance = (float)Math.Sqrt(crystal.RealX * crystal.RealX +
-                                                     crystal.RealY * crystal.RealY);
+                    float distance = (float)Math.Sqrt(crystal.RealX * crystal.RealX + crystal.RealY * crystal.RealY);
                     float angle = (float)(Math.Atan2(crystal.RealY, crystal.RealX) * 180 / Math.PI);
+                    string quadrant = DetermineQuadrant(crystal);
 
-                    // Определяем квадрант
-                    string quadrant;
-                    if (crystal.RealX >= 0 && crystal.RealY >= 0) quadrant = "Q1";
-                    else if (crystal.RealX < 0 && crystal.RealY >= 0) quadrant = "Q2";
-                    else if (crystal.RealX < 0 && crystal.RealY < 0) quadrant = "Q3";
-                    else quadrant = "Q4";
-
-                    writer.WriteLine($"{crystal.Index},{crystal.RealX:F3},{crystal.RealY:F3}," +
-                                   $"{distance:F3},{angle:F1},{quadrant},{crystal.Color.Name}");
+                    writer.WriteLine(string.Join(";", new[]
+                    {
+                        crystal.Index.ToString(),
+                        crystal.RealX.ToString("F3", CultureSettings.NumericCulture),
+                        crystal.RealY.ToString("F3", CultureSettings.NumericCulture),
+                        distance.ToString("F3", CultureSettings.NumericCulture),
+                        angle.ToString("F1", CultureSettings.NumericCulture),
+                        quadrant,
+                        crystal.Color.Name,
+                        crystal.DisplayX.ToString("F3", CultureSettings.NumericCulture),
+                        crystal.DisplayY.ToString("F3", CultureSettings.NumericCulture),
+                        crystal.DisplayLeft.ToString("F3", CultureSettings.NumericCulture),
+                        crystal.DisplayTop.ToString("F3", CultureSettings.NumericCulture),
+                        crystal.DisplayRight.ToString("F3", CultureSettings.NumericCulture),
+                        crystal.DisplayBottom.ToString("F3", CultureSettings.NumericCulture)
+                    }));
                 }
             }
-        }
-
-        /// <summary>
-        /// Экспортирует данные в формат JSON
-        /// </summary>
-        public void ExportToJson(string filePath, WaferInfo info, List<Crystal> crystals)
+        }        public void ExportToJson(string filePath, WaferInfo info, List<Crystal> crystals)
         {
             using (var writer = new StreamWriter(filePath, false, Encoding.UTF8))
             {
                 writer.WriteLine("{");
-
-                // Информация о пластине
                 writer.WriteLine("  \"waferInfo\": {");
-                writer.WriteLine($"    \"diameter\": {info.WaferDiameter},");
-                writer.WriteLine($"    \"crystalWidth\": {info.SizeX},");
-                writer.WriteLine($"    \"crystalHeight\": {info.SizeY},");
-                writer.WriteLine("    \"units\": {");
-                writer.WriteLine("      \"diameter\": \"mm\",");
-                writer.WriteLine("      \"crystalSize\": \"µm\"");
-                writer.WriteLine("    }");
+                writer.WriteLine($"    \"diameter\": \"{info.WaferDiameter.ToString(CultureSettings.NumericCulture)}\",");
+                writer.WriteLine($"    \"crystalWidth\": \"{info.SizeX.ToString(CultureSettings.NumericCulture)}\",");
+                writer.WriteLine($"    \"crystalHeight\": \"{info.SizeY.ToString(CultureSettings.NumericCulture)}\",");
+                writer.WriteLine($"    \"stepXmm\": \"{info.StepXmm.ToString("F3", CultureSettings.NumericCulture)}\",");
+                writer.WriteLine($"    \"stepYmm\": \"{info.StepYmm.ToString("F3", CultureSettings.NumericCulture)}\",");
+                writer.WriteLine($"    \"rotationDeg\": \"{info.RotationAngleDeg.ToString("F3", CultureSettings.NumericCulture)}\",");
+                writer.WriteLine($"    \"zoom\": \"{info.ZoomFactor.ToString("F3", CultureSettings.NumericCulture)}\",");
+                writer.WriteLine($"    \"panX\": \"{info.PanOffsetX.ToString("F3", CultureSettings.NumericCulture)}\",");
+                writer.WriteLine($"    \"panY\": \"{info.PanOffsetY.ToString("F3", CultureSettings.NumericCulture)}\",");
+                writer.WriteLine($"    \"pointerX\": \"{info.PointerXmm.ToString("F3", CultureSettings.NumericCulture)}\",");
+                writer.WriteLine($"    \"pointerY\": \"{info.PointerYmm.ToString("F3", CultureSettings.NumericCulture)}\",");
+                writer.WriteLine($"    \"calibrated\": \"{(info.HasCalibration ? "1" : "0")}\",");
+                writer.WriteLine($"    \"firstRefX\": \"{info.FirstReferenceX.ToString("F3", CultureSettings.NumericCulture)}\",");
+                writer.WriteLine($"    \"firstRefY\": \"{info.FirstReferenceY.ToString("F3", CultureSettings.NumericCulture)}\",");
+                writer.WriteLine($"    \"lastRefX\": \"{info.LastReferenceX.ToString("F3", CultureSettings.NumericCulture)}\",");
+                writer.WriteLine($"    \"lastRefY\": \"{info.LastReferenceY.ToString("F3", CultureSettings.NumericCulture)}\"");
                 writer.WriteLine("  },");
-
-                // Метаданные
                 writer.WriteLine("  \"metadata\": {");
                 writer.WriteLine($"    \"exportDate\": \"{DateTime.Now:yyyy-MM-dd}\",");
                 writer.WriteLine($"    \"exportTime\": \"{DateTime.Now:HH:mm:ss}\",");
-                writer.WriteLine($"    \"totalCrystals\": {crystals.Count}");
+                writer.WriteLine($"    \"totalCrystals\": \"{crystals.Count}\"");
                 writer.WriteLine("  },");
-
-                // Кристаллы
                 writer.WriteLine("  \"crystals\": [");
 
                 for (int i = 0; i < crystals.Count; i++)
                 {
                     var crystal = crystals[i];
-                    writer.Write("    {");
-                    writer.Write($"\"index\": {crystal.Index}, ");
-                    writer.Write($"\"x\": {crystal.RealX:F3}, ");
-                    writer.Write($"\"y\": {crystal.RealY:F3}, ");
-                    writer.Write($"\"color\": \"{crystal.Color.Name}\"");
-                    writer.Write("}");
+                    float distance = (float)Math.Sqrt(crystal.RealX * crystal.RealX + crystal.RealY * crystal.RealY);
+                    float angle = (float)(Math.Atan2(crystal.RealY, crystal.RealX) * 180 / Math.PI);
+                    string quadrant = DetermineQuadrant(crystal);
 
+                    writer.WriteLine("    {");
+                    writer.WriteLine($"      \"index\": \"{crystal.Index}\",");
+                    writer.WriteLine($"      \"x\": \"{crystal.RealX.ToString("F3", CultureSettings.NumericCulture)}\",");
+                    writer.WriteLine($"      \"y\": \"{crystal.RealY.ToString("F3", CultureSettings.NumericCulture)}\",");
+                    writer.WriteLine($"      \"distance\": \"{distance.ToString("F3", CultureSettings.NumericCulture)}\",");
+                    writer.WriteLine($"      \"angle\": \"{angle.ToString("F1", CultureSettings.NumericCulture)}\",");
+                    writer.WriteLine($"      \"quadrant\": \"{quadrant}\",");
+                    writer.WriteLine($"      \"color\": \"{crystal.Color.Name}\",");
+                    writer.WriteLine($"      \"visualX\": \"{crystal.DisplayX.ToString("F3", CultureSettings.NumericCulture)}\",");
+                    writer.WriteLine($"      \"visualY\": \"{crystal.DisplayY.ToString("F3", CultureSettings.NumericCulture)}\",");
+                    writer.WriteLine($"      \"visualLeft\": \"{crystal.DisplayLeft.ToString("F3", CultureSettings.NumericCulture)}\",");
+                    writer.WriteLine($"      \"visualTop\": \"{crystal.DisplayTop.ToString("F3", CultureSettings.NumericCulture)}\",");
+                    writer.WriteLine($"      \"visualRight\": \"{crystal.DisplayRight.ToString("F3", CultureSettings.NumericCulture)}\",");
+                    writer.WriteLine($"      \"visualBottom\": \"{crystal.DisplayBottom.ToString("F3", CultureSettings.NumericCulture)}\"");
+                    writer.Write("    }");
                     if (i < crystals.Count - 1)
+                    {
                         writer.WriteLine(",");
+                    }
                     else
+                    {
                         writer.WriteLine();
+                    }
                 }
 
                 writer.WriteLine("  ]");
                 writer.WriteLine("}");
             }
-        }
-
-        /// <summary>
-        /// Импортирует данные из компактного XML
-        /// </summary>
-        public (WaferInfo info, List<Crystal> crystals) ImportFromCompactXml(string filePath)
+        }        public (WaferInfo info, List<Crystal> crystals) ImportFromCompactXml(string filePath)
         {
             var info = new WaferInfo();
             var crystals = new List<Crystal>();
@@ -289,87 +308,149 @@ namespace CrystalTable.Logic
             {
                 while (reader.Read())
                 {
-                    if (reader.NodeType == XmlNodeType.Element)
+                    if (reader.NodeType != XmlNodeType.Element)
                     {
-                        switch (reader.Name)
-                        {
-                            case "WaferInfo":
-                                info.WaferDiameter = uint.Parse(reader.GetAttribute("diameter"));
-                                info.SizeX = uint.Parse(reader.GetAttribute("crystalWidth"));
-                                info.SizeY = uint.Parse(reader.GetAttribute("crystalHeight"));
-                                break;
+                        continue;
+                    }
 
-                            case "C": // Crystal
-                                var crystal = new Crystal
-                                {
-                                    Index = int.Parse(reader.GetAttribute("i")),
-                                    RealX = float.Parse(reader.GetAttribute("x")),
-                                    RealY = float.Parse(reader.GetAttribute("y"))
-                                };
+                    switch (reader.Name)
+                    {
+                        case "WaferInfo":
+                            info.WaferDiameter = ParseUInt(reader.GetAttribute("diameter"));
+                            info.SizeX = ParseUInt(reader.GetAttribute("crystalWidth"));
+                            info.SizeY = ParseUInt(reader.GetAttribute("crystalHeight"));
+                            info.StepXmm = ParseFloat(reader.GetAttribute("stepXmm"), info.StepXmm);
+                            info.StepYmm = ParseFloat(reader.GetAttribute("stepYmm"), info.StepYmm);
+                            info.RotationAngleDeg = ParseFloat(reader.GetAttribute("rotationDeg"), info.RotationAngleDeg);
+                            info.ZoomFactor = ParseFloat(reader.GetAttribute("zoom"), 1f);
+                            info.PanOffsetX = ParseFloat(reader.GetAttribute("panX"), info.PanOffsetX);
+                            info.PanOffsetY = ParseFloat(reader.GetAttribute("panY"), info.PanOffsetY);
+                            info.PointerXmm = ParseFloat(reader.GetAttribute("pointerX"), info.PointerXmm);
+                            info.PointerYmm = ParseFloat(reader.GetAttribute("pointerY"), info.PointerYmm);
 
-                                string colorAttr = reader.GetAttribute("color");
-                                if (!string.IsNullOrEmpty(colorAttr))
-                                {
-                                    crystal.Color = System.Drawing.Color.FromArgb(int.Parse(colorAttr));
-                                }
-                                else
-                                {
-                                    crystal.Color = System.Drawing.Color.Blue;
-                                }
+                            string calibrated = reader.GetAttribute("calibrated");
+                            info.HasCalibration = calibrated == "1" || string.Equals(calibrated, "true", StringComparison.OrdinalIgnoreCase);
+                            if (info.HasCalibration)
+                            {
+                                info.FirstReferenceX = ParseFloat(reader.GetAttribute("firstRefX"), info.FirstReferenceX);
+                                info.FirstReferenceY = ParseFloat(reader.GetAttribute("firstRefY"), info.FirstReferenceY);
+                                info.LastReferenceX = ParseFloat(reader.GetAttribute("lastRefX"), info.LastReferenceX);
+                                info.LastReferenceY = ParseFloat(reader.GetAttribute("lastRefY"), info.LastReferenceY);
+                            }
+                            break;
 
-                                crystals.Add(crystal);
-                                break;
-                        }
+                        case "C":
+                            var crystal = new Crystal
+                            {
+                                Index = int.Parse(reader.GetAttribute("i")),
+                                RealX = ParseFloat(reader.GetAttribute("x")),
+                                RealY = ParseFloat(reader.GetAttribute("y")),
+                                Color = System.Drawing.Color.Blue
+                            };
+
+                            string colorAttr = reader.GetAttribute("color");
+                            if (!string.IsNullOrEmpty(colorAttr))
+                            {
+                                crystal.Color = System.Drawing.Color.FromArgb(int.Parse(colorAttr));
+                            }
+
+                            crystal.DisplayX = ParseFloat(reader.GetAttribute("vx"), crystal.DisplayX);
+                            crystal.DisplayY = ParseFloat(reader.GetAttribute("vy"), crystal.DisplayY);
+                            crystal.DisplayLeft = ParseFloat(reader.GetAttribute("vleft"), crystal.DisplayLeft);
+                            crystal.DisplayTop = ParseFloat(reader.GetAttribute("vtop"), crystal.DisplayTop);
+                            crystal.DisplayRight = ParseFloat(reader.GetAttribute("vright"), crystal.DisplayRight);
+                            crystal.DisplayBottom = ParseFloat(reader.GetAttribute("vbottom"), crystal.DisplayBottom);
+
+                            crystals.Add(crystal);
+                            break;
                     }
                 }
             }
 
             return (info, crystals);
-        }
-
-        /// <summary>
+        }/// <summary>
         /// Импортирует данные из CSV файла
         /// </summary>
-        public List<Crystal> ImportFromCsv(string filePath)
+                public List<Crystal> ImportFromCsv(string filePath)
         {
             var crystals = new List<Crystal>();
             var lines = File.ReadAllLines(filePath);
 
-            foreach (var line in lines)
+            foreach (var rawLine in lines)
             {
-                // Пропускаем комментарии и заголовки
-                if (line.StartsWith("#") || line.Contains("Index,") || string.IsNullOrWhiteSpace(line))
-                    continue;
-
-                var parts = line.Split(',');
-                if (parts.Length >= 3)
+                if (string.IsNullOrWhiteSpace(rawLine) || rawLine.StartsWith("#"))
                 {
-                    var crystal = new Crystal
-                    {
-                        Index = int.Parse(parts[0]),
-                        RealX = float.Parse(parts[1]),
-                        RealY = float.Parse(parts[2])
-                    };
+                    continue;
+                }
 
-                    // Цвет (если есть)
-                    if (parts.Length >= 7 && !string.IsNullOrEmpty(parts[6]))
+                var line = rawLine.Trim();
+                if (line.StartsWith("Index", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                string[] parts = line.Split(';');
+                if (parts.Length < 3)
+                {
+                    parts = line.Split(',');
+                }
+
+                if (parts.Length < 3)
+                {
+                    continue;
+                }
+
+                var crystal = new Crystal
+                {
+                    Index = int.Parse(parts[0]),
+                    RealX = ParseFloat(parts[1]),
+                    RealY = ParseFloat(parts[2]),
+                    Color = System.Drawing.Color.Blue
+                };
+
+                if (parts.Length > 6 && !string.IsNullOrEmpty(parts[6]))
+                {
+                    try
                     {
-                        try
-                        {
-                            crystal.Color = System.Drawing.Color.FromName(parts[6]);
-                        }
-                        catch
-                        {
-                            crystal.Color = System.Drawing.Color.Blue;
-                        }
+                        crystal.Color = System.Drawing.Color.FromName(parts[6]);
                     }
-                    else
+                    catch
                     {
                         crystal.Color = System.Drawing.Color.Blue;
                     }
-
-                    crystals.Add(crystal);
                 }
+
+                if (parts.Length > 7)
+                {
+                    crystal.DisplayX = ParseFloat(parts[7], crystal.DisplayX);
+                }
+
+                if (parts.Length > 8)
+                {
+                    crystal.DisplayY = ParseFloat(parts[8], crystal.DisplayY);
+                }
+
+                if (parts.Length > 9)
+                {
+                    crystal.DisplayLeft = ParseFloat(parts[9], crystal.DisplayLeft);
+                }
+
+                if (parts.Length > 10)
+                {
+                    crystal.DisplayTop = ParseFloat(parts[10], crystal.DisplayTop);
+                }
+
+                if (parts.Length > 11)
+                {
+                    crystal.DisplayRight = ParseFloat(parts[11], crystal.DisplayRight);
+                }
+
+                if (parts.Length > 12)
+                {
+                    crystal.DisplayBottom = ParseFloat(parts[12], crystal.DisplayBottom);
+                }
+
+                crystals.Add(crystal);
             }
 
             return crystals;
@@ -378,6 +459,48 @@ namespace CrystalTable.Logic
         /// <summary>
         /// Определяет формат файла по расширению
         /// </summary>
+        private static string DetermineQuadrant(Crystal crystal)
+        {
+            if (crystal.RealX >= 0 && crystal.RealY >= 0)
+            {
+                return "Q1";
+            }
+
+            if (crystal.RealX < 0 && crystal.RealY >= 0)
+            {
+                return "Q2";
+            }
+
+            if (crystal.RealX < 0 && crystal.RealY < 0)
+            {
+                return "Q3";
+            }
+
+            return "Q4";
+        }
+        private static float ParseFloat(string source, float fallback = 0f)
+        {
+            if (string.IsNullOrWhiteSpace(source))
+            {
+                return fallback;
+            }
+
+            return float.TryParse(source, NumberStyles.Float, CultureSettings.NumericCulture, out var value)
+                ? value
+                : fallback;
+        }
+
+        private static uint ParseUInt(string source, uint fallback = 0)
+        {
+            if (string.IsNullOrWhiteSpace(source))
+            {
+                return fallback;
+            }
+
+            return uint.TryParse(source, NumberStyles.Integer, CultureSettings.NumericCulture, out var value)
+                ? value
+                : fallback;
+        }
         public ExportFormat GetFormatFromExtension(string filePath)
         {
             string extension = Path.GetExtension(filePath).ToLower();
@@ -406,3 +529,15 @@ namespace CrystalTable.Logic
         Json
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
