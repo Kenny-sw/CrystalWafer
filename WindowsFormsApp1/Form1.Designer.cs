@@ -1,4 +1,4 @@
-﻿namespace CrystalTable
+namespace CrystalTable
 {
     partial class Form1
     {
@@ -24,6 +24,11 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            this.cameraPictureBox = new System.Windows.Forms.PictureBox();
+            this.groupBoxMainControl = new System.Windows.Forms.GroupBox();
+            this.resetButton = new System.Windows.Forms.Button();
+            this.startButton = new System.Windows.Forms.Button();
+            this.toOriginButton = new System.Windows.Forms.Button();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -113,11 +118,14 @@
             this.label3 = new System.Windows.Forms.Label();
             this.saveButton = new System.Windows.Forms.Button();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+            ((System.ComponentModel.ISupportInitialize)(this.cameraPictureBox)).BeginInit();
+            this.groupBoxMainControl.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.toolStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.mainPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.pictureBox1.SuspendLayout();
             this.topInfoPanel.SuspendLayout();
             this.rightPanel.SuspendLayout();
             this.groupBoxCalibration.SuspendLayout();
@@ -127,6 +135,59 @@
             this.tableLayoutPanel1.SuspendLayout();
             this.groupBoxConnection.SuspendLayout();
             this.SuspendLayout();
+            // 
+            // cameraPictureBox
+            // 
+            this.cameraPictureBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cameraPictureBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.cameraPictureBox.Location = new System.Drawing.Point(769, 3);
+            this.cameraPictureBox.Name = "cameraPictureBox";
+            this.cameraPictureBox.Size = new System.Drawing.Size(160, 120);
+            this.cameraPictureBox.TabIndex = 2;
+            this.cameraPictureBox.TabStop = false;
+            // 
+            // groupBoxMainControl
+            // 
+            this.groupBoxMainControl.Controls.Add(this.resetButton);
+            this.groupBoxMainControl.Controls.Add(this.startButton);
+            this.groupBoxMainControl.Controls.Add(this.toOriginButton);
+            this.groupBoxMainControl.Dock = System.Windows.Forms.DockStyle.Top;
+            this.groupBoxMainControl.Location = new System.Drawing.Point(10, 10);
+            this.groupBoxMainControl.Name = "groupBoxMainControl";
+            this.groupBoxMainControl.Size = new System.Drawing.Size(290, 65);
+            this.groupBoxMainControl.TabIndex = 4;
+            this.groupBoxMainControl.TabStop = false;
+            this.groupBoxMainControl.Text = "Главное управление";
+            // 
+            // resetButton
+            // 
+            this.resetButton.Location = new System.Drawing.Point(197, 23);
+            this.resetButton.Name = "resetButton";
+            this.resetButton.Size = new System.Drawing.Size(85, 28);
+            this.resetButton.TabIndex = 2;
+            this.resetButton.Text = "Сброс";
+            this.resetButton.UseVisualStyleBackColor = true;
+            this.resetButton.Click += new System.EventHandler(this.resetButton_Click);
+            // 
+            // startButton
+            // 
+            this.startButton.Location = new System.Drawing.Point(101, 23);
+            this.startButton.Name = "startButton";
+            this.startButton.Size = new System.Drawing.Size(85, 28);
+            this.startButton.TabIndex = 1;
+            this.startButton.Text = "Пуск";
+            this.startButton.UseVisualStyleBackColor = true;
+            this.startButton.Click += new System.EventHandler(this.startButton_Click);
+            // 
+            // toOriginButton
+            // 
+            this.toOriginButton.Location = new System.Drawing.Point(9, 23);
+            this.toOriginButton.Name = "toOriginButton";
+            this.toOriginButton.Size = new System.Drawing.Size(85, 28);
+            this.toOriginButton.TabIndex = 0;
+            this.toOriginButton.Text = "В исходное";
+            this.toOriginButton.UseVisualStyleBackColor = true;
+            this.toOriginButton.Click += new System.EventHandler(this.toOriginButton_Click);
             // 
             // menuStrip1
             // 
@@ -515,6 +576,7 @@
             // 
             this.pictureBox1.BackColor = System.Drawing.Color.White;
             this.pictureBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pictureBox1.Controls.Add(this.cameraPictureBox);
             this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pictureBox1.Location = new System.Drawing.Point(10, 42);
             this.pictureBox1.Name = "pictureBox1";
@@ -544,7 +606,6 @@
             this.labelSelectedCrystal.Size = new System.Drawing.Size(158, 16);
             this.labelSelectedCrystal.TabIndex = 1;
             this.labelSelectedCrystal.Text = "Кристаллы не выбраны";
-            this.labelSelectedCrystal.Click += new System.EventHandler(this.labelSelectedCrystal_Click);
             // 
             // labelTotalCrystals
             // 
@@ -561,6 +622,7 @@
             this.rightPanel.Controls.Add(this.groupBoxManualControl);
             this.rightPanel.Controls.Add(this.groupBoxParameters);
             this.rightPanel.Controls.Add(this.groupBoxConnection);
+            this.rightPanel.Controls.Add(this.groupBoxMainControl);
             this.rightPanel.Dock = System.Windows.Forms.DockStyle.Right;
             this.rightPanel.Location = new System.Drawing.Point(952, 55);
             this.rightPanel.Name = "rightPanel";
@@ -580,7 +642,7 @@
             this.groupBoxCalibration.Controls.Add(this.lblPitchY);
             this.groupBoxCalibration.Controls.Add(this.lblPitchX);
             this.groupBoxCalibration.Dock = System.Windows.Forms.DockStyle.Top;
-            this.groupBoxCalibration.Location = new System.Drawing.Point(10, 493);
+            this.groupBoxCalibration.Location = new System.Drawing.Point(10, 558);
             this.groupBoxCalibration.Name = "groupBoxCalibration";
             this.groupBoxCalibration.Size = new System.Drawing.Size(290, 240);
             this.groupBoxCalibration.TabIndex = 3;
@@ -682,7 +744,7 @@
             this.groupBoxManualControl.Controls.Add(this.tableLayoutPanel2);
             this.groupBoxManualControl.Controls.Add(this.checkBoxDiscreteStep);
             this.groupBoxManualControl.Dock = System.Windows.Forms.DockStyle.Top;
-            this.groupBoxManualControl.Location = new System.Drawing.Point(10, 303);
+            this.groupBoxManualControl.Location = new System.Drawing.Point(10, 368);
             this.groupBoxManualControl.Name = "groupBoxManualControl";
             this.groupBoxManualControl.Size = new System.Drawing.Size(290, 190);
             this.groupBoxManualControl.TabIndex = 2;
@@ -797,7 +859,7 @@
             this.groupBoxParameters.Controls.Add(this.Create);
             this.groupBoxParameters.Controls.Add(this.checkBoxFillWafer);
             this.groupBoxParameters.Dock = System.Windows.Forms.DockStyle.Top;
-            this.groupBoxParameters.Location = new System.Drawing.Point(10, 81);
+            this.groupBoxParameters.Location = new System.Drawing.Point(10, 146);
             this.groupBoxParameters.Name = "groupBoxParameters";
             this.groupBoxParameters.Size = new System.Drawing.Size(290, 222);
             this.groupBoxParameters.TabIndex = 1;
@@ -940,7 +1002,7 @@
             this.groupBoxConnection.Controls.Add(this.buttonConnect);
             this.groupBoxConnection.Controls.Add(this.comboBoxPorts);
             this.groupBoxConnection.Dock = System.Windows.Forms.DockStyle.Top;
-            this.groupBoxConnection.Location = new System.Drawing.Point(10, 10);
+            this.groupBoxConnection.Location = new System.Drawing.Point(10, 75);
             this.groupBoxConnection.Name = "groupBoxConnection";
             this.groupBoxConnection.Size = new System.Drawing.Size(290, 71);
             this.groupBoxConnection.TabIndex = 0;
@@ -1026,6 +1088,8 @@
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
             this.Resize += new System.EventHandler(this.Form1_Resize);
+            ((System.ComponentModel.ISupportInitialize)(this.cameraPictureBox)).EndInit();
+            this.groupBoxMainControl.ResumeLayout(false);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.toolStrip1.ResumeLayout(false);
@@ -1034,6 +1098,7 @@
             this.statusStrip1.PerformLayout();
             this.mainPanel.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            this.pictureBox1.ResumeLayout(false);
             this.topInfoPanel.ResumeLayout(false);
             this.topInfoPanel.PerformLayout();
             this.rightPanel.ResumeLayout(false);
@@ -1143,16 +1208,10 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Button saveButton;
+        private System.Windows.Forms.PictureBox cameraPictureBox;
+        private System.Windows.Forms.GroupBox groupBoxMainControl;
+        private System.Windows.Forms.Button toOriginButton;
+        private System.Windows.Forms.Button startButton;
+        private System.Windows.Forms.Button resetButton;
     }
 }
-
-
-
-
-
-
-
-
-
-
-

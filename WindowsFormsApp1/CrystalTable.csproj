@@ -52,6 +52,7 @@
     <Compile Include="Calibration.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Camera\CameraController.cs" />
     <Compile Include="Controllers\ExportImportController.cs" />
     <Compile Include="Controllers\MouseController.cs" />
     <Compile Include="Controllers\SerialPortController.cs" />

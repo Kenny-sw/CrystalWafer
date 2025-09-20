@@ -127,6 +127,21 @@ namespace CrystalTable
             UpdateUI();
         }
 
+        private void resetButton_Click(object sender, EventArgs e)
+        {
+            // TODO: Implement hardware reset logic
+        }
+
+        private void startButton_Click(object sender, EventArgs e)
+        {
+            // TODO: Implement start logic
+        }
+
+        private void toOriginButton_Click(object sender, EventArgs e)
+        {
+            // TODO: Implement move to origin logic
+        }
+
         // ===== Тулбар =====
         private void btnUndo_Click(object sender, EventArgs e) => HandleUndo();
         private void btnRedo_Click(object sender, EventArgs e) => HandleRedo();
@@ -481,6 +496,11 @@ namespace CrystalTable
         {
             try { CenterPointer(); } catch { }   // из Form1.Movement.cs
             zoomPanController.Reset();           // центр и 1.0x
+        }
+
+        private void cameraPictureBox_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
