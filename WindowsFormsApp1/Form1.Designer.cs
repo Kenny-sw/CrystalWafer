@@ -68,15 +68,14 @@ namespace CrystalTable
             this.btnZoomReset = new System.Windows.Forms.ToolStripButton();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.statusLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.totalCrystalsStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.selectedCrystalStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.fillPercentageLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.zoomLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.coordinatesLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.MyserialPort = new System.IO.Ports.SerialPort(this.components);
             this.mainPanel = new System.Windows.Forms.Panel();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.topInfoPanel = new System.Windows.Forms.Panel();
-            this.labelSelectedCrystal = new System.Windows.Forms.Label();
-            this.labelTotalCrystals = new System.Windows.Forms.Label();
             this.rightPanel = new System.Windows.Forms.Panel();
             this.groupBoxCalibration = new System.Windows.Forms.GroupBox();
             this.btnBuildMap = new System.Windows.Forms.Button();
@@ -113,10 +112,6 @@ namespace CrystalTable
             this.buttonUpdatePort = new System.Windows.Forms.Button();
             this.buttonConnect = new System.Windows.Forms.Button();
             this.comboBoxPorts = new System.Windows.Forms.ComboBox();
-            this.labelIndex = new System.Windows.Forms.Label();
-            this.label4 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
-            this.saveButton = new System.Windows.Forms.Button();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             ((System.ComponentModel.ISupportInitialize)(this.cameraPictureBox)).BeginInit();
             this.groupBoxMainControl.SuspendLayout();
@@ -126,7 +121,6 @@ namespace CrystalTable
             this.mainPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.pictureBox1.SuspendLayout();
-            this.topInfoPanel.SuspendLayout();
             this.rightPanel.SuspendLayout();
             this.groupBoxCalibration.SuspendLayout();
             this.groupBoxManualControl.SuspendLayout();
@@ -524,6 +518,8 @@ namespace CrystalTable
             this.statusStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.statusLabel,
+            this.totalCrystalsStatusLabel,
+            this.selectedCrystalStatusLabel,
             this.fillPercentageLabel,
             this.zoomLabel,
             this.coordinatesLabel});
@@ -538,6 +534,18 @@ namespace CrystalTable
             this.statusLabel.Name = "statusLabel";
             this.statusLabel.Size = new System.Drawing.Size(57, 20);
             this.statusLabel.Text = "Готово";
+            // 
+            // totalCrystalsStatusLabel
+            // 
+            this.totalCrystalsStatusLabel.Name = "totalCrystalsStatusLabel";
+            this.totalCrystalsStatusLabel.Size = new System.Drawing.Size(238, 20);
+            this.totalCrystalsStatusLabel.Text = "Общее количество кристаллов: 0";
+            // 
+            // selectedCrystalStatusLabel
+            // 
+            this.selectedCrystalStatusLabel.Name = "selectedCrystalStatusLabel";
+            this.selectedCrystalStatusLabel.Size = new System.Drawing.Size(174, 20);
+            this.selectedCrystalStatusLabel.Text = "Кристаллы не выбраны";
             // 
             // fillPercentageLabel
             // 
@@ -564,7 +572,6 @@ namespace CrystalTable
             // mainPanel
             // 
             this.mainPanel.Controls.Add(this.pictureBox1);
-            this.mainPanel.Controls.Add(this.topInfoPanel);
             this.mainPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.mainPanel.Location = new System.Drawing.Point(0, 55);
             this.mainPanel.Name = "mainPanel";
@@ -578,43 +585,15 @@ namespace CrystalTable
             this.pictureBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pictureBox1.Controls.Add(this.cameraPictureBox);
             this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pictureBox1.Location = new System.Drawing.Point(10, 42);
+            this.pictureBox1.Location = new System.Drawing.Point(10, 10);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(932, 540);
+            this.pictureBox1.Size = new System.Drawing.Size(932, 572);
             this.pictureBox1.TabIndex = 1;
             this.pictureBox1.TabStop = false;
             this.pictureBox1.Paint += new System.Windows.Forms.PaintEventHandler(this.PictureBox1_Paint);
             this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
             this.pictureBox1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseMove);
             this.pictureBox1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseUp);
-            // 
-            // topInfoPanel
-            // 
-            this.topInfoPanel.Controls.Add(this.labelSelectedCrystal);
-            this.topInfoPanel.Controls.Add(this.labelTotalCrystals);
-            this.topInfoPanel.Dock = System.Windows.Forms.DockStyle.Top;
-            this.topInfoPanel.Location = new System.Drawing.Point(10, 10);
-            this.topInfoPanel.Name = "topInfoPanel";
-            this.topInfoPanel.Size = new System.Drawing.Size(932, 32);
-            this.topInfoPanel.TabIndex = 0;
-            // 
-            // labelSelectedCrystal
-            // 
-            this.labelSelectedCrystal.AutoSize = true;
-            this.labelSelectedCrystal.Location = new System.Drawing.Point(313, 8);
-            this.labelSelectedCrystal.Name = "labelSelectedCrystal";
-            this.labelSelectedCrystal.Size = new System.Drawing.Size(158, 16);
-            this.labelSelectedCrystal.TabIndex = 1;
-            this.labelSelectedCrystal.Text = "Кристаллы не выбраны";
-            // 
-            // labelTotalCrystals
-            // 
-            this.labelTotalCrystals.AutoSize = true;
-            this.labelTotalCrystals.Location = new System.Drawing.Point(4, 8);
-            this.labelTotalCrystals.Name = "labelTotalCrystals";
-            this.labelTotalCrystals.Size = new System.Drawing.Size(223, 16);
-            this.labelTotalCrystals.TabIndex = 0;
-            this.labelTotalCrystals.Text = "Общее количество кристаллов: 0";
             // 
             // rightPanel
             // 
@@ -1042,35 +1021,6 @@ namespace CrystalTable
             this.comboBoxPorts.Size = new System.Drawing.Size(169, 24);
             this.comboBoxPorts.TabIndex = 0;
             // 
-            // labelIndex
-            // 
-            this.labelIndex.Location = new System.Drawing.Point(0, 0);
-            this.labelIndex.Name = "labelIndex";
-            this.labelIndex.Size = new System.Drawing.Size(100, 23);
-            this.labelIndex.TabIndex = 0;
-            // 
-            // label4
-            // 
-            this.label4.Location = new System.Drawing.Point(0, 0);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(100, 23);
-            this.label4.TabIndex = 0;
-            // 
-            // label3
-            // 
-            this.label3.Location = new System.Drawing.Point(0, 0);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(100, 23);
-            this.label3.TabIndex = 0;
-            // 
-            // saveButton
-            // 
-            this.saveButton.Location = new System.Drawing.Point(0, 0);
-            this.saveButton.Name = "saveButton";
-            this.saveButton.Size = new System.Drawing.Size(75, 23);
-            this.saveButton.TabIndex = 0;
-            this.saveButton.Click += new System.EventHandler(this.SaveButton_Click);
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -1099,8 +1049,6 @@ namespace CrystalTable
             this.mainPanel.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.pictureBox1.ResumeLayout(false);
-            this.topInfoPanel.ResumeLayout(false);
-            this.topInfoPanel.PerformLayout();
             this.rightPanel.ResumeLayout(false);
             this.groupBoxCalibration.ResumeLayout(false);
             this.groupBoxCalibration.PerformLayout();
@@ -1164,9 +1112,6 @@ namespace CrystalTable
         private System.IO.Ports.SerialPort MyserialPort;
         private System.Windows.Forms.Panel mainPanel;
         private System.Windows.Forms.PictureBox pictureBox1;
-        private System.Windows.Forms.Panel topInfoPanel;
-        private System.Windows.Forms.Label labelSelectedCrystal;
-        private System.Windows.Forms.Label labelTotalCrystals;
         private System.Windows.Forms.Panel rightPanel;
         private System.Windows.Forms.GroupBox groupBoxConnection;
         private System.Windows.Forms.Button buttonUpdatePort;
@@ -1204,14 +1149,12 @@ namespace CrystalTable
         private System.Windows.Forms.Label lblPitchY;
         private System.Windows.Forms.Label lblPitchX;
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
-        private System.Windows.Forms.Label labelIndex;
-        private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Button saveButton;
         private System.Windows.Forms.PictureBox cameraPictureBox;
         private System.Windows.Forms.GroupBox groupBoxMainControl;
         private System.Windows.Forms.Button toOriginButton;
         private System.Windows.Forms.Button startButton;
         private System.Windows.Forms.Button resetButton;
+        private System.Windows.Forms.ToolStripStatusLabel totalCrystalsStatusLabel;
+        private System.Windows.Forms.ToolStripStatusLabel selectedCrystalStatusLabel;
     }
 }

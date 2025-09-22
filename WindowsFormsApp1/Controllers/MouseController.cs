@@ -71,8 +71,7 @@ namespace CrystalTable.Controllers
 
         public void HandleMouseMove(MouseEventArgs e)
         {
-            form.LabelX.Text = $"X: {e.X}";
-            form.LabelY.Text = $"Y: {e.Y}";
+            // form.CoordinatesLabel.Text = $"X: {e.X}, Y: {e.Y}"; // Эта строка закомментирована, так как UIController обновляет координаты
 
             if (isPanning && e.Button == MouseButtons.Middle)
             {
@@ -239,16 +238,16 @@ namespace CrystalTable.Controllers
         {
             var transformedPoint = TransformMousePoint(e.Location);
 
-            foreach (var crystal in CrystalManager.Instance.Crystals)
+            for (int i = CrystalManager.Instance.Crystals.Count - 1; i >= 0; i--)
             {
+                var crystal = CrystalManager.Instance.Crystals[i];
                 if (IsPointInCrystal(transformedPoint, crystal))
                 {
-                    form.LabelIndex.Text = $" : {crystal.Index}";
+                    form.UiController.ShowHoveredCrystal(crystal);
                     return;
                 }
             }
-
-            form.LabelIndex.Text = " : -";
+            form.UiController.ShowHoveredCrystal(null);
         }
 
         public Point LastMousePosition => lastMousePosition;

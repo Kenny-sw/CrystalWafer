@@ -1,5 +1,6 @@
 ﻿using CrystalTable.Logic;
 using CrystalTable.Controllers;
+using CrystalTable.Data;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -85,8 +86,8 @@ namespace CrystalTable.Controllers
 
             // Кол-во кристаллов
             int count = CrystalManager.Instance.Crystals.Count;
-            if (form.LabelTotalCrystals != null)
-                form.LabelTotalCrystals.Text = $"Общее количество кристаллов: {count}";
+            if (form.TotalCrystalsStatusLabel != null)
+                form.TotalCrystalsStatusLabel.Text = $"Общее количество кристаллов: {count}";
 
             // Заполнение площади (приблизительно)
             if (form.FillPercentageLabel != null && wafer != null)
@@ -107,24 +108,44 @@ namespace CrystalTable.Controllers
         /// <summary>Обновление метки выбранных кристаллов (индексация с 1 для UI)</summary>
         public void UpdateSelectionLabel(HashSet<int> selected)
         {
-            if (form?.LabelSelectedCrystal == null) return;
+            if (form?.SelectedCrystalStatusLabel == null) return;
 
             if (selected == null || selected.Count == 0)
             {
-                form.LabelSelectedCrystal.Text = "Кристаллы не выбраны";
+                form.SelectedCrystalStatusLabel.Text = "Кристаллы не выбраны";
             }
             else if (selected.Count == 1)
             {
                 int idx = selected.First();
-                form.LabelSelectedCrystal.Text = $"Выбран кристалл: {idx + 1}";
+                form.SelectedCrystalStatusLabel.Text = $"Выбран кристалл: {idx + 1}";
             }
             else
             {
                 var head = selected.OrderBy(i => i).Take(5).Select(i => (i + 1).ToString());
                 string headStr = string.Join(", ", head);
                 string suffix = selected.Count > 5 ? "…" : "";
-                form.LabelSelectedCrystal.Text = $"Выбрано: {selected.Count} ({headStr}{suffix})";
+                form.SelectedCrystalStatusLabel.Text = $"Выбрано: {selected.Count} ({headStr}{suffix})";
             }
+        }
+
+        public void ShowHoveredCrystal(Crystal crystal)
+        {
+            if (form?.SelectedCrystalStatusLabel == null) return;
+
+            if (crystal != null)
+            {
+                form.SelectedCrystalStatusLabel.Text = string.Format(
+                    CultureSettings.NumericCulture,
+                    "Кристалл: {0} (X: {1:F2} мм, Y: {2:F2} мм, Z: {3:F2})",
+                    crystal.Index + 1,
+                    crystal.RealX,
+                    crystal.RealY,
+                    crystal.Z);
+                return;
+            }
+
+            var selected = form.MouseController?.SelectedCrystals;
+            UpdateSelectionLabel(selected ?? new HashSet<int>());
         }
 
         // === ТУЛБАР ===

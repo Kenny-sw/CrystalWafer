@@ -354,12 +354,11 @@ namespace CrystalTable
         public RoutePreview RoutePreview => routePreview;
         public ZoomPanController ZoomPanController => zoomPanController;
         public WaferController WaferController => waferController;
+        public MouseController MouseController => mouseController;
         public bool ShowRoutePreview => showRoutePreview;
-        public Label LabelX => label3;
-        public Label LabelY => label4;
-        public Label LabelIndex => labelIndex;
-        public Label LabelSelectedCrystal => labelSelectedCrystal;
-        public Label LabelTotalCrystals => labelTotalCrystals;
+        public UIController UiController => uiController;
+        public ToolStripStatusLabel SelectedCrystalStatusLabel => selectedCrystalStatusLabel;
+        public ToolStripStatusLabel TotalCrystalsStatusLabel => totalCrystalsStatusLabel;
         public ToolStripStatusLabel StatusLabel => statusLabel;
         public ToolStripStatusLabel FillPercentageLabel => fillPercentageLabel;
         public ToolStripStatusLabel ZoomLabel => zoomLabel;

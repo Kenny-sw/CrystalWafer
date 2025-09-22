@@ -21,6 +21,7 @@ namespace CrystalTable.Data
         }
         public float RealX { get; set; }          // Реальная X координата в мм
         public float RealY { get; set; }          // Реальная Y координата в мм
+        public float Z { get; set; }              // Высота Z для тепловой карты
         // Координаты на экране не имеют смысла при сохранении и будут восстановлены
         // при следующем отображении, поэтому исключаем их из сериализации.
         [XmlIgnore]
