@@ -1,4 +1,4 @@
-namespace CrystalTable
+﻿namespace CrystalTable
 {
     partial class Form1
     {
@@ -73,6 +73,7 @@ namespace CrystalTable
             this.fillPercentageLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.zoomLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.coordinatesLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.sensorStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.MyserialPort = new System.IO.Ports.SerialPort(this.components);
             this.mainPanel = new System.Windows.Forms.Panel();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
@@ -522,7 +523,8 @@ namespace CrystalTable
             this.selectedCrystalStatusLabel,
             this.fillPercentageLabel,
             this.zoomLabel,
-            this.coordinatesLabel});
+            this.coordinatesLabel,
+            this.sensorStatusLabel});
             this.statusStrip1.Location = new System.Drawing.Point(0, 647);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(1262, 26);
@@ -565,9 +567,14 @@ namespace CrystalTable
             this.coordinatesLabel.Size = new System.Drawing.Size(63, 20);
             this.coordinatesLabel.Text = "X: 0, Y: 0";
             // 
+            // sensorStatusLabel
+            // 
+            this.sensorStatusLabel.Name = "sensorStatusLabel";
+            this.sensorStatusLabel.Size = new System.Drawing.Size(88, 20);
+            this.sensorStatusLabel.Text = "Датчик: ?";
+            // 
             // MyserialPort
             // 
-            this.MyserialPort.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(this.MyserialPort_DataReceived);
             // 
             // mainPanel
             // 
@@ -1109,6 +1116,7 @@ namespace CrystalTable
         private System.Windows.Forms.ToolStripStatusLabel fillPercentageLabel;
         private System.Windows.Forms.ToolStripStatusLabel zoomLabel;
         private System.Windows.Forms.ToolStripStatusLabel coordinatesLabel;
+        private System.Windows.Forms.ToolStripStatusLabel sensorStatusLabel;
         private System.IO.Ports.SerialPort MyserialPort;
         private System.Windows.Forms.Panel mainPanel;
         private System.Windows.Forms.PictureBox pictureBox1;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
@@ -272,41 +272,32 @@ namespace CrystalTable
             return true;
         }
 
+        private async Task<bool> TrySendAsync(byte commandByte, uint stepUm)
+        {
+            if (serialPortController == null || MyserialPort == null)
+            {
+                return false;
+            }
+
+            if (!MyserialPort.IsOpen)
+            {
+                MessageBox.Show("COM-порт не открыт.");
+                return false;
+            }
+
+            bool success = await serialPortController.SendCommandAsync(commandByte, stepUm);
+            if (!success)
+            {
+                MessageBox.Show("Ошибка передачи. Проверьте COM-порт.");
+            }
+
+            return success;
+        }
         private bool CanMoveTo(float xMm, float yMm)
         {
             float r = waferController?.WaferDiameter > 0 ? waferController.WaferDiameter / 2f : 100f;
             return (xMm * xMm + yMm * yMm) <= (r * r) + 1e-6f;
         }
 
-        private async Task<bool> TrySendAsync(byte commandByte, uint stepUm)
-        {
-            try
-            {
-                if (MyserialPort == null || !MyserialPort.IsOpen)
-                {
-                    MessageBox.Show("COM-порт не открыт.");
-                    return false;
-                }
-
-                byte[] dataToSend = new byte[]
-                {
-                    commandByte,
-                    (byte)(stepUm & 0xFF),
-                    (byte)((stepUm >> 8) & 0xFF),
-                    (byte)((stepUm >> 16) & 0xFF),
-                    (byte)((stepUm >> 24) & 0xFF)
-                };
-
-                await MyserialPort.BaseStream.WriteAsync(dataToSend, 0, dataToSend.Length);
-                await MyserialPort.BaseStream.FlushAsync();
-                await Task.Delay(50);
-                return true;
-            }
-            catch
-            {
-                MessageBox.Show("Ошибка обмена. Проверьте COM-порт.");
-                return false;
-            }
-        }
     }
 }

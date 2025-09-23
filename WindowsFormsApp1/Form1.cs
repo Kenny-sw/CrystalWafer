@@ -1,4 +1,4 @@
-using CrystalTable.Data;
+﻿using CrystalTable.Data;
 using CrystalTable.Logic;
 using CrystalTable.Controllers;
 using System;
@@ -27,7 +27,6 @@ namespace CrystalTable
         private bool showRoutePreview = false;
 
         // Для дросселирования обновления статус-бара по RX
-        private DateTime _lastRxUiUpdate = DateTime.MinValue;
 
         public Form1()
         {
@@ -52,7 +51,7 @@ namespace CrystalTable
             serialPortController = new SerialPortController(MyserialPort);
 
             // RX/STATE > статус-бар
-            serialPortController.DataReceived += SerialPort_DataReceived;
+            serialPortController.UnsolicitedEventReceived += SerialPort_UnsolicitedEventReceived;
             serialPortController.ConnectionStateChanged += SerialPort_ConnectionStateChanged;
 
             InitializeEventHandlers();
@@ -179,9 +178,6 @@ namespace CrystalTable
 
         private void buttonUpdatePort_Click(object sender, EventArgs e) =>
             serialPortController.UpdatePortList(comboBoxPorts);
-
-        private void MyserialPort_DataReceived(object sender, System.IO.Ports.SerialDataReceivedEventArgs e) =>
-            serialPortController.HandleDataReceived();
 
         // ===== Вспомогательные =====
         private void HandleUndo()
@@ -363,6 +359,7 @@ namespace CrystalTable
         public ToolStripStatusLabel FillPercentageLabel => fillPercentageLabel;
         public ToolStripStatusLabel ZoomLabel => zoomLabel;
         public ToolStripStatusLabel CoordinatesLabel => coordinatesLabel;
+        public ToolStripStatusLabel SensorStatusLabel => sensorStatusLabel;
         public CheckBox CheckBoxFillWafer => checkBoxFillWafer;
         public ToolStripButton BtnRoutePreview => btnRoutePreview;
         public ToolStripMenuItem ShowRouteToolStripMenuItem => showRouteToolStripMenuItem;
@@ -371,32 +368,57 @@ namespace CrystalTable
         public ToolStripButton BtnRedo => btnRedo;
 
         // ====== RX > статус-бар ======
-        private void SerialPort_DataReceived(string data)
+        private void SerialPort_UnsolicitedEventReceived(string message)
         {
-            var now = DateTime.Now;
-            if ((now - _lastRxUiUpdate).TotalMilliseconds < 150) return;
-            _lastRxUiUpdate = now;
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return;
+            }
 
-            string preview = FormatPacketPreview(data);
-            if (StatusLabel != null)
-                StatusLabel.Text = $"COM RX {now:HH:mm:ss}  {preview}";
+            if (IsHandleCreated && InvokeRequired)
+            {
+                BeginInvoke(new Action<string>(SerialPort_UnsolicitedEventReceived), message);
+                return;
+            }
+
+            if (!IsHandleCreated)
+            {
+                return;
+            }
+
+            string normalized = message.Trim();
+
+            if (normalized.StartsWith("EV S:1", StringComparison.OrdinalIgnoreCase))
+            {
+                UpdateSensorStatusLabel("Датчик: ВКЛ");
+            }
+            else if (normalized.StartsWith("EV S:0", StringComparison.OrdinalIgnoreCase))
+            {
+                UpdateSensorStatusLabel("Датчик: ВЫКЛ");
+            }
             else
-                Text = $"COM RX {now:HH:mm:ss}  {preview}";
+            {
+                UpdateSensorStatusLabel($"Датчик: {normalized}");
+            }
         }
 
         private void SerialPort_ConnectionStateChanged(bool isOpen, string portName)
         {
             var msg = isOpen ? $"COM подключён: {portName}" : "COM отключён";
-            if (StatusLabel != null) StatusLabel.Text = msg;
+            if (StatusLabel != null)
+                StatusLabel.Text = msg;
+            else
+                Text = msg;
+
+            UpdateSensorStatusLabel(isOpen ? "Датчик: ?" : "Датчик: -");
         }
 
-        private static string FormatPacketPreview(string s)
+        private void UpdateSensorStatusLabel(string text)
         {
-            if (string.IsNullOrEmpty(s)) return "(пусто)";
-            s = s.Replace("\r", " ").Replace("\n", " ").Trim();
-            const int max = 60;
-            if (s.Length > max) s = s.Substring(0, max) + "…";
-            return s;
+            if (sensorStatusLabel != null)
+            {
+                sensorStatusLabel.Text = text;
+            }
         }
 
         // ====== ОБРАБОТЧИКИ ======
