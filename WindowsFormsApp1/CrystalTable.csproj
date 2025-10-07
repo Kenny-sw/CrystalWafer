@@ -79,6 +79,8 @@
     <Compile Include="Logic\CommandHistory.cs" />
     <Compile Include="Logic\CrystalManager.cs" />
     <Compile Include="Logic\CrystalCache.cs" />
+    <Compile Include="Logic\AppLogger.cs" />
+    <Compile Include="Logic\Protocol.cs" />
     <Compile Include="Logic\DataExporter.cs" />
     <Compile Include="Logic\RoutePreview.cs" />
     <Compile Include="Logic\Serializer.cs" />

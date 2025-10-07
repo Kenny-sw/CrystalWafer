@@ -10,10 +10,6 @@ namespace CrystalTable
 {
     public partial class Form1
     {
-        private const byte CMD_LEFT = 1;
-        private const byte CMD_RIGHT = 2;
-        private const byte CMD_UP = 3;
-        private const byte CMD_DOWN = 4;
 
         private PointF pointerMm = new PointF(0, 0);
         private bool isLoadingInProgress;
@@ -58,8 +54,8 @@ namespace CrystalTable
                 return;
             }
 
-            if (!await TrySendAsync(CMD_RIGHT, stepXum)) return;
-            if (!await TrySendAsync(CMD_UP, stepYum)) return;
+            if (!await TrySendAsync(Protocol.Commands.MoveRight, stepXum)) return;
+            if (!await TrySendAsync(Protocol.Commands.MoveUp, stepYum)) return;
 
             pointerMm = new PointF(newX, newY);
             pictureBox1.Invalidate();
@@ -128,7 +124,7 @@ namespace CrystalTable
 
             if (axis == Axis.X)
             {
-                cmd = negative ? CMD_LEFT : CMD_RIGHT;
+                cmd = negative ? Protocol.Commands.MoveLeft : Protocol.Commands.MoveRight;
                 stepUm = stepXum;
                 deltaMm = (negative ? -1f : 1f) * (stepXum / 1000f);
 
@@ -144,7 +140,7 @@ namespace CrystalTable
             }
             else
             {
-                cmd = negative ? CMD_UP : CMD_DOWN;
+                cmd = negative ? Protocol.Commands.MoveUp : Protocol.Commands.MoveDown;
                 stepUm = stepYum;
                 deltaMm = (negative ? -1f : 1f) * (stepYum / 1000f);
 
@@ -215,7 +211,7 @@ namespace CrystalTable
 
             if (moveXum > 0)
             {
-                byte command = dx > 0 ? CMD_RIGHT : CMD_LEFT;
+                byte command = dx > 0 ? Protocol.Commands.MoveRight : Protocol.Commands.MoveLeft;
                 if (!await TrySendAsync(command, moveXum))
                 {
                     return false;
@@ -227,7 +223,7 @@ namespace CrystalTable
 
             if (moveYum > 0)
             {
-                byte command = dy > 0 ? CMD_DOWN : CMD_UP;
+                byte command = dy > 0 ? Protocol.Commands.MoveDown : Protocol.Commands.MoveUp;
                 if (!await TrySendAsync(command, moveYum))
                 {
                     return false;
@@ -276,19 +272,27 @@ namespace CrystalTable
         {
             if (serialPortController == null || MyserialPort == null)
             {
+                AppLogger.Warning($"Attempt to send 0x{commandByte:X2} while serial port controller is not initialised.");
                 return false;
             }
 
             if (!MyserialPort.IsOpen)
             {
-                MessageBox.Show("COM-порт не открыт.");
+                AppLogger.Warning($"Attempt to send 0x{commandByte:X2} while COM port is closed.");
+                MessageBox.Show("COM port is closed.", "COM", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
 
+            AppLogger.Debug($"UI -> command 0x{commandByte:X2}, step={stepUm} um");
             bool success = await serialPortController.SendCommandAsync(commandByte, stepUm);
             if (!success)
             {
-                MessageBox.Show("Ошибка передачи. Проверьте COM-порт.");
+                AppLogger.Warning($"Command 0x{commandByte:X2} failed at UI layer.");
+                MessageBox.Show("Failed to send the command. Check COM port status.", "COM", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            else
+            {
+                AppLogger.Debug($"Command 0x{commandByte:X2} acknowledged by controller.");
             }
 
             return success;

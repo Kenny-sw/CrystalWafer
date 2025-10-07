@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using CrystalTable.Logic;
 
 namespace CrystalTable.Controllers
 {
@@ -13,7 +14,7 @@ namespace CrystalTable.Controllers
     {
         private readonly SerialPort _port;
         private readonly SemaphoreSlim _sendLock = new SemaphoreSlim(1, 1);
-        private readonly TimeSpan _commandTimeout = TimeSpan.FromSeconds(3);
+        private readonly TimeSpan _commandTimeout = Protocol.Timeouts.Command;
 
         private TaskCompletionSource<CommandResult> _pendingCommand;
         private readonly object _pendingLock = new object();
@@ -35,60 +36,92 @@ namespace CrystalTable.Controllers
             {
                 if (_port.IsOpen)
                 {
+                    AppLogger.Info($"Closing COM port {_port.PortName}.");
                     StopListener();
+
                     _port.Close();
-                    if (btnConnect != null) btnConnect.Text = "Подключить";
+                    if (btnConnect != null)
+                    {
+                        btnConnect.Text = "Connect";
+                    }
+
                     ConnectionStateChanged?.Invoke(false, null);
                     return;
                 }
 
                 if (string.IsNullOrWhiteSpace(portName))
                 {
-                    MessageBox.Show("Выберите COM-порт.", "COM", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    AppLogger.Warning("COM port name is empty.");
+                    MessageBox.Show("Select a COM port.", "COM", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
 
-                _port.BaudRate = 115200;
-                _port.Parity = Parity.None;
-                _port.DataBits = 8;
-                _port.StopBits = StopBits.One;
-                _port.Handshake = Handshake.None;
-                _port.PortName = portName;
-                _port.NewLine = "\r\n";
-
+                ConfigurePort(portName.Trim());
                 _port.Open();
+
                 StartListener();
 
-                if (btnConnect != null) btnConnect.Text = "Отключить";
+                if (btnConnect != null)
+                {
+                    btnConnect.Text = "Disconnect";
+                }
+
+                AppLogger.Info($"COM port opened: {_port.PortName}");
                 ConnectionStateChanged?.Invoke(true, _port.PortName);
             }
             catch (Exception ex)
             {
+                AppLogger.Error("Failed to toggle serial port connection.", ex);
                 StopListener();
 
                 if (_port.IsOpen)
                 {
-                    try { _port.Close(); } catch { }
+                    try { _port.Close(); }
+                    catch { }
                 }
 
-                MessageBox.Show("Не удалось открыть порт: " + ex.Message, "COM", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Failed to communicate with the COM port: " + ex.Message, "COM", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 ConnectionStateChanged?.Invoke(false, null);
             }
         }
 
+        private void ConfigurePort(string portName)
+        {
+            _port.BaudRate = 115200;
+            _port.Parity = Parity.None;
+            _port.DataBits = 8;
+            _port.StopBits = StopBits.One;
+            _port.Handshake = Handshake.None;
+            _port.PortName = portName;
+            _port.NewLine = "\r\n";
+        }
+
         public void UpdatePortList(ComboBox combo)
         {
-            if (combo == null) return;
-            var list = SerialPort.GetPortNames().OrderBy(s => s, StringComparer.OrdinalIgnoreCase).ToArray();
+            if (combo == null)
+            {
+                return;
+            }
+
+            var ports = SerialPort.GetPortNames()
+                .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
+            AppLogger.Info($"Available COM ports: {string.Join(", ", ports)}");
+
             combo.Items.Clear();
-            combo.Items.AddRange(list);
-            if (list.Length > 0) combo.SelectedIndex = 0;
+            combo.Items.AddRange(ports);
+            if (ports.Length > 0)
+            {
+                combo.SelectedIndex = 0;
+            }
         }
 
         public async Task<bool> SendCommandAsync(byte command, uint data)
         {
             if (_port == null || !_port.IsOpen)
             {
+                AppLogger.Warning($"Attempt to send 0x{command:X2} while port is closed.");
                 return false;
             }
 
@@ -102,33 +135,38 @@ namespace CrystalTable.Controllers
                 {
                     if (_pendingCommand != null)
                     {
+                        AppLogger.Warning($"Command 0x{command:X2} rejected: previous command still pending.");
                         return false;
                     }
 
                     _pendingCommand = pending;
                 }
 
-                byte[] packet = BuildPacket(command, data);
+                var packet = BuildPacket(command, data);
+                AppLogger.Debug($"TX -> cmd=0x{command:X2}, data={data}");
 
                 try
                 {
                     await _port.BaseStream.WriteAsync(packet, 0, packet.Length).ConfigureAwait(false);
                     await _port.BaseStream.FlushAsync().ConfigureAwait(false);
                 }
-                catch
+                catch (Exception writeError)
                 {
-                    ClearPending(pending);
+                    AppLogger.Error("Failed to write to serial port.", writeError);
+                    ClearPending(pending, "Write failure");
                     return false;
                 }
 
-                var completed = await Task.WhenAny(pending.Task, Task.Delay(_commandTimeout)).ConfigureAwait(false);
-                if (completed != pending.Task)
+                var completedTask = await Task.WhenAny(pending.Task, Task.Delay(_commandTimeout)).ConfigureAwait(false);
+                if (completedTask != pending.Task)
                 {
-                    ClearPending(pending);
+                    AppLogger.Warning("Serial command timed out.");
+                    ClearPending(pending, "Timeout");
                     return false;
                 }
 
                 var result = await pending.Task.ConfigureAwait(false);
+                AppLogger.Debug($"RX <- {(result.Success ? Protocol.Responses.Ok : Protocol.Responses.ErrorPrefix)}: {result.Message}");
                 return result.Success;
             }
             finally
@@ -167,6 +205,7 @@ namespace CrystalTable.Controllers
             _listenerCts = new CancellationTokenSource();
             var token = _listenerCts.Token;
             _listenerTask = Task.Run(() => ListenAsync(token), token);
+            AppLogger.Debug("Serial listener started.");
         }
 
         private void StopListener()
@@ -181,7 +220,14 @@ namespace CrystalTable.Controllers
                 _listenerCts.Cancel();
                 _listenerTask?.Wait(500);
             }
-            catch { }
+            catch (AggregateException ex)
+            {
+                AppLogger.Debug($"Serial listener stop aggregate exception: {ex.Flatten().Message}");
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when cancellation triggers while awaiting.
+            }
             finally
             {
                 _listenerCts.Dispose();
@@ -189,7 +235,8 @@ namespace CrystalTable.Controllers
                 _listenerTask = null;
             }
 
-            FailPendingCommand("Порт закрыт");
+            FailPendingCommand("Listener stopped");
+            AppLogger.Debug("Serial listener stopped.");
         }
 
         private async Task ListenAsync(CancellationToken token)
@@ -218,12 +265,14 @@ namespace CrystalTable.Controllers
                         {
                             return;
                         }
-                        catch (IOException)
+                        catch (IOException ioEx)
                         {
+                            AppLogger.Warning("Serial port read error.", ioEx);
                             break;
                         }
-                        catch (InvalidOperationException)
+                        catch (InvalidOperationException invalidEx)
                         {
+                            AppLogger.Warning("Serial port became unavailable.", invalidEx);
                             break;
                         }
 
@@ -238,29 +287,41 @@ namespace CrystalTable.Controllers
                             continue;
                         }
 
-                        if (line.StartsWith("EV", StringComparison.OrdinalIgnoreCase))
+                        AppLogger.Trace($"RX raw: {line}");
+
+                        if (Protocol.Events.TryParseSensorEvent(line, out bool isSensorOn))
                         {
+                            AppLogger.Info($"Sensor event: {(isSensorOn ? "ON" : "OFF")}");
                             UnsolicitedEventReceived?.Invoke(line);
                             continue;
                         }
 
-                        if (string.Equals(line, "OK", StringComparison.OrdinalIgnoreCase))
+                        if (Protocol.Events.IsEvent(line))
+                        {
+                            AppLogger.Debug($"Unsolicited event: {line}");
+                            UnsolicitedEventReceived?.Invoke(line);
+                            continue;
+                        }
+
+                        if (Protocol.Responses.IsOk(line))
                         {
                             CompletePendingCommand(true, line);
                             continue;
                         }
 
-                        if (line.StartsWith("ERR", StringComparison.OrdinalIgnoreCase))
+                        if (Protocol.Responses.IsError(line))
                         {
                             CompletePendingCommand(false, line);
                             continue;
                         }
+
+                        AppLogger.Warning($"Unknown serial response: {line}");
                     }
                 }
             }
             finally
             {
-                FailPendingCommand("Связь потеряна");
+                FailPendingCommand("Listener stopped");
             }
         }
 
@@ -285,10 +346,14 @@ namespace CrystalTable.Controllers
                 _pendingCommand = null;
             }
 
-            pending?.TrySetResult(new CommandResult(false, reason));
+            if (pending != null)
+            {
+                AppLogger.Warning($"Pending command failed: {reason}");
+                pending.TrySetResult(new CommandResult(false, reason));
+            }
         }
 
-        private void ClearPending(TaskCompletionSource<CommandResult> expected)
+        private void ClearPending(TaskCompletionSource<CommandResult> expected, string reason)
         {
             TaskCompletionSource<CommandResult> pending = null;
             lock (_pendingLock)
@@ -300,7 +365,11 @@ namespace CrystalTable.Controllers
                 }
             }
 
-            pending?.TrySetResult(new CommandResult(false, "Не удалось отправить"));
+            if (pending != null)
+            {
+                AppLogger.Warning($"Pending command cleared: {reason}");
+                pending.TrySetResult(new CommandResult(false, reason));
+            }
         }
 
         public void Dispose()
@@ -309,13 +378,17 @@ namespace CrystalTable.Controllers
 
             try
             {
-                if (_port != null)
+                if (_port.IsOpen)
                 {
-                    if (_port.IsOpen) _port.Close();
-                    _port.Dispose();
+                    _port.Close();
                 }
+
+                _port.Dispose();
             }
-            catch { /* ignore */ }
+            catch (Exception disposingError)
+            {
+                AppLogger.Warning("Error while disposing serial port controller.", disposingError);
+            }
         }
 
         private class CommandResult
