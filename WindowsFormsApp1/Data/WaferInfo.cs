@@ -56,6 +56,27 @@ namespace CrystalTable.Data
         [XmlIgnore]
         public float LastReferenceY { get; set; }
 
+        [XmlIgnore]
+        public float StreetMm { get; set; }
+
+        [XmlIgnore]
+        public float OffsetXMm { get; set; }
+
+        [XmlIgnore]
+        public float OffsetYMm { get; set; }
+
+        [XmlIgnore]
+        public bool OrientationSwapped { get; set; }
+
+        [XmlIgnore]
+        public bool MirrorX { get; set; }
+
+        [XmlIgnore]
+        public bool MirrorY { get; set; }
+
+        [XmlIgnore]
+        public float EdgeExclusionMm { get; set; }
+
         [XmlElement("StepXmm")]
         public string StepXmmSerialized
         {
@@ -138,6 +159,55 @@ namespace CrystalTable.Data
         {
             get => LastReferenceY.ToString("F3", CultureSettings.NumericCulture);
             set => LastReferenceY = ParseFloat(value);
+        }
+
+        [XmlElement("StreetMm")]
+        public string StreetSerialized
+        {
+            get => StreetMm.ToString("F3", CultureSettings.NumericCulture);
+            set => StreetMm = ParseFloat(value);
+        }
+
+        [XmlElement("OffsetXMm")]
+        public string OffsetXSerialized
+        {
+            get => OffsetXMm.ToString("F3", CultureSettings.NumericCulture);
+            set => OffsetXMm = ParseFloat(value);
+        }
+
+        [XmlElement("OffsetYMm")]
+        public string OffsetYSerialized
+        {
+            get => OffsetYMm.ToString("F3", CultureSettings.NumericCulture);
+            set => OffsetYMm = ParseFloat(value);
+        }
+
+        [XmlElement("OrientationSwapped")]
+        public bool OrientationSerialized
+        {
+            get => OrientationSwapped;
+            set => OrientationSwapped = value;
+        }
+
+        [XmlElement("MirrorX")]
+        public bool MirrorXSerialized
+        {
+            get => MirrorX;
+            set => MirrorX = value;
+        }
+
+        [XmlElement("MirrorY")]
+        public bool MirrorYSerialized
+        {
+            get => MirrorY;
+            set => MirrorY = value;
+        }
+
+        [XmlElement("EdgeExclusionMm")]
+        public string EdgeExclusionSerialized
+        {
+            get => EdgeExclusionMm.ToString("F3", CultureSettings.NumericCulture);
+            set => EdgeExclusionMm = ParseFloat(value);
         }
 
         private static float ParseFloat(string source, float defaultValue = 0f)

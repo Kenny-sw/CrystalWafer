@@ -85,43 +85,56 @@ namespace CrystalTable
 
         private void DrawCrystals(Graphics g)
         {
-            float wPx = (waferController.CrystalWidthRaw / 1000f) * waferController.ScaleFactor;
-            float hPx = (waferController.CrystalHeightRaw / 1000f) * waferController.ScaleFactor;
-            float cx = pictureBox1.Width / 2f, cy = pictureBox1.Height / 2f;
+            waferController.UpdateDisplayCache(pictureBox1.Width, pictureBox1.Height);
+
+            var baseMap = waferController.GetWaferBitmap(pictureBox1.Width, pictureBox1.Height);
+            if (baseMap != null)
+            {
+                g.DrawImageUnscaled(baseMap, Point.Empty);
+            }
 
             var client = new RectangleF(0, 0, pictureBox1.Width, pictureBox1.Height);
             int drawnInView = 0;
+            int hoveredIndex = GetHoveredCrystalIndex();
+            var selected = mouseController.SelectedCrystals;
+
+            using var selectedFill = new SolidBrush(Color.FromArgb(60, Color.Khaki));
+            using var selectedBorder = new Pen(Color.FromArgb(220, Color.DarkGoldenrod), 2f);
+            using var hoveredFill = new SolidBrush(Color.FromArgb(40, Color.LightSkyBlue));
+            using var hoveredBorder = new Pen(Color.FromArgb(200, Color.RoyalBlue), 1.5f);
 
             foreach (var c in CrystalManager.Instance.Crystals)
             {
-                float x = c.RealX * waferController.ScaleFactor + cx;
-                float y = c.RealY * waferController.ScaleFactor + cy;
-
-                float left = x - wPx / 2f, top = y - hPx / 2f;
-
-                // вьюпорт-куллинг
-                if (left > client.Right || top > client.Bottom || left + wPx < client.Left || top + hPx < client.Top)
+                if (c.DisplayRight <= client.Left || c.DisplayLeft >= client.Right ||
+                    c.DisplayBottom <= client.Top || c.DisplayTop >= client.Bottom)
+                {
                     continue;
-
-                c.DisplayX = x; c.DisplayY = y;
-                c.DisplayLeft = left; c.DisplayTop = top;
-                c.DisplayRight = left + wPx; c.DisplayBottom = top + hPx;
-
-                bool selected = mouseController.SelectedCrystals.Contains(c.Index);
-                bool hovered = (GetHoveredCrystalIndex() == c.Index);
-
-                Color fill = Color.Empty, border = Color.Blue;
-                float bw = 1f;
-                if (selected) { fill = Color.Yellow; border = Color.DarkBlue; bw = 2f; }
-                else if (hovered) { fill = Color.LightBlue; border = Color.DarkBlue; }
-
-                if (fill != Color.Empty) { using var b = new SolidBrush(fill); g.FillRectangle(b, left, top, wPx, hPx); }
-                using (var p = new Pen(border, bw)) g.DrawRectangle(p, left, top, wPx, hPx);
+                }
 
                 drawnInView++;
+
+                bool isSelected = selected.Contains(c.Index);
+                bool isHovered = hoveredIndex == c.Index;
+                if (!isSelected && !isHovered)
+                {
+                    continue;
+                }
+
+                float w = c.DisplayRight - c.DisplayLeft;
+                float h = c.DisplayBottom - c.DisplayTop;
+
+                if (isSelected)
+                {
+                    g.FillRectangle(selectedFill, c.DisplayLeft, c.DisplayTop, w, h);
+                    g.DrawRectangle(selectedBorder, c.DisplayLeft, c.DisplayTop, w, h);
+                }
+                else
+                {
+                    g.FillRectangle(hoveredFill, c.DisplayLeft, c.DisplayTop, w, h);
+                    g.DrawRectangle(hoveredBorder, c.DisplayLeft, c.DisplayTop, w, h);
+                }
             }
 
-            // Подписи индексов — только при большом зуме и если в кадре не слишком много кристаллов
             if (zoomPanController.ZoomFactor > 4.0f && drawnInView <= 200)
             {
                 using var font = new Font("Arial", 8);
@@ -131,7 +144,9 @@ namespace CrystalTable
                 {
                     if (c.DisplayRight <= 0 || c.DisplayLeft >= pictureBox1.Width ||
                         c.DisplayBottom <= 0 || c.DisplayTop >= pictureBox1.Height)
+                    {
                         continue;
+                    }
 
                     string text = c.Index.ToString();
                     var size = g.MeasureString(text, font);
@@ -139,7 +154,6 @@ namespace CrystalTable
                 }
             }
         }
-
         private void DrawReferenceMarkers(Graphics g)
         {
             float cx = pictureBox1.Width / 2f, cy = pictureBox1.Height / 2f;
@@ -224,3 +238,4 @@ namespace CrystalTable
         }
     }
 }
+

@@ -1002,7 +1002,7 @@
             this.buttonUpdatePort.Name = "buttonUpdatePort";
             this.buttonUpdatePort.Size = new System.Drawing.Size(35, 24);
             this.buttonUpdatePort.TabIndex = 1;
-            this.buttonUpdatePort.Text = "??";
+            this.buttonUpdatePort.Text = "Обнов.";
             this.buttonUpdatePort.UseVisualStyleBackColor = true;
             this.buttonUpdatePort.Click += new System.EventHandler(this.buttonUpdatePort_Click);
             // 
@@ -1013,7 +1013,7 @@
             this.buttonConnect.Name = "buttonConnect";
             this.buttonConnect.Size = new System.Drawing.Size(59, 24);
             this.buttonConnect.TabIndex = 2;
-            this.buttonConnect.Text = "?";
+            this.buttonConnect.Text = "Подкл.";
             this.buttonConnect.UseVisualStyleBackColor = true;
             this.buttonConnect.Click += new System.EventHandler(this.buttonConnect_Click);
             // 
@@ -1166,3 +1166,4 @@
         private System.Windows.Forms.ToolStripStatusLabel selectedCrystalStatusLabel;
     }
 }
+

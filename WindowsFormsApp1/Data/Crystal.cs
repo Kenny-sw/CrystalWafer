@@ -1,3 +1,4 @@
+using System;
 using System.Drawing;
 using System.Xml.Serialization;
 
@@ -5,38 +6,57 @@ namespace CrystalTable.Data
 {
     public class Crystal
     {
-        public int Index { get; set; }            // Уникальный номер кристалла
-        // Цвет кристалла. System.Drawing.Color не сериализуется по умолчанию,
-        // поэтому основное свойство помечено как XmlIgnore, а для сохранения
-        // используется дублирующее свойство ColorArgb.
-        [XmlIgnore]
-        public Color Color { get; set; }          // Цвет для отрисовки
+        public int Index { get; set; }
 
-        // Служебное свойство для сериализации цвета в формате ARGB.
+        [XmlIgnore]
+        public Color Color { get; set; }
+
         [XmlElement("Color")]
         public int ColorArgb
         {
             get => Color.ToArgb();
             set => Color = Color.FromArgb(value);
         }
-        public float RealX { get; set; }          // Реальная X координата в мм
-        public float RealY { get; set; }          // Реальная Y координата в мм
-        public float Z { get; set; }              // Высота Z для тепловой карты
-        // Координаты на экране не имеют смысла при сохранении и будут восстановлены
-        // при следующем отображении, поэтому исключаем их из сериализации.
-        [XmlIgnore]
-        public float DisplayX { get; set; }       // X координата на экране
-        [XmlIgnore]
-        public float DisplayY { get; set; }       // Y координата на экране
 
-        // Добавленные свойства для границ отображения кристалла
+        public float RealX { get; set; }
+        public float RealY { get; set; }
+        public float Z { get; set; }
+
+        public float WidthMm { get; set; }
+        public float HeightMm { get; set; }
+
         [XmlIgnore]
-        public float DisplayLeft { get; set; }    // Левая граница
+        public CrystalPlacementStatus PlacementStatus { get; set; } = CrystalPlacementStatus.Full;
+
+        [XmlElement("Status")]
+        public string StatusString
+        {
+            get => PlacementStatus.ToString();
+            set
+            {
+                if (Enum.TryParse(value, true, out CrystalPlacementStatus parsed))
+                {
+                    PlacementStatus = parsed;
+                }
+                else
+                {
+                    PlacementStatus = CrystalPlacementStatus.Full;
+                }
+            }
+        }
+
         [XmlIgnore]
-        public float DisplayRight { get; set; }   // Правая граница
+        public float DisplayX { get; set; }
         [XmlIgnore]
-        public float DisplayTop { get; set; }     // Верхняя граница
+        public float DisplayY { get; set; }
+
         [XmlIgnore]
-        public float DisplayBottom { get; set; }  // Нижняя граница
+        public float DisplayLeft { get; set; }
+        [XmlIgnore]
+        public float DisplayRight { get; set; }
+        [XmlIgnore]
+        public float DisplayTop { get; set; }
+        [XmlIgnore]
+        public float DisplayBottom { get; set; }
     }
 }

@@ -45,7 +45,7 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
-        <Reference Include="System.Xml" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Calibration.cs">
@@ -60,6 +60,8 @@
     <Compile Include="Controllers\\ZoomPanController.cs" />
     <Compile Include="CultureSettings.cs" />
     <Compile Include="Data\Crystal.cs" />
+    <Compile Include="Data\CrystalPlacementStatus.cs" />
+    <Compile Include="Data\WaferMapParameters.cs" />
     <Compile Include="Data\WaferInfo.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
@@ -76,12 +78,17 @@
     <Compile Include="Form1.Movement.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Form1.MapBuilder.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Logic\CommandHistory.cs" />
     <Compile Include="Logic\CrystalManager.cs" />
     <Compile Include="Logic\CrystalCache.cs" />
     <Compile Include="Logic\AppLogger.cs" />
     <Compile Include="Logic\Protocol.cs" />
     <Compile Include="Logic\DataExporter.cs" />
+    <Compile Include="Logic\WaferBitmapRenderer.cs" />
+    <Compile Include="Logic\WaferMapBuilder.cs" />
     <Compile Include="Logic\RoutePreview.cs" />
     <Compile Include="Logic\Serializer.cs" />
     <Compile Include="Logic\WaferStatistics.cs" />

@@ -229,6 +229,18 @@ namespace CrystalTable.Controllers
                 info.LastReferenceY = waferController.LastRefMm.Y;
             }
 
+            var mapSnapshot = waferController.GetEffectiveMapSnapshot();
+            if (mapSnapshot != null)
+            {
+                info.StreetMm = mapSnapshot.StreetMm;
+                info.OffsetXMm = mapSnapshot.OffsetXMm;
+                info.OffsetYMm = mapSnapshot.OffsetYMm;
+                info.OrientationSwapped = mapSnapshot.SwapOrientation;
+                info.MirrorX = mapSnapshot.MirrorX;
+                info.MirrorY = mapSnapshot.MirrorY;
+                info.EdgeExclusionMm = mapSnapshot.EdgeExclusionMm;
+            }
+
             return info;
         }
 
@@ -254,9 +266,27 @@ namespace CrystalTable.Controllers
                 waferController.ClearReferences();
             }
 
+            var parameters = new WaferMapParameters
+            {
+                DiameterMm = info.WaferDiameter,
+                CrystalWidthMm = info.SizeX / 1000f,
+                CrystalHeightMm = info.SizeY / 1000f,
+                StreetMm = info.StreetMm,
+                OffsetXMm = info.OffsetXMm,
+                OffsetYMm = info.OffsetYMm,
+                SwapOrientation = info.OrientationSwapped,
+                MirrorX = info.MirrorX,
+                MirrorY = info.MirrorY,
+                EdgeExclusionMm = info.EdgeExclusionMm
+            };
+
             if (buildCrystals)
             {
-                waferController.BuildCrystalsCached();
+                waferController.LoadActiveMap(parameters);
+            }
+            else
+            {
+                waferController.SetActiveMapMetadata(parameters);
             }
 
             form.ZoomPanController.SetState(info.ZoomFactor, new PointF(info.PanOffsetX, info.PanOffsetY));
@@ -264,3 +294,4 @@ namespace CrystalTable.Controllers
         }
     }
 }
+

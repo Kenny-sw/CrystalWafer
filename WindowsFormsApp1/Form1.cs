@@ -49,6 +49,7 @@ namespace CrystalTable
             uiController = new UIController(this);
             exportImportController = new ExportImportController(this, waferController);
             serialPortController = new SerialPortController(MyserialPort);
+            InitializeMapBuilderUi();
 
             // RX/STATE > статус-бар
             serialPortController.UnsolicitedEventReceived += SerialPort_UnsolicitedEventReceived;
@@ -105,6 +106,7 @@ namespace CrystalTable
             uiController.UpdateStatusBar(waferController, zoomPanController);
             uiController.UpdateSelectionLabel(mouseController.SelectedCrystals);
             uiController.UpdateToolbarState(commandHistory);
+            SyncMapBuilderUi();
         }
 
         // ===== PictureBox =====
