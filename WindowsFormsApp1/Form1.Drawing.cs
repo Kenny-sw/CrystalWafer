@@ -50,16 +50,15 @@ namespace CrystalTable
 
         private bool IsInputValid()
         {
-            if (!uint.TryParse(SizeX.Text.Trim(), out var w)) return false;
-            if (!uint.TryParse(SizeY.Text.Trim(), out var h)) return false;
-            if (!float.TryParse(WaferDiameter.Text.Trim(), NumberStyles.Float, CultureSettings.NumericCulture, out var d)) return false;
+            // ✅ Проверка через WaferController
+            if (waferController.CrystalWidthRaw == 0 || waferController.CrystalHeightRaw == 0)
+                return false;
 
-            if (w == 0 || h == 0) return false;
-            if (d < Controllers.WaferController.MinWaferDiameter || d > Controllers.WaferController.MaxWaferDiameter) return false;
+            float diameter = waferController.WaferDiameter;
+            if (diameter < Controllers.WaferController.MinWaferDiameter || 
+                diameter > Controllers.WaferController.MaxWaferDiameter)
+                return false;
 
-            waferController.CrystalWidthRaw = w;
-            waferController.CrystalHeightRaw = h;
-            waferController.WaferDiameter = d;
             return true;
         }
 
@@ -185,7 +184,7 @@ namespace CrystalTable
 
         private void DrawPointer(Graphics g)
         {
-            var p = TryGetPointerOrZero();
+            var p = GetPointerMm();  // ← Исправлено
 
             float cx = pictureBox1.Width / 2f, cy = pictureBox1.Height / 2f;
             float x = p.X * waferController.ScaleFactor + cx;

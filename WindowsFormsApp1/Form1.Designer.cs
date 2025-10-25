@@ -87,18 +87,6 @@ namespace CrystalTable
             this.scan = new System.Windows.Forms.Button();
             this.buttonStart = new System.Windows.Forms.Button();
             this.checkBoxDiscreteStep = new System.Windows.Forms.CheckBox();
-            this.groupBoxParameters = new System.Windows.Forms.GroupBox();
-            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.WaferDiameter = new System.Windows.Forms.MaskedTextBox();
-            this.label6 = new System.Windows.Forms.Label();
-            this.label1 = new System.Windows.Forms.Label();
-            this.SizeY = new System.Windows.Forms.MaskedTextBox();
-            this.loadDataComboBox = new System.Windows.Forms.ComboBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.SizeX = new System.Windows.Forms.MaskedTextBox();
-            this.label5 = new System.Windows.Forms.Label();
-            this.Create = new System.Windows.Forms.Button();
-            this.checkBoxFillWafer = new System.Windows.Forms.CheckBox();
             this.groupBoxConnection = new System.Windows.Forms.GroupBox();
             this.buttonUpdatePort = new System.Windows.Forms.Button();
             this.buttonConnect = new System.Windows.Forms.Button();
@@ -115,8 +103,6 @@ namespace CrystalTable
             this.rightPanel.SuspendLayout();
             this.groupBoxManualControl.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
-            this.groupBoxParameters.SuspendLayout();
-            this.tableLayoutPanel1.SuspendLayout();
             this.groupBoxConnection.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -591,7 +577,6 @@ namespace CrystalTable
             // rightPanel
             // 
             this.rightPanel.Controls.Add(this.groupBoxManualControl);
-            this.rightPanel.Controls.Add(this.groupBoxParameters);
             this.rightPanel.Controls.Add(this.groupBoxConnection);
             this.rightPanel.Controls.Add(this.groupBoxMainControl);
             this.rightPanel.Dock = System.Windows.Forms.DockStyle.Right;
@@ -715,149 +700,6 @@ namespace CrystalTable
             this.checkBoxDiscreteStep.Text = "По шагу";
             this.checkBoxDiscreteStep.UseVisualStyleBackColor = true;
             // 
-            // groupBoxParameters
-            // 
-            this.groupBoxParameters.Controls.Add(this.tableLayoutPanel1);
-            this.groupBoxParameters.Controls.Add(this.Create);
-            this.groupBoxParameters.Controls.Add(this.checkBoxFillWafer);
-            this.groupBoxParameters.Dock = System.Windows.Forms.DockStyle.Top;
-            this.groupBoxParameters.Location = new System.Drawing.Point(10, 146);
-            this.groupBoxParameters.Name = "groupBoxParameters";
-            this.groupBoxParameters.Size = new System.Drawing.Size(290, 222);
-            this.groupBoxParameters.TabIndex = 1;
-            this.groupBoxParameters.TabStop = false;
-            this.groupBoxParameters.Text = "Параметры пластины";
-            // 
-            // tableLayoutPanel1
-            // 
-            this.tableLayoutPanel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.tableLayoutPanel1.ColumnCount = 2;
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.Controls.Add(this.WaferDiameter, 1, 3);
-            this.tableLayoutPanel1.Controls.Add(this.label6, 0, 0);
-            this.tableLayoutPanel1.Controls.Add(this.label1, 0, 1);
-            this.tableLayoutPanel1.Controls.Add(this.SizeY, 1, 2);
-            this.tableLayoutPanel1.Controls.Add(this.loadDataComboBox, 1, 0);
-            this.tableLayoutPanel1.Controls.Add(this.label2, 0, 2);
-            this.tableLayoutPanel1.Controls.Add(this.SizeX, 1, 1);
-            this.tableLayoutPanel1.Controls.Add(this.label5, 0, 3);
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(6, 21);
-            this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 4;
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(278, 124);
-            this.tableLayoutPanel1.TabIndex = 0;
-            // 
-            // WaferDiameter
-            // 
-            this.WaferDiameter.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.WaferDiameter.Location = new System.Drawing.Point(139, 96);
-            this.WaferDiameter.Mask = "000";
-            this.WaferDiameter.Name = "WaferDiameter";
-            this.WaferDiameter.Size = new System.Drawing.Size(136, 22);
-            this.WaferDiameter.TabIndex = 7;
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label6.Location = new System.Drawing.Point(3, 0);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(130, 31);
-            this.label6.TabIndex = 0;
-            this.label6.Text = "Тип изделия";
-            this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label1.Location = new System.Drawing.Point(3, 31);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(130, 31);
-            this.label1.TabIndex = 2;
-            this.label1.Text = "Размер X, мкм";
-            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // SizeY
-            // 
-            this.SizeY.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.SizeY.Location = new System.Drawing.Point(139, 65);
-            this.SizeY.Mask = "00000";
-            this.SizeY.Name = "SizeY";
-            this.SizeY.Size = new System.Drawing.Size(136, 22);
-            this.SizeY.TabIndex = 5;
-            this.SizeY.ValidatingType = typeof(int);
-            // 
-            // loadDataComboBox
-            // 
-            this.loadDataComboBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.loadDataComboBox.FormattingEnabled = true;
-            this.loadDataComboBox.Location = new System.Drawing.Point(139, 3);
-            this.loadDataComboBox.Name = "loadDataComboBox";
-            this.loadDataComboBox.Size = new System.Drawing.Size(136, 24);
-            this.loadDataComboBox.TabIndex = 1;
-            this.loadDataComboBox.SelectedIndexChanged += new System.EventHandler(this.loadDataComboBox_SelectedIndexChanged);
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label2.Location = new System.Drawing.Point(3, 62);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(130, 31);
-            this.label2.TabIndex = 4;
-            this.label2.Text = "Размер Y, мкм";
-            this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // SizeX
-            // 
-            this.SizeX.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.SizeX.Location = new System.Drawing.Point(139, 34);
-            this.SizeX.Mask = "00000";
-            this.SizeX.Name = "SizeX";
-            this.SizeX.Size = new System.Drawing.Size(136, 22);
-            this.SizeX.TabIndex = 3;
-            this.SizeX.ValidatingType = typeof(int);
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label5.Location = new System.Drawing.Point(3, 93);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(130, 31);
-            this.label5.TabIndex = 6;
-            this.label5.Text = "Диаметр пластины";
-            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // Create
-            // 
-            this.Create.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.Create.Location = new System.Drawing.Point(184, 184);
-            this.Create.Name = "Create";
-            this.Create.Size = new System.Drawing.Size(100, 28);
-            this.Create.TabIndex = 2;
-            this.Create.Text = "Создать";
-            this.Create.UseVisualStyleBackColor = true;
-            this.Create.Click += new System.EventHandler(this.Create_Click);
-            // 
-            // checkBoxFillWafer
-            // 
-            this.checkBoxFillWafer.AutoSize = true;
-            this.checkBoxFillWafer.Location = new System.Drawing.Point(9, 151);
-            this.checkBoxFillWafer.Name = "checkBoxFillWafer";
-            this.checkBoxFillWafer.Size = new System.Drawing.Size(114, 20);
-            this.checkBoxFillWafer.TabIndex = 1;
-            this.checkBoxFillWafer.Text = "Режим схемы";
-            this.checkBoxFillWafer.UseVisualStyleBackColor = true;
-            this.checkBoxFillWafer.CheckedChanged += new System.EventHandler(this.checkBoxFillWafer_CheckedChanged);
-            // 
             // groupBoxConnection
             // 
             this.groupBoxConnection.Controls.Add(this.buttonUpdatePort);
@@ -936,10 +778,6 @@ namespace CrystalTable
             this.groupBoxManualControl.ResumeLayout(false);
             this.groupBoxManualControl.PerformLayout();
             this.tableLayoutPanel2.ResumeLayout(false);
-            this.groupBoxParameters.ResumeLayout(false);
-            this.groupBoxParameters.PerformLayout();
-            this.tableLayoutPanel1.ResumeLayout(false);
-            this.tableLayoutPanel1.PerformLayout();
             this.groupBoxConnection.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -1010,18 +848,6 @@ namespace CrystalTable
         private System.Windows.Forms.Button buttonStart;
         private System.Windows.Forms.Button scan;
         private System.Windows.Forms.CheckBox checkBoxDiscreteStep;
-        private System.Windows.Forms.GroupBox groupBoxParameters;
-        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
-        private System.Windows.Forms.MaskedTextBox WaferDiameter;
-        private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.MaskedTextBox SizeY;
-        private System.Windows.Forms.ComboBox loadDataComboBox;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.MaskedTextBox SizeX;
-        private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.Button Create;
-        private System.Windows.Forms.CheckBox checkBoxFillWafer;
         private System.Windows.Forms.GroupBox groupBoxConnection;
         private System.Windows.Forms.Button buttonUpdatePort;
         private System.Windows.Forms.Button buttonConnect;

@@ -62,9 +62,7 @@ namespace CrystalTable
 
         private void InitializeEventHandlers()
         {
-            SizeX.Validated += (s, e) => uiController.ValidateInput(SizeX, ref waferController.SizeXtemp);
-            SizeY.Validated += (s, e) => uiController.ValidateInput(SizeY, ref waferController.SizeYtemp);
-            WaferDiameter.Validated += (s, e) => uiController.ValidateWaferDiameter(WaferDiameter, ref waferController.WaferDiameterTemp);
+            // Удалены обработчики для SizeX, SizeY, WaferDiameter (теперь в MapBuilder)
 
             pictureBox1.MouseWheel += (s, e) =>
             {
@@ -119,13 +117,19 @@ namespace CrystalTable
         private void loadDataComboBox_SelectedIndexChanged(object sender, EventArgs e) => SetFieldsFromComboBox();
 
         // ===== Кнопки =====
-        private void SaveButton_Click(object sender, EventArgs e) =>
-            exportImportController.SaveWaferInfo(SizeX.Text, SizeY.Text, WaferDiameter.Text);
+        private void SaveButton_Click(object sender, EventArgs e)
+        {
+            // ✅ Сохранение через WaferController
+            string sizeXText = waferController.CrystalWidthRaw.ToString();
+            string sizeYText = waferController.CrystalHeightRaw.ToString();
+            string diameterText = waferController.WaferDiameter.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            exportImportController.SaveWaferInfo(sizeXText, sizeYText, diameterText);
+        }
 
         private void checkBoxFillWafer_CheckedChanged(object sender, EventArgs e)
         {
             waferController.WaferDisplayMode = checkBoxFillWafer.Checked;
-            UpdateUI();
+            pictureBox1.Invalidate();
         }
 
         private void resetButton_Click(object sender, EventArgs e)
@@ -155,7 +159,7 @@ namespace CrystalTable
         private void btnZoomReset_Click(object sender, EventArgs e) => ResetZoom();
 
         // ===== Меню =====
-        private void newToolStripMenuItem_Click(object sender, EventArgs e) => Create_Click(sender, e);
+        private void newToolStripMenuItem_Click(object sender, EventArgs e) => CreateNewWafer();
         private void openToolStripMenuItem_Click(object sender, EventArgs e) => OpenFile();
         private void saveToolStripMenuItem_Click(object sender, EventArgs e) => SaveButton_Click(sender, e);
         private void saveAsToolStripMenuItem_Click(object sender, EventArgs e) => exportImportController.SaveAs();
@@ -260,12 +264,12 @@ namespace CrystalTable
             if (MessageBox.Show("Создать новую пластину? Все несохраненные данные будут потеряны.",
                 "Новая пластина", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
-                uiController.ClearInputFields(SizeX, SizeY, WaferDiameter);
                 waferController.CreateNewWafer();
                 mouseController.ClearSelection();
-                CenterPointer();   // <— центрируем
-                zoomPanController.Reset();  // центр и 1.0x
+                CenterPointer();
+                zoomPanController.Reset();
                 commandHistory.Clear();
+                SyncMapBuilderUi();  // ← Обновить MapBuilder
                 UpdateUI();
             }
         }
@@ -308,9 +312,15 @@ namespace CrystalTable
                 return;
             }
 
-            SizeX.Text = info.SizeX.ToString();
-            SizeY.Text = info.SizeY.ToString();
-            WaferDiameter.Text = info.WaferDiameter.ToString(CultureSettings.NumericCulture);
+            // ✅ Синхронизация через WaferController
+            waferController.CrystalWidthRaw = info.SizeX;
+            waferController.CrystalHeightRaw = info.SizeY;
+            waferController.WaferDiameter = info.WaferDiameter;
+            waferController.SizeXtemp = info.SizeX;
+            waferController.SizeYtemp = info.SizeY;
+            waferController.WaferDiameterTemp = info.WaferDiameter;
+            
+            SyncMapBuilderUi();  // ← Обновить MapBuilder UI
         }
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
@@ -395,53 +405,5 @@ namespace CrystalTable
         }
 
         // ====== ОБРАБОТЧИКИ ======
-
-        // «Создать»
-        private void Create_Click(object sender, EventArgs e)
-        {
-            string ReadMasked(MaskedTextBox box)
-            {
-                var prev = box.TextMaskFormat;
-                try
-                {
-                    box.TextMaskFormat = MaskFormat.ExcludePromptAndLiterals;
-                    return (box.Text ?? string.Empty).Trim();
-                }
-                finally
-                {
-                    box.TextMaskFormat = prev;
-                }
-            }
-
-            string sizeXRaw = ReadMasked(SizeX);
-            string sizeYRaw = ReadMasked(SizeY);
-            string diaRaw = ReadMasked(WaferDiameter);
-
-            if (waferController.CreateWaferFromInput(sizeXRaw, sizeYRaw, diaRaw, out string errorMessage))
-            {
-                CenterPointer();
-                zoomPanController.Reset();
-                UpdateUI();
-            }
-            else
-            {
-                MessageBox.Show(errorMessage, "Новая пластина", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-        }
-
-        // Вспомогательный метод для получения позиции указателя или нулевой точки
-        private PointF TryGetPointerOrZero()
-        {
-            try
-            {
-                return GetPointerMm();
-            }
-            catch
-            {
-                return new PointF(0f, 0f);
-            }
-        }
-
-
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Windows.Forms;
 using System.Globalization;
@@ -129,10 +129,23 @@ namespace CrystalTable
                                 return;
                             }
 
-                            SizeX.Text = newSizeXum.ToString(CultureSettings.NumericCulture);
-                            SizeY.Text = newSizeYum.ToString(CultureSettings.NumericCulture);
-                            WaferDiameter.Text = newDiameterMm.ToString(CultureSettings.NumericCulture);
+                            // ✅ Обновление через MapBuilder
+                            mapInputsSyncLock = true;
+                            try
+                            {
+                                mapWidthInput.Value = newSizeXum;
+                                mapHeightInput.Value = newSizeYum;
+                                mapDiameterInput.Value = (decimal)newDiameterMm;
+                            }
+                            finally
+                            {
+                                mapInputsSyncLock = false;
+                            }
 
+                            // Синхронизация WaferController
+                            waferController.CrystalWidthRaw = newSizeXum;
+                            waferController.CrystalHeightRaw = newSizeYum;
+                            waferController.WaferDiameter = newDiameterMm;
                             waferController.SizeXtemp = newSizeXum;
                             waferController.SizeYtemp = newSizeYum;
                             waferController.WaferDiameterTemp = newDiameterMm;

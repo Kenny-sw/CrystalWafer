@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Windows.Forms;
@@ -19,6 +19,8 @@ namespace CrystalTable
         private NumericUpDown mapOffsetYInput;
         private CheckBox mapMirrorXCheckBox;
         private CheckBox mapMirrorYCheckBox;
+        private CheckBox checkBoxFillWafer;  // ← Добавлено из Parameters
+        private ComboBox loadDataComboBox;    // ← Добавлено из Parameters
         private Button mapStartButton;
         private Button mapApplyButton;
         private Button mapCancelButton;
@@ -47,9 +49,10 @@ namespace CrystalTable
             mapBuilderPanel = new Panel
             {
                 Dock = DockStyle.Top,
-                Height = 240,
+                Height = 380,  // ← УВЕЛИЧЕНО с 320 до 380 для полного отображения
                 Padding = new Padding(10),
-                BackColor = Color.FromArgb(246, 250, 246)
+                BackColor = Color.FromArgb(246, 250, 246),
+                AutoScroll = true  // ← Добавлено для прокрутки при необходимости
             };
 
             var titleLabel = new Label
@@ -68,6 +71,43 @@ namespace CrystalTable
                 ForeColor = Color.FromArgb(72, 96, 72)
             };
 
+            // ✅ НОВЫЙ БЛОК: Тип изделия и режим схемы
+            var presetPanel = new FlowLayoutPanel
+            {
+                FlowDirection = FlowDirection.LeftToRight,
+                Dock = DockStyle.Top,
+                AutoSize = true,
+                Margin = new Padding(0, 0, 0, 6)
+            };
+
+            var lblPreset = new Label
+            {
+                Text = "Тип изделия:",
+                AutoSize = true,
+                Margin = new Padding(0, 5, 6, 3),
+                Width = 90
+            };
+
+            loadDataComboBox = new ComboBox
+            {
+                Width = 180,
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Margin = new Padding(0, 3, 0, 3)
+            };
+            loadDataComboBox.SelectedIndexChanged += loadDataComboBox_SelectedIndexChanged;
+
+            checkBoxFillWafer = new CheckBox
+            {
+                Text = "Режим схемы",
+                AutoSize = true,
+                Margin = new Padding(10, 5, 0, 3)
+            };
+            checkBoxFillWafer.CheckedChanged += checkBoxFillWafer_CheckedChanged;
+
+            presetPanel.Controls.Add(lblPreset);
+            presetPanel.Controls.Add(loadDataComboBox);
+            presetPanel.Controls.Add(checkBoxFillWafer);
+
             var inputsTable = new TableLayoutPanel
             {
                 ColumnCount = 2,
@@ -78,16 +118,16 @@ namespace CrystalTable
             inputsTable.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 55f));
             inputsTable.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 45f));
 
-            mapDiameterInput = CreateNumericUpDown((decimal)WaferController.MinWaferDiameter, (decimal)WaferController.MaxWaferDiameter, 1m, 1);
-            mapWidthInput = CreateNumericUpDown(0.1m, 200.0m, 0.1m, 3);
-            mapHeightInput = CreateNumericUpDown(0.1m, 200.0m, 0.1m, 3);
+            mapDiameterInput = CreateNumericUpDown((decimal)WaferController.MinWaferDiameter, (decimal)WaferController.MaxWaferDiameter, 1m, 0);
+            mapWidthInput = CreateNumericUpDown(1m, 50000m, 1m, 0);  // ← В мкм!
+            mapHeightInput = CreateNumericUpDown(1m, 50000m, 1m, 0); // ← В мкм!
             mapStreetInput = CreateNumericUpDown(0m, 10m, 0.05m, 3);
             mapOffsetXInput = CreateNumericUpDown(-200m, 200m, 0.05m, 3);
             mapOffsetYInput = CreateNumericUpDown(-200m, 200m, 0.05m, 3);
 
             AddLabeledControl(inputsTable, "Диаметр D, мм", mapDiameterInput, 0);
-            AddLabeledControl(inputsTable, "Ширина W, мм", mapWidthInput, 1);
-            AddLabeledControl(inputsTable, "Высота H, мм", mapHeightInput, 2);
+            AddLabeledControl(inputsTable, "Ширина W, мкм", mapWidthInput, 1);  // ← мкм!
+            AddLabeledControl(inputsTable, "Высота H, мкм", mapHeightInput, 2); // ← мкм!
             AddLabeledControl(inputsTable, "Ширина street, мм", mapStreetInput, 3);
             AddLabeledControl(inputsTable, "Смещение X, мм", mapOffsetXInput, 4);
             AddLabeledControl(inputsTable, "Смещение Y, мм", mapOffsetYInput, 5);
@@ -138,9 +178,9 @@ namespace CrystalTable
             };
 
             mapStartButton = CreatePrimaryButton("Создать карту", MapStartButton_Click);
-            mapApplyButton = CreatePrimaryButton("Применить черновик", MapApplyButton_Click);
+            mapApplyButton = CreatePrimaryButton("Применить", MapApplyButton_Click);
             mapCancelButton = CreateSecondaryButton("Отмена", MapCancelButton_Click);
-            mapEditButton = CreateSecondaryButton("Редактировать карту", MapEditButton_Click);
+            mapEditButton = CreateSecondaryButton("Редактировать", MapEditButton_Click);
 
             buttonsPanel.Controls.Add(mapStartButton);
             buttonsPanel.Controls.Add(mapApplyButton);
@@ -151,6 +191,7 @@ namespace CrystalTable
             mapBuilderPanel.Controls.Add(shiftPanel);
             mapBuilderPanel.Controls.Add(mirrorPanel);
             mapBuilderPanel.Controls.Add(inputsTable);
+            mapBuilderPanel.Controls.Add(presetPanel);  // ← Добавлено
             mapBuilderPanel.Controls.Add(mapBuilderStatusLabel);
             mapBuilderPanel.Controls.Add(titleLabel);
 
@@ -271,8 +312,8 @@ namespace CrystalTable
                 if (snapshot != null)
                 {
                     mapDiameterInput.Value = ClampToNumeric(snapshot.DiameterMm, mapDiameterInput);
-                    mapWidthInput.Value = ClampToNumeric(snapshot.CrystalWidthMm, mapWidthInput);
-                    mapHeightInput.Value = ClampToNumeric(snapshot.CrystalHeightMm, mapHeightInput);
+                    mapWidthInput.Value = ClampToNumeric(snapshot.CrystalWidthMm * 1000f, mapWidthInput);  // ← мм → мкм
+                    mapHeightInput.Value = ClampToNumeric(snapshot.CrystalHeightMm * 1000f, mapHeightInput); // ← мм → мкм
                     mapStreetInput.Value = ClampToNumeric(snapshot.StreetMm, mapStreetInput);
                     mapOffsetXInput.Value = ClampToNumeric(snapshot.OffsetXMm, mapOffsetXInput);
                     mapOffsetYInput.Value = ClampToNumeric(snapshot.OffsetYMm, mapOffsetYInput);
@@ -282,12 +323,12 @@ namespace CrystalTable
                 else
                 {
                     float defaultDiameter = waferController.WaferDiameter > 0 ? waferController.WaferDiameter : 200f;
-                    float defaultWidth = waferController.CrystalWidthRaw > 0 ? waferController.CrystalWidthRaw / 1000f : 10f;
-                    float defaultHeight = waferController.CrystalHeightRaw > 0 ? waferController.CrystalHeightRaw / 1000f : 10f;
+                    float defaultWidthMicrons = waferController.CrystalWidthRaw > 0 ? waferController.CrystalWidthRaw : 100f;  // ← мкм
+                    float defaultHeightMicrons = waferController.CrystalHeightRaw > 0 ? waferController.CrystalHeightRaw : 100f; // ← мкм
 
                     mapDiameterInput.Value = ClampToNumeric(defaultDiameter, mapDiameterInput);
-                    mapWidthInput.Value = ClampToNumeric(defaultWidth, mapWidthInput);
-                    mapHeightInput.Value = ClampToNumeric(defaultHeight, mapHeightInput);
+                    mapWidthInput.Value = ClampToNumeric(defaultWidthMicrons, mapWidthInput);
+                    mapHeightInput.Value = ClampToNumeric(defaultHeightMicrons, mapHeightInput);
                     mapStreetInput.Value = ClampToNumeric(0f, mapStreetInput);
                     mapOffsetXInput.Value = ClampToNumeric(0f, mapOffsetXInput);
                     mapOffsetYInput.Value = ClampToNumeric(0f, mapOffsetYInput);
@@ -298,14 +339,17 @@ namespace CrystalTable
                 bool editing = waferController.IsMapEditing;
                 bool hasActive = waferController.HasActiveMap;
 
-                mapDiameterInput.Enabled = editing;
-                mapWidthInput.Enabled = editing;
-                mapHeightInput.Enabled = editing;
-                mapStreetInput.Enabled = editing;
-                mapOffsetXInput.Enabled = editing;
-                mapOffsetYInput.Enabled = editing;
-                mapMirrorXCheckBox.Enabled = editing;
-                mapMirrorYCheckBox.Enabled = editing;
+                // ✅ Режим редактирования - можно менять все
+                mapDiameterInput.Enabled = editing || !hasActive;
+                mapWidthInput.Enabled = editing || !hasActive;
+                mapHeightInput.Enabled = editing || !hasActive;
+                mapStreetInput.Enabled = editing || !hasActive;
+                mapOffsetXInput.Enabled = editing || !hasActive;
+                mapOffsetYInput.Enabled = editing || !hasActive;
+                mapMirrorXCheckBox.Enabled = editing || !hasActive;
+                mapMirrorYCheckBox.Enabled = editing || !hasActive;
+                loadDataComboBox.Enabled = !editing && !hasActive;  // ← Только до создания
+                checkBoxFillWafer.Enabled = true;  // ← Всегда доступно
 
                 mapShiftLeftButton.Enabled = editing;
                 mapShiftRightButton.Enabled = editing;
@@ -315,18 +359,31 @@ namespace CrystalTable
                 mapHalfStepYButton.Enabled = editing;
                 mapSwapOrientationButton.Enabled = editing;
 
-                mapStartButton.Enabled = !editing;
+                mapStartButton.Enabled = !editing && !hasActive;
                 mapApplyButton.Enabled = editing;
                 mapCancelButton.Enabled = editing;
-                mapEditButton.Enabled = hasActive && !editing;
+                mapEditButton.Enabled = !editing;  // ← ИЗМЕНЕНО: всегда доступна когда НЕ редактируем
 
-                toolStripCreateMapButton.Enabled = !editing;
-                toolStripEditMapButton.Enabled = hasActive && !editing;
+                toolStripCreateMapButton.Enabled = !editing && !hasActive;
+                toolStripEditMapButton.Enabled = !editing;  // ← ИЗМЕНЕНО: всегда доступна когда НЕ редактируем
                 toolStripSavePngButton.Enabled = hasActive;
 
-                mapBuilderStatusLabel.Text = editing
-                    ? "Редактируется черновик карты"
-                    : hasActive ? "Активная карта готова" : "Карта не создана";
+                // ✅ Обновленные статусы
+                if (editing)
+                {
+                    mapBuilderStatusLabel.Text = "Редактируется черновик карты";
+                    mapEditButton.Text = "Отменить";  // Меняем текст кнопки
+                }
+                else if (hasActive)
+                {
+                    mapBuilderStatusLabel.Text = "Активная карта готова";
+                    mapEditButton.Text = "Редактировать";
+                }
+                else
+                {
+                    mapBuilderStatusLabel.Text = "Настройте параметры и нажмите 'Создать карту'";
+                    mapEditButton.Text = "Настроить";  // ← НОВЫЙ текст для режима "до создания"
+                }
             }
             finally
             {
@@ -344,11 +401,32 @@ namespace CrystalTable
 
         private void MapStartButton_Click(object sender, EventArgs e)
         {
+            // ✅ ОБЪЕДИНЕННЫЙ ФУНКЦИОНАЛ: проверка + создание + синхронизация
+
+            float diameterMm = (float)mapDiameterInput.Value;
+            float widthMicrons = (float)mapWidthInput.Value;
+            float heightMicrons = (float)mapHeightInput.Value;
+
+            // Валидация
+            if (diameterMm < WaferController.MinWaferDiameter || diameterMm > WaferController.MaxWaferDiameter)
+            {
+                MessageBox.Show($"Диаметр пластины должен быть от {WaferController.MinWaferDiameter} до {WaferController.MaxWaferDiameter} мм.",
+                    "Ошибка валидации", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (widthMicrons < 1f || heightMicrons < 1f)
+            {
+                MessageBox.Show("Размеры кристалла должны быть больше 0.",
+                    "Ошибка валидации", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             var parameters = new WaferMapParameters
             {
-                DiameterMm = (float)mapDiameterInput.Value,
-                CrystalWidthMm = (float)mapWidthInput.Value,
-                CrystalHeightMm = (float)mapHeightInput.Value,
+                DiameterMm = diameterMm,
+                CrystalWidthMm = widthMicrons / 1000f,  // ← мкм → мм
+                CrystalHeightMm = heightMicrons / 1000f, // ← мкм → мм
                 StreetMm = (float)mapStreetInput.Value,
                 OffsetXMm = (float)mapOffsetXInput.Value,
                 OffsetYMm = (float)mapOffsetYInput.Value,
@@ -357,10 +435,27 @@ namespace CrystalTable
                 SwapOrientation = false
             };
 
+            // ✅ КРИТИЧНО: Синхронизировать состояние WaferController
+            waferController.CrystalWidthRaw = (uint)widthMicrons;
+            waferController.CrystalHeightRaw = (uint)heightMicrons;
+            waferController.WaferDiameter = diameterMm;
+            waferController.SizeXtemp = waferController.CrystalWidthRaw;
+            waferController.SizeYtemp = waferController.CrystalHeightRaw;
+            waferController.WaferDiameterTemp = waferController.WaferDiameter;
+
+            // Создание карты
             waferController.BeginMapCreation(parameters);
+            
+            // Центрирование указателя
+            CenterPointer();
+            zoomPanController.Reset();
+            
             pictureBox1.Invalidate();
             SyncMapBuilderUi();
             UpdateUI();
+            
+            // Логирование (опционально)
+            System.Diagnostics.Debug.WriteLine($"Карта создана: {diameterMm}мм, {widthMicrons}×{heightMicrons} мкм, кристаллов: {Logic.CrystalManager.Instance.Crystals.Count}");
         }
 
         private void MapApplyButton_Click(object sender, EventArgs e)
@@ -381,12 +476,38 @@ namespace CrystalTable
 
         private void MapEditButton_Click(object sender, EventArgs e)
         {
-            if (!waferController.HasActiveMap)
+            // ✅ УЛУЧШЕННАЯ ЛОГИКА: работает в трех режимах
+            
+            if (waferController.IsMapEditing)
             {
-                return;
+                // Режим 1: Отменить редактирование (как Cancel)
+                waferController.CancelDraftMap();
             }
-
-            waferController.BeginMapEdit();
+            else if (waferController.HasActiveMap)
+            {
+                // Режим 2: Редактировать существующую карту
+                waferController.BeginMapEdit();
+            }
+            else
+            {
+                // Режим 3: Войти в режим настройки ДО создания карты (как "Создать карту" но без создания)
+                // Просто переводим в режим редактирования параметров
+                var parameters = new WaferMapParameters
+                {
+                    DiameterMm = (float)mapDiameterInput.Value,
+                    CrystalWidthMm = (float)mapWidthInput.Value / 1000f,
+                    CrystalHeightMm = (float)mapHeightInput.Value / 1000f,
+                    StreetMm = (float)mapStreetInput.Value,
+                    OffsetXMm = (float)mapOffsetXInput.Value,
+                    OffsetYMm = (float)mapOffsetYInput.Value,
+                    MirrorX = mapMirrorXCheckBox.Checked,
+                    MirrorY = mapMirrorYCheckBox.Checked,
+                    SwapOrientation = false
+                };
+                
+                waferController.BeginMapCreation(parameters);
+            }
+            
             pictureBox1.Invalidate();
             SyncMapBuilderUi();
             UpdateUI();
@@ -491,7 +612,9 @@ namespace CrystalTable
         private void MapWidthInput_ValueChanged(object sender, EventArgs e)
         {
             if (mapInputsSyncLock || !waferController.IsMapEditing) return;
-            waferController.UpdateDraftCrystalSize((float)mapWidthInput.Value, (float)mapHeightInput.Value);
+            float widthMm = (float)mapWidthInput.Value / 1000f;  // ← мкм → мм
+            float heightMm = (float)mapHeightInput.Value / 1000f; // ← мкм → мм
+            waferController.UpdateDraftCrystalSize(widthMm, heightMm);
             pictureBox1.Invalidate();
             SyncMapBuilderUi();
         }
@@ -499,7 +622,9 @@ namespace CrystalTable
         private void MapHeightInput_ValueChanged(object sender, EventArgs e)
         {
             if (mapInputsSyncLock || !waferController.IsMapEditing) return;
-            waferController.UpdateDraftCrystalSize((float)mapWidthInput.Value, (float)mapHeightInput.Value);
+            float widthMm = (float)mapWidthInput.Value / 1000f;  // ← мкм → мм
+            float heightMm = (float)mapHeightInput.Value / 1000f; // ← мкм → мм
+            waferController.UpdateDraftCrystalSize(widthMm, heightMm);
             pictureBox1.Invalidate();
             SyncMapBuilderUi();
         }
@@ -532,6 +657,9 @@ namespace CrystalTable
             waferController.SetDraftMirror(mapMirrorXCheckBox.Checked, mapMirrorYCheckBox.Checked);
             pictureBox1.Invalidate();
         }
+
+        // Обработчики loadDataComboBox_SelectedIndexChanged и checkBoxFillWafer_CheckedChanged
+        // находятся в Form1.cs и Form1.LoadData.cs
     }
 }
 

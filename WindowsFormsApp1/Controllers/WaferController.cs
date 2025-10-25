@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -55,9 +55,15 @@ namespace CrystalTable.Controllers
         public WaferController(Form1 form)
         {
             this.form = form;
-            SizeXtemp = 100;
-            SizeYtemp = 100;
-            WaferDiameterTemp = 100f;
+            
+            // ✅ Инициализация с разумными значениями по умолчанию
+            CrystalWidthRaw = 100;      // 100 мкм = 0.1 мм
+            CrystalHeightRaw = 100;     // 100 мкм = 0.1 мм
+            WaferDiameter = 200f;       // 200 мм
+            
+            SizeXtemp = CrystalWidthRaw;
+            SizeYtemp = CrystalHeightRaw;
+            WaferDiameterTemp = WaferDiameter;
         }
 
         public void Dispose()

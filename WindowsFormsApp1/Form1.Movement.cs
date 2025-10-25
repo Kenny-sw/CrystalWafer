@@ -261,9 +261,10 @@ namespace CrystalTable
 
         private bool TryGetPitchUm(out uint pitchXum, out uint pitchYum)
         {
-            pitchXum = pitchYum = 0;
-            if (!uint.TryParse(SizeX.Text.Trim(), out pitchXum)) return false;
-            if (!uint.TryParse(SizeY.Text.Trim(), out pitchYum)) return false;
+            // ✅ Исправлено: берем из WaferController
+            pitchXum = waferController.CrystalWidthRaw;
+            pitchYum = waferController.CrystalHeightRaw;
+            
             if (pitchXum == 0 || pitchYum == 0) return false;
             return true;
         }
