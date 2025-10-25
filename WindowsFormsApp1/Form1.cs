@@ -1,4 +1,4 @@
-﻿using CrystalTable.Data;
+using CrystalTable.Data;
 using CrystalTable.Logic;
 using CrystalTable.Controllers;
 using System;
@@ -263,7 +263,8 @@ namespace CrystalTable
                 uiController.ClearInputFields(SizeX, SizeY, WaferDiameter);
                 waferController.CreateNewWafer();
                 mouseController.ClearSelection();
-                CenterPointerAndView();   // <— центрируем
+                CenterPointer();   // <— центрируем
+                zoomPanController.Reset();  // центр и 1.0x
                 commandHistory.Clear();
                 UpdateUI();
             }
@@ -310,36 +311,7 @@ namespace CrystalTable
             SizeX.Text = info.SizeX.ToString();
             SizeY.Text = info.SizeY.ToString();
             WaferDiameter.Text = info.WaferDiameter.ToString(CultureSettings.NumericCulture);
-
-            if (info.HasCalibration)
-            {
-                try
-                {
-                    if (lblFirstRef != null)
-                    {
-                        lblFirstRef.Text = $"Первый: {info.FirstReferenceX:F3} мм; {info.FirstReferenceY:F3} мм";
-                    }
-
-                    if (lblLastRef != null)
-                    {
-                        lblLastRef.Text = $"Последний: {info.LastReferenceX:F3} мм; {info.LastReferenceY:F3} мм";
-                    }
-                }
-                catch
-                {
-                    // UI элемент может отсутствовать в режиме тестов
-                }
-            }
-
-            try
-            {
-                UpdateCalibrationLabelsAfterBuild();
-            }
-            catch
-            {
-            }
         }
-        private void UpdateWaferVisualization() => pictureBox1.Refresh();
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
@@ -355,14 +327,13 @@ namespace CrystalTable
         public MouseController MouseController => mouseController;
         public bool ShowRoutePreview => showRoutePreview;
         public UIController UiController => uiController;
-        public ToolStripStatusLabel SelectedCrystalStatusLabel => selectedCrystalStatusLabel;
-        public ToolStripStatusLabel TotalCrystalsStatusLabel => totalCrystalsStatusLabel;
         public ToolStripStatusLabel StatusLabel => statusLabel;
         public ToolStripStatusLabel FillPercentageLabel => fillPercentageLabel;
         public ToolStripStatusLabel ZoomLabel => zoomLabel;
         public ToolStripStatusLabel CoordinatesLabel => coordinatesLabel;
         public ToolStripStatusLabel SensorStatusLabel => sensorStatusLabel;
-        public CheckBox CheckBoxFillWafer => checkBoxFillWafer;
+        public ToolStripStatusLabel TotalCrystalsStatusLabel => totalCrystalsStatusLabel;
+        public ToolStripStatusLabel SelectedCrystalStatusLabel => selectedCrystalStatusLabel;
         public ToolStripButton BtnRoutePreview => btnRoutePreview;
         public ToolStripMenuItem ShowRouteToolStripMenuItem => showRouteToolStripMenuItem;
         public SerialPortController SerialPortController => serialPortController;
@@ -448,8 +419,8 @@ namespace CrystalTable
 
             if (waferController.CreateWaferFromInput(sizeXRaw, sizeYRaw, diaRaw, out string errorMessage))
             {
-                CenterPointerAndView();
-                try { InitializeCalibrationUiState(); } catch { /* не критично */ }
+                CenterPointer();
+                zoomPanController.Reset();
                 UpdateUI();
             }
             else
@@ -458,76 +429,19 @@ namespace CrystalTable
             }
         }
 
-
-
-        // «Выбрать первый»
-        private void btnSelectFirst_Click(object sender, EventArgs e)
-        {
-            var p = TryGetPointerOrZero();
-            waferController.SetFirstReference(p.X, p.Y);
-            try { if (lblFirstRef != null) lblFirstRef.Text = $"Первый: {p.X:F3} мм; {p.Y:F3} мм"; } catch { }
-            try { UpdateBuildMapEnabled(); } catch { }
-            UpdateUI();
-        }
-
-        // «Выбрать последний»
-        private void btnSelectLast_Click(object sender, EventArgs e)
-        {
-            var p = TryGetPointerOrZero();
-            waferController.SetLastReference(p.X, p.Y);
-            try { if (lblLastRef != null) lblLastRef.Text = $"Последний: {p.X:F3} мм; {p.Y:F3} мм"; } catch { }
-            try { UpdateBuildMapEnabled(); } catch { }
-            UpdateUI();
-        }
-
-        // «Построить карту»
-        private void btnBuildMap_Click(object sender, EventArgs e)
-        {
-            bool ok = false;
-
-            if (waferController.IsCalibrationReady())
-            {
-                waferController.BuildMapFromReferences();
-                ok = true;
-            }
-            else if (waferController.IsPresetReady())
-            {
-                waferController.BuildMapFromPreset();
-                ok = true;
-            }
-
-            if (!ok)
-            {
-                MessageBox.Show("Построение карты недоступно. Задайте шаги (SizeX/SizeY) или выберите две опорные точки.",
-                    "Построить карту", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
-
-            try { UpdateCalibrationLabelsAfterBuild(); } catch { }
-            pictureBox1?.Invalidate();
-            UpdateUI();
-        }
-
-        // Вспомогательные
+        // Вспомогательный метод для получения позиции указателя или нулевой точки
         private PointF TryGetPointerOrZero()
         {
-            try { return GetPointerMm(); } // реализован в Form1.Movement.cs (partial)
-            catch { return new PointF(0f, 0f); }
+            try
+            {
+                return GetPointerMm();
+            }
+            catch
+            {
+                return new PointF(0f, 0f);
+            }
         }
 
-        private void CenterPointerAndView()
-        {
-            try { CenterPointer(); } catch { }   // из Form1.Movement.cs
-            zoomPanController.Reset();           // центр и 1.0x
-        }
 
-        private void cameraPictureBox_Click(object sender, EventArgs e)
-        {
-
-        }
     }
 }
-
-       
-
-        

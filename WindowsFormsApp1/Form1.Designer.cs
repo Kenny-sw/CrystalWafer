@@ -1,4 +1,4 @@
-﻿namespace CrystalTable
+namespace CrystalTable
 {
     partial class Form1
     {
@@ -78,16 +78,6 @@
             this.mainPanel = new System.Windows.Forms.Panel();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.rightPanel = new System.Windows.Forms.Panel();
-            this.groupBoxCalibration = new System.Windows.Forms.GroupBox();
-            this.btnBuildMap = new System.Windows.Forms.Button();
-            this.lblRows = new System.Windows.Forms.Label();
-            this.btnSelectLast = new System.Windows.Forms.Button();
-            this.lblLastRef = new System.Windows.Forms.Label();
-            this.lblCols = new System.Windows.Forms.Label();
-            this.btnSelectFirst = new System.Windows.Forms.Button();
-            this.lblFirstRef = new System.Windows.Forms.Label();
-            this.lblPitchY = new System.Windows.Forms.Label();
-            this.lblPitchX = new System.Windows.Forms.Label();
             this.groupBoxManualControl = new System.Windows.Forms.GroupBox();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.buttonMoveRight = new System.Windows.Forms.Button();
@@ -123,7 +113,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.pictureBox1.SuspendLayout();
             this.rightPanel.SuspendLayout();
-            this.groupBoxCalibration.SuspendLayout();
             this.groupBoxManualControl.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             this.groupBoxParameters.SuspendLayout();
@@ -570,11 +559,8 @@
             // sensorStatusLabel
             // 
             this.sensorStatusLabel.Name = "sensorStatusLabel";
-            this.sensorStatusLabel.Size = new System.Drawing.Size(88, 20);
+            this.sensorStatusLabel.Size = new System.Drawing.Size(71, 20);
             this.sensorStatusLabel.Text = "Датчик: ?";
-            // 
-            // MyserialPort
-            // 
             // 
             // mainPanel
             // 
@@ -604,7 +590,6 @@
             // 
             // rightPanel
             // 
-            this.rightPanel.Controls.Add(this.groupBoxCalibration);
             this.rightPanel.Controls.Add(this.groupBoxManualControl);
             this.rightPanel.Controls.Add(this.groupBoxParameters);
             this.rightPanel.Controls.Add(this.groupBoxConnection);
@@ -615,115 +600,6 @@
             this.rightPanel.Padding = new System.Windows.Forms.Padding(10, 10, 10, 0);
             this.rightPanel.Size = new System.Drawing.Size(310, 592);
             this.rightPanel.TabIndex = 3;
-            // 
-            // groupBoxCalibration
-            // 
-            this.groupBoxCalibration.Controls.Add(this.btnBuildMap);
-            this.groupBoxCalibration.Controls.Add(this.lblRows);
-            this.groupBoxCalibration.Controls.Add(this.btnSelectLast);
-            this.groupBoxCalibration.Controls.Add(this.lblLastRef);
-            this.groupBoxCalibration.Controls.Add(this.lblCols);
-            this.groupBoxCalibration.Controls.Add(this.btnSelectFirst);
-            this.groupBoxCalibration.Controls.Add(this.lblFirstRef);
-            this.groupBoxCalibration.Controls.Add(this.lblPitchY);
-            this.groupBoxCalibration.Controls.Add(this.lblPitchX);
-            this.groupBoxCalibration.Dock = System.Windows.Forms.DockStyle.Top;
-            this.groupBoxCalibration.Location = new System.Drawing.Point(10, 558);
-            this.groupBoxCalibration.Name = "groupBoxCalibration";
-            this.groupBoxCalibration.Size = new System.Drawing.Size(290, 240);
-            this.groupBoxCalibration.TabIndex = 3;
-            this.groupBoxCalibration.TabStop = false;
-            this.groupBoxCalibration.Text = "Калибровка по 2 точкам";
-            // 
-            // btnBuildMap
-            // 
-            this.btnBuildMap.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnBuildMap.Location = new System.Drawing.Point(9, 196);
-            this.btnBuildMap.Name = "btnBuildMap";
-            this.btnBuildMap.Size = new System.Drawing.Size(275, 28);
-            this.btnBuildMap.TabIndex = 2;
-            this.btnBuildMap.Text = "Построить карту";
-            this.btnBuildMap.UseVisualStyleBackColor = true;
-            this.btnBuildMap.Click += new System.EventHandler(this.btnBuildMap_Click);
-            // 
-            // lblRows
-            // 
-            this.lblRows.AutoSize = true;
-            this.lblRows.Location = new System.Drawing.Point(145, 168);
-            this.lblRows.Name = "lblRows";
-            this.lblRows.Size = new System.Drawing.Size(82, 16);
-            this.lblRows.TabIndex = 8;
-            this.lblRows.Text = "Rows (Ny): 0";
-            // 
-            // btnSelectLast
-            // 
-            this.btnSelectLast.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnSelectLast.Location = new System.Drawing.Point(9, 57);
-            this.btnSelectLast.Name = "btnSelectLast";
-            this.btnSelectLast.Size = new System.Drawing.Size(275, 28);
-            this.btnSelectLast.TabIndex = 1;
-            this.btnSelectLast.Text = "Выбрать последний";
-            this.btnSelectLast.UseVisualStyleBackColor = true;
-            this.btnSelectLast.Click += new System.EventHandler(this.btnSelectLast_Click);
-            // 
-            // lblLastRef
-            // 
-            this.lblLastRef.AutoSize = true;
-            this.lblLastRef.Location = new System.Drawing.Point(6, 116);
-            this.lblLastRef.Name = "lblLastRef";
-            this.lblLastRef.Size = new System.Drawing.Size(110, 16);
-            this.lblLastRef.TabIndex = 4;
-            this.lblLastRef.Text = "Последний: —, —";
-            // 
-            // lblCols
-            // 
-            this.lblCols.AutoSize = true;
-            this.lblCols.Location = new System.Drawing.Point(145, 142);
-            this.lblCols.Name = "lblCols";
-            this.lblCols.Size = new System.Drawing.Size(74, 16);
-            this.lblCols.TabIndex = 7;
-            this.lblCols.Text = "Cols (Nx): 0";
-            // 
-            // btnSelectFirst
-            // 
-            this.btnSelectFirst.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnSelectFirst.Location = new System.Drawing.Point(9, 23);
-            this.btnSelectFirst.Name = "btnSelectFirst";
-            this.btnSelectFirst.Size = new System.Drawing.Size(275, 28);
-            this.btnSelectFirst.TabIndex = 0;
-            this.btnSelectFirst.Text = "Выбрать первый";
-            this.btnSelectFirst.UseVisualStyleBackColor = true;
-            this.btnSelectFirst.Click += new System.EventHandler(this.btnSelectFirst_Click);
-            // 
-            // lblFirstRef
-            // 
-            this.lblFirstRef.AutoSize = true;
-            this.lblFirstRef.Location = new System.Drawing.Point(6, 91);
-            this.lblFirstRef.Name = "lblFirstRef";
-            this.lblFirstRef.Size = new System.Drawing.Size(88, 16);
-            this.lblFirstRef.TabIndex = 3;
-            this.lblFirstRef.Text = "Первый: —, —";
-            // 
-            // lblPitchY
-            // 
-            this.lblPitchY.AutoSize = true;
-            this.lblPitchY.Location = new System.Drawing.Point(6, 168);
-            this.lblPitchY.Name = "lblPitchY";
-            this.lblPitchY.Size = new System.Drawing.Size(75, 16);
-            this.lblPitchY.TabIndex = 6;
-            this.lblPitchY.Text = "PitchY: 0.00";
-            // 
-            // lblPitchX
-            // 
-            this.lblPitchX.AutoSize = true;
-            this.lblPitchX.Location = new System.Drawing.Point(6, 142);
-            this.lblPitchX.Name = "lblPitchX";
-            this.lblPitchX.Size = new System.Drawing.Size(74, 16);
-            this.lblPitchX.TabIndex = 5;
-            this.lblPitchX.Text = "PitchX: 0.00";
             // 
             // groupBoxManualControl
             // 
@@ -1057,8 +933,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.pictureBox1.ResumeLayout(false);
             this.rightPanel.ResumeLayout(false);
-            this.groupBoxCalibration.ResumeLayout(false);
-            this.groupBoxCalibration.PerformLayout();
             this.groupBoxManualControl.ResumeLayout(false);
             this.groupBoxManualControl.PerformLayout();
             this.tableLayoutPanel2.ResumeLayout(false);
@@ -1113,6 +987,8 @@
         private System.Windows.Forms.ToolStripButton btnZoomReset;
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel statusLabel;
+        private System.Windows.Forms.ToolStripStatusLabel totalCrystalsStatusLabel;
+        private System.Windows.Forms.ToolStripStatusLabel selectedCrystalStatusLabel;
         private System.Windows.Forms.ToolStripStatusLabel fillPercentageLabel;
         private System.Windows.Forms.ToolStripStatusLabel zoomLabel;
         private System.Windows.Forms.ToolStripStatusLabel coordinatesLabel;
@@ -1121,10 +997,19 @@
         private System.Windows.Forms.Panel mainPanel;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Panel rightPanel;
-        private System.Windows.Forms.GroupBox groupBoxConnection;
-        private System.Windows.Forms.Button buttonUpdatePort;
-        private System.Windows.Forms.Button buttonConnect;
-        private System.Windows.Forms.ComboBox comboBoxPorts;
+        private System.Windows.Forms.GroupBox groupBoxMainControl;
+        private System.Windows.Forms.Button toOriginButton;
+        private System.Windows.Forms.Button startButton;
+        private System.Windows.Forms.Button resetButton;
+        private System.Windows.Forms.GroupBox groupBoxManualControl;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
+        private System.Windows.Forms.Button buttonMoveRight;
+        private System.Windows.Forms.Button buttonMoveUp;
+        private System.Windows.Forms.Button buttonMoveLeft;
+        private System.Windows.Forms.Button buttonMoveDown;
+        private System.Windows.Forms.Button buttonStart;
+        private System.Windows.Forms.Button scan;
+        private System.Windows.Forms.CheckBox checkBoxDiscreteStep;
         private System.Windows.Forms.GroupBox groupBoxParameters;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.MaskedTextBox WaferDiameter;
@@ -1137,33 +1022,12 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Button Create;
         private System.Windows.Forms.CheckBox checkBoxFillWafer;
-        private System.Windows.Forms.GroupBox groupBoxManualControl;
-        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
-        private System.Windows.Forms.Button buttonMoveRight;
-        private System.Windows.Forms.Button buttonMoveUp;
-        private System.Windows.Forms.Button buttonMoveLeft;
-        private System.Windows.Forms.Button buttonMoveDown;
-        private System.Windows.Forms.Button buttonStart;
-        private System.Windows.Forms.Button scan;
-        private System.Windows.Forms.CheckBox checkBoxDiscreteStep;
-        private System.Windows.Forms.GroupBox groupBoxCalibration;
-        private System.Windows.Forms.Button btnBuildMap;
-        private System.Windows.Forms.Label lblRows;
-        private System.Windows.Forms.Button btnSelectLast;
-        private System.Windows.Forms.Label lblLastRef;
-        private System.Windows.Forms.Label lblCols;
-        private System.Windows.Forms.Button btnSelectFirst;
-        private System.Windows.Forms.Label lblFirstRef;
-        private System.Windows.Forms.Label lblPitchY;
-        private System.Windows.Forms.Label lblPitchX;
+        private System.Windows.Forms.GroupBox groupBoxConnection;
+        private System.Windows.Forms.Button buttonUpdatePort;
+        private System.Windows.Forms.Button buttonConnect;
+        private System.Windows.Forms.ComboBox comboBoxPorts;
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
         private System.Windows.Forms.PictureBox cameraPictureBox;
-        private System.Windows.Forms.GroupBox groupBoxMainControl;
-        private System.Windows.Forms.Button toOriginButton;
-        private System.Windows.Forms.Button startButton;
-        private System.Windows.Forms.Button resetButton;
-        private System.Windows.Forms.ToolStripStatusLabel totalCrystalsStatusLabel;
-        private System.Windows.Forms.ToolStripStatusLabel selectedCrystalStatusLabel;
     }
 }
 
