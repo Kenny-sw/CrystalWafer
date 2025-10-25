@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;  // ← ДОБАВЛЕНО для List<T>
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Windows.Forms;
@@ -19,21 +20,18 @@ namespace CrystalTable
         private NumericUpDown mapOffsetYInput;
         private CheckBox mapMirrorXCheckBox;
         private CheckBox mapMirrorYCheckBox;
-        private CheckBox checkBoxFillWafer;  // ← Добавлено из Parameters
-        private ComboBox loadDataComboBox;    // ← Добавлено из Parameters
+        private CheckBox checkBoxFillWafer;
+        private ComboBox loadDataComboBox;
         private Button mapStartButton;
         private Button mapApplyButton;
         private Button mapCancelButton;
         private Button mapEditButton;
-        private Button mapHalfStepXButton;
-        private Button mapHalfStepYButton;
-        private Button mapShiftLeftButton;
-        private Button mapShiftRightButton;
-        private Button mapShiftUpButton;
-        private Button mapShiftDownButton;
-        private Button mapSwapOrientationButton;
-        private ToolStripButton toolStripCreateMapButton;
-        private ToolStripButton toolStripEditMapButton;
+        
+        // ✅ Управление пресетами
+        private Button mapSavePresetButton;
+        private Button mapEditPresetButton;
+        private Button mapDeletePresetButton;
+        
         private ToolStripButton toolStripSavePngButton;
         private bool mapInputsSyncLock;
 
@@ -49,10 +47,10 @@ namespace CrystalTable
             mapBuilderPanel = new Panel
             {
                 Dock = DockStyle.Top,
-                Height = 380,  // ← УВЕЛИЧЕНО с 320 до 380 для полного отображения
+                Height = 320,  // ← УМЕНЬШЕНО с 380 до 320 (удалены кнопки сдвига)
                 Padding = new Padding(10),
                 BackColor = Color.FromArgb(246, 250, 246),
-                AutoScroll = true  // ← Добавлено для прокрутки при необходимости
+                AutoScroll = true
             };
 
             var titleLabel = new Label
@@ -90,22 +88,56 @@ namespace CrystalTable
 
             loadDataComboBox = new ComboBox
             {
-                Width = 180,
+                Width = 150,
                 DropDownStyle = ComboBoxStyle.DropDownList,
-                Margin = new Padding(0, 3, 0, 3)
+                Margin = new Padding(0, 3, 6, 3)
             };
             loadDataComboBox.SelectedIndexChanged += loadDataComboBox_SelectedIndexChanged;
+
+            // ✅ Кнопки управления пресетами
+            mapSavePresetButton = new Button
+            {
+                Text = "💾",
+                Width = 28,
+                Height = 24,
+                Margin = new Padding(0, 3, 3, 3),
+                FlatStyle = FlatStyle.System
+            };
+            mapSavePresetButton.Click += MapSavePreset_Click;
+
+            mapEditPresetButton = new Button
+            {
+                Text = "✏️",
+                Width = 28,
+                Height = 24,
+                Margin = new Padding(0, 3, 3, 3),
+                FlatStyle = FlatStyle.System
+            };
+            mapEditPresetButton.Click += MapEditPreset_Click;
+
+            mapDeletePresetButton = new Button
+            {
+                Text = "🗑️",
+                Width = 28,
+                Height = 24,
+                Margin = new Padding(0, 3, 6, 3),
+                FlatStyle = FlatStyle.System
+            };
+            mapDeletePresetButton.Click += MapDeletePreset_Click;
 
             checkBoxFillWafer = new CheckBox
             {
                 Text = "Режим схемы",
                 AutoSize = true,
-                Margin = new Padding(10, 5, 0, 3)
+                Margin = new Padding(0, 5, 0, 3)
             };
             checkBoxFillWafer.CheckedChanged += checkBoxFillWafer_CheckedChanged;
 
             presetPanel.Controls.Add(lblPreset);
             presetPanel.Controls.Add(loadDataComboBox);
+            presetPanel.Controls.Add(mapSavePresetButton);
+            presetPanel.Controls.Add(mapEditPresetButton);
+            presetPanel.Controls.Add(mapDeletePresetButton);
             presetPanel.Controls.Add(checkBoxFillWafer);
 
             var inputsTable = new TableLayoutPanel
@@ -145,30 +177,6 @@ namespace CrystalTable
             mirrorPanel.Controls.Add(mapMirrorXCheckBox);
             mirrorPanel.Controls.Add(mapMirrorYCheckBox);
 
-            var shiftPanel = new FlowLayoutPanel
-            {
-                FlowDirection = FlowDirection.LeftToRight,
-                Dock = DockStyle.Top,
-                AutoSize = true,
-                Margin = new Padding(0, 6, 0, 0)
-            };
-
-            mapShiftLeftButton = CreateActionButton("Влево", MapShiftLeft_Click);
-            mapShiftRightButton = CreateActionButton("Вправо", MapShiftRight_Click);
-            mapShiftUpButton = CreateActionButton("Вверх", MapShiftUp_Click);
-            mapShiftDownButton = CreateActionButton("Вниз", MapShiftDown_Click);
-            mapHalfStepXButton = CreateActionButton("X/2", MapHalfStepX_Click);
-            mapHalfStepYButton = CreateActionButton("Y/2", MapHalfStepY_Click);
-            mapSwapOrientationButton = CreateActionButton("W-H", MapSwapOrientation_Click);
-
-            shiftPanel.Controls.Add(mapShiftLeftButton);
-            shiftPanel.Controls.Add(mapShiftRightButton);
-            shiftPanel.Controls.Add(mapShiftUpButton);
-            shiftPanel.Controls.Add(mapShiftDownButton);
-            shiftPanel.Controls.Add(mapHalfStepXButton);
-            shiftPanel.Controls.Add(mapHalfStepYButton);
-            shiftPanel.Controls.Add(mapSwapOrientationButton);
-
             var buttonsPanel = new FlowLayoutPanel
             {
                 FlowDirection = FlowDirection.LeftToRight,
@@ -188,10 +196,9 @@ namespace CrystalTable
             buttonsPanel.Controls.Add(mapEditButton);
 
             mapBuilderPanel.Controls.Add(buttonsPanel);
-            mapBuilderPanel.Controls.Add(shiftPanel);
             mapBuilderPanel.Controls.Add(mirrorPanel);
             mapBuilderPanel.Controls.Add(inputsTable);
-            mapBuilderPanel.Controls.Add(presetPanel);  // ← Добавлено
+            mapBuilderPanel.Controls.Add(presetPanel);
             mapBuilderPanel.Controls.Add(mapBuilderStatusLabel);
             mapBuilderPanel.Controls.Add(titleLabel);
 
@@ -210,19 +217,8 @@ namespace CrystalTable
 
         private void CreateMapBuilderToolbarButtons()
         {
-            toolStripCreateMapButton = new ToolStripButton
-            {
-                Text = "Создать карту",
-                DisplayStyle = ToolStripItemDisplayStyle.Text
-            };
-            toolStripCreateMapButton.Click += MapStartButton_Click;
-
-            toolStripEditMapButton = new ToolStripButton
-            {
-                Text = "Редактировать карту",
-                DisplayStyle = ToolStripItemDisplayStyle.Text
-            };
-            toolStripEditMapButton.Click += MapEditButton_Click;
+            // ❌ УДАЛЕНО: Дублирующие кнопки "Создать карту" и "Редактировать карту"
+            // Оставлены только уникальные функции
 
             toolStripSavePngButton = new ToolStripButton
             {
@@ -232,8 +228,6 @@ namespace CrystalTable
             toolStripSavePngButton.Click += MapSavePng_Click;
 
             toolStrip1.Items.Add(new ToolStripSeparator());
-            toolStrip1.Items.Add(toolStripCreateMapButton);
-            toolStrip1.Items.Add(toolStripEditMapButton);
             toolStrip1.Items.Add(toolStripSavePngButton);
         }
 
@@ -348,24 +342,19 @@ namespace CrystalTable
                 mapOffsetYInput.Enabled = editing || !hasActive;
                 mapMirrorXCheckBox.Enabled = editing || !hasActive;
                 mapMirrorYCheckBox.Enabled = editing || !hasActive;
-                loadDataComboBox.Enabled = !editing && !hasActive;  // ← Только до создания
+                loadDataComboBox.Enabled = !editing;  // ← ИСПРАВЛЕНО: доступен всегда кроме редактирования
                 checkBoxFillWafer.Enabled = true;  // ← Всегда доступно
 
-                mapShiftLeftButton.Enabled = editing;
-                mapShiftRightButton.Enabled = editing;
-                mapShiftUpButton.Enabled = editing;
-                mapShiftDownButton.Enabled = editing;
-                mapHalfStepXButton.Enabled = editing;
-                mapHalfStepYButton.Enabled = editing;
-                mapSwapOrientationButton.Enabled = editing;
-
-                mapStartButton.Enabled = !editing && !hasActive;
+                mapStartButton.Enabled = !editing;  // ← ИСПРАВЛЕНО: доступна всегда кроме редактирования
                 mapApplyButton.Enabled = editing;
                 mapCancelButton.Enabled = editing;
-                mapEditButton.Enabled = !editing;  // ← ИЗМЕНЕНО: всегда доступна когда НЕ редактируем
+                mapEditButton.Enabled = !editing;
 
-                toolStripCreateMapButton.Enabled = !editing && !hasActive;
-                toolStripEditMapButton.Enabled = !editing;  // ← ИЗМЕНЕНО: всегда доступна когда НЕ редактируем
+                // ✅ Управление пресетами
+                mapSavePresetButton.Enabled = !editing;
+                mapEditPresetButton.Enabled = !editing && loadDataComboBox.SelectedIndex >= 0;
+                mapDeletePresetButton.Enabled = !editing && loadDataComboBox.SelectedIndex >= 0;
+
                 toolStripSavePngButton.Enabled = hasActive;
 
                 // ✅ Обновленные статусы
@@ -545,62 +534,6 @@ namespace CrystalTable
             clone.Save(dialog.FileName, ImageFormat.Png);
         }
 
-        private void MapShiftLeft_Click(object sender, EventArgs e)
-        {
-            if (!waferController.IsMapEditing) return;
-            waferController.NudgeDraftOffsets(-waferController.StepXmmOrDefault, 0f);
-            pictureBox1.Invalidate();
-            SyncMapBuilderUi();
-        }
-
-        private void MapShiftRight_Click(object sender, EventArgs e)
-        {
-            if (!waferController.IsMapEditing) return;
-            waferController.NudgeDraftOffsets(waferController.StepXmmOrDefault, 0f);
-            pictureBox1.Invalidate();
-            SyncMapBuilderUi();
-        }
-
-        private void MapShiftUp_Click(object sender, EventArgs e)
-        {
-            if (!waferController.IsMapEditing) return;
-            waferController.NudgeDraftOffsets(0f, -waferController.StepYmmOrDefault);
-            pictureBox1.Invalidate();
-            SyncMapBuilderUi();
-        }
-
-        private void MapShiftDown_Click(object sender, EventArgs e)
-        {
-            if (!waferController.IsMapEditing) return;
-            waferController.NudgeDraftOffsets(0f, waferController.StepYmmOrDefault);
-            pictureBox1.Invalidate();
-            SyncMapBuilderUi();
-        }
-
-        private void MapHalfStepX_Click(object sender, EventArgs e)
-        {
-            if (!waferController.IsMapEditing) return;
-            waferController.NudgeDraftOffsets(waferController.StepXmmOrDefault / 2f, 0f);
-            pictureBox1.Invalidate();
-            SyncMapBuilderUi();
-        }
-
-        private void MapHalfStepY_Click(object sender, EventArgs e)
-        {
-            if (!waferController.IsMapEditing) return;
-            waferController.NudgeDraftOffsets(0f, waferController.StepYmmOrDefault / 2f);
-            pictureBox1.Invalidate();
-            SyncMapBuilderUi();
-        }
-
-        private void MapSwapOrientation_Click(object sender, EventArgs e)
-        {
-            if (!waferController.IsMapEditing) return;
-            waferController.ToggleDraftOrientation();
-            pictureBox1.Invalidate();
-            SyncMapBuilderUi();
-        }
-
         private void MapDiameterInput_ValueChanged(object sender, EventArgs e)
         {
             if (mapInputsSyncLock || !waferController.IsMapEditing) return;
@@ -658,9 +591,2289 @@ namespace CrystalTable
             pictureBox1.Invalidate();
         }
 
+        // ====== УПРАВЛЕНИЕ ПРЕСЕТАМИ ======
+
+        private void MapSavePreset_Click(object sender, EventArgs e)
+        {
+            using (var dialog = new Form())
+            {
+                dialog.Text = "Сохранить пресет";
+                dialog.Size = new Size(400, 150);
+                dialog.StartPosition = FormStartPosition.CenterParent;
+                dialog.FormBorderStyle = FormBorderStyle.FixedDialog;
+                dialog.MaximizeBox = false;
+                dialog.MinimizeBox = false;
+
+                var lblName = new Label
+                {
+                    Text = "Название пресета:",
+                    Location = new Point(10, 20),
+                    AutoSize = true
+                };
+
+                var txtName = new TextBox
+                {
+                    Location = new Point(10, 45),
+                    Width = 360
+                };
+
+                var btnOk = new Button
+                {
+                    Text = "Сохранить",
+                    DialogResult = DialogResult.OK,
+                    Location = new Point(200, 80),
+                    Width = 80
+                };
+
+                var btnCancel = new Button
+                {
+                    Text = "Отмена",
+                    DialogResult = DialogResult.Cancel,
+                    Location = new Point(290, 80),
+                    Width = 80
+                };
+
+                dialog.Controls.AddRange(new Control[] { lblName, txtName, btnOk, btnCancel });
+                dialog.AcceptButton = btnOk;
+                dialog.CancelButton = btnCancel;
+
+                if (dialog.ShowDialog() == DialogResult.OK && !string.IsNullOrWhiteSpace(txtName.Text))
+                {
+                    SaveCurrentMapAsPreset(txtName.Text.Trim());
+                }
+            }
+        }
+
+        private void MapEditPreset_Click(object sender, EventArgs e)
+        {
+            if (loadDataComboBox.SelectedIndex < 0)
+            {
+                MessageBox.Show("Выберите пресет для редактирования.", "Редактирование пресета",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            // Параметры уже загружены в поля через SetFieldsFromComboBox
+            // Пользователь меняет их вручную и нажимает "Сохранить пресет" (перезапись)
+            
+            var presetName = loadDataComboBox.SelectedItem.ToString();
+            var result = MessageBox.Show(
+                $"Редактировать пресет '{presetName}'?\n\n" +
+                "После внесения изменений в параметры нажмите кнопку '💾' для сохранения.",
+                "Редактирование пресета",
+                MessageBoxButtons.OKCancel,
+                MessageBoxIcon.Information);
+
+            if (result == DialogResult.OK)
+            {
+                // Просто информируем пользователя - реальная перезапись произойдет при нажатии "💾"
+                MessageBox.Show(
+                    "Внесите необходимые изменения в параметры и нажмите '💾' для сохранения.",
+                    "Режим редактирования",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+        }
+
+        private void MapDeletePreset_Click(object sender, EventArgs e)
+        {
+            if (loadDataComboBox.SelectedIndex < 0)
+            {
+                MessageBox.Show("Выберите пресет для удаления.", "Удаление пресета",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            var presetName = loadDataComboBox.SelectedItem.ToString();
+            var result = MessageBox.Show(
+                $"Удалить пресет '{presetName}'?",
+                "Подтверждение удаления",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (result == DialogResult.Yes)
+            {
+                DeletePreset(presetName);
+            }
+        }
+
+        // ====== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ДЛЯ УПРАВЛЕНИЯ ПРЕСЕТАМИ ======
+
+        private void SaveCurrentMapAsPreset(string presetName)
+        {
+            try
+            {
+                string filePath = System.IO.Path.Combine(Application.StartupPath, "crystal_data.txt");
+                
+                // Читаем существующие строки
+                var lines = System.IO.File.Exists(filePath) 
+                    ? new List<string>(System.IO.File.ReadAllLines(filePath)) 
+                    : new List<string>();
+
+                // Формируем новую строку
+                uint widthMicrons = (uint)mapWidthInput.Value;
+                uint heightMicrons = (uint)mapHeightInput.Value;
+                float diameterMm = (float)mapDiameterInput.Value;
+                
+                string newLine = $"{presetName} : {widthMicrons}, {heightMicrons}, {diameterMm}";
+
+                // Проверяем, существует ли уже такой пресет
+                bool updated = false;
+                for (int i = 0; i < lines.Count; i++)
+                {
+                    if (lines[i].StartsWith(presetName + " :"))
+                    {
+                        lines[i] = newLine;
+                        updated = true;
+                        break;
+                    }
+                }
+
+                // Если не нашли - добавляем в конец
+                if (!updated)
+                {
+                    lines.Add(newLine);
+                }
+
+                // Сохраняем файл
+                System.IO.File.WriteAllLines(filePath, lines);
+
+                // Перезагружаем ComboBox
+                LoadComboBoxData();
+
+                // Выбираем сохраненный пресет
+                for (int i = 0; i < loadDataComboBox.Items.Count; i++)
+                {
+                    if (loadDataComboBox.Items[i].ToString() == presetName)
+                    {
+                        loadDataComboBox.SelectedIndex = i;
+                        break;
+                    }
+                }
+
+                MessageBox.Show(
+                    updated ? $"Пресет '{presetName}' обновлен." : $"Пресет '{presetName}' сохранен.",
+                    "Успех",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при сохранении пресета: {ex.Message}",
+                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void DeletePreset(string presetName)
+        {
+            try
+            {
+                string filePath = System.IO.Path.Combine(Application.StartupPath, "crystal_data.txt");
+                
+                if (!System.IO.File.Exists(filePath))
+                {
+                    MessageBox.Show("Файл пресетов не найден.", "Ошибка",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                // Читаем все строки
+                var lines = new List<string>(System.IO.File.ReadAllLines(filePath));
+
+                // Удаляем строку с пресетом
+                lines.RemoveAll(line => line.StartsWith(presetName + " :"));
+
+                // Сохраняем файл
+                System.IO.File.WriteAllLines(filePath, lines);
+
+                // Перезагружаем ComboBox
+                LoadComboBoxData();
+
+                MessageBox.Show($"Пресет '{presetName}' удален.", "Успех",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при удалении пресета: {ex.Message}",
+                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
         // Обработчики loadDataComboBox_SelectedIndexChanged и checkBoxFillWafer_CheckedChanged
         // находятся в Form1.cs и Form1.LoadData.cs
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
