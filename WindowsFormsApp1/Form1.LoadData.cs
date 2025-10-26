@@ -210,6 +210,14 @@ namespace CrystalTable
                 // Игнорируем ошибки при сохранении
             }
         }
+
+        /// <summary>
+        /// Обработчик изменения выбранного пресета в ComboBox
+        /// </summary>
+        private void loadDataComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SetFieldsFromComboBox();
+        }
     }
 }
 

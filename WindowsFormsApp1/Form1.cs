@@ -26,11 +26,15 @@ namespace CrystalTable
         private readonly RoutePreview routePreview = new RoutePreview();
         private bool showRoutePreview = false;
 
+        // РЕЖИМ ОТЛАДКИ: Работа без COM-порта
+        private bool debugModeWithoutComPort = false;
+
         // Для дросселирования обновления статус-бара по RX
 
         public Form1()
         {
             InitializeComponent();
+            debugModeToolStripMenuItem.Checked = debugModeWithoutComPort;
             buttonStart.Text = "Старт";
             buttonStart.Visible = true;
 
@@ -113,13 +117,10 @@ namespace CrystalTable
         private void pictureBox1_MouseUp(object sender, MouseEventArgs e) => mouseController.HandleMouseUp(e);
         private void Form1_Resize(object sender, EventArgs e) => pictureBox1.Invalidate();
 
-        // ===== Загрузка набора =====
-        private void loadDataComboBox_SelectedIndexChanged(object sender, EventArgs e) => SetFieldsFromComboBox();
-
         // ===== Кнопки =====
         private void SaveButton_Click(object sender, EventArgs e)
         {
-            // ✅ Сохранение через WaferController
+            // Сохранение через WaferController
             string sizeXText = waferController.CrystalWidthRaw.ToString();
             string sizeYText = waferController.CrystalHeightRaw.ToString();
             string diameterText = waferController.WaferDiameter.ToString(System.Globalization.CultureInfo.InvariantCulture);
@@ -147,7 +148,76 @@ namespace CrystalTable
             // TODO: Implement move to origin logic
         }
 
-        // ===== Тулбар =====
+        /// <summary>
+        /// Обработчик установки калибровки (привязка виртуальной карты к физической пластине)
+        /// </summary>
+        private void SetCalibrationZero_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // Проверка: если калибровка уже выполнена - запросить подтверждение
+                if (waferController.IsCalibrated)
+                {
+                    var result = MessageBox.Show(
+                        "Внимание! Текущая калибровка будет перезаписана.\n\nПродолжить?",
+                        "Подтверждение",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Warning);
+                    
+                    if (result != DialogResult.Yes)
+                    {
+                        return; // Пользователь отменил
+                    }
+                }
+
+                // Получаем физические координаты машины (где стоит ЛШД)
+                var pointerMachine = GetPointerMachineMm();
+                
+                // Устанавливаем калибровку: запоминаем соответствие
+                // виртуальной позиции первого кристалла и физической позиции ЛШД
+                waferController.SetCalibrationZero(pointerMachine.X, pointerMachine.Y);
+                
+                // Получаем виртуальные координаты для отображения
+                var pointerVirtual = GetPointerMm();
+                var offsetX = waferController.CalibrationOffsetX;
+                var offsetY = waferController.CalibrationOffsetY;
+                
+                MessageBox.Show(
+                    $"Калибровка выполнена!\n\n" +
+                    $"Базовый кристалл: №{waferController.CalibrationCrystalIndex} (левый верхний)\n" +
+                    $"Виртуальная позиция ЛШД: ({pointerVirtual.X:F2}, {pointerVirtual.Y:F2}) мм\n" +
+                    $"Смещение системы: ({offsetX:+0.00;-0.00;0}, {offsetY:+0.00;-0.00;0}) мм",
+                    "Калибровка",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+                
+                UpdateUI();
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Ошибка: нет кристаллов для калибровки
+                MessageBox.Show(ex.Message, "Ошибка калибровки", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        /// <summary>
+        /// Обработчик переключения режима отладки (работа без COM-порта)
+        /// </summary>
+        private void debugModeToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            debugModeWithoutComPort = debugModeToolStripMenuItem.Checked;
+            UpdateUI();
+        }
+
+        /// <summary>
+        /// Обработчик сброса калибровки
+        /// </summary>
+        private void resetCalibrationToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            waferController.ResetCalibration();
+            MessageBox.Show("Калибровка сброшена.", "Калибровка", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            UpdateUI();
+        }
         private void btnUndo_Click(object sender, EventArgs e) => HandleUndo();
         private void btnRedo_Click(object sender, EventArgs e) => HandleRedo();
         private void btnExport_Click(object sender, EventArgs e) => exportImportController.ExportData();
@@ -269,7 +339,7 @@ namespace CrystalTable
                 CenterPointer();
                 zoomPanController.Reset();
                 commandHistory.Clear();
-                SyncMapBuilderUi();  // ← Обновить MapBuilder
+                SyncMapBuilderUi();  // Обновить MapBuilder
                 UpdateUI();
             }
         }
@@ -312,7 +382,7 @@ namespace CrystalTable
                 return;
             }
 
-            // ✅ Синхронизация через WaferController
+            // Синхронизация через WaferController
             waferController.CrystalWidthRaw = info.SizeX;
             waferController.CrystalHeightRaw = info.SizeY;
             waferController.WaferDiameter = info.WaferDiameter;
@@ -320,7 +390,7 @@ namespace CrystalTable
             waferController.SizeYtemp = info.SizeY;
             waferController.WaferDiameterTemp = info.WaferDiameter;
             
-            SyncMapBuilderUi();  // ← Обновить MapBuilder UI
+            SyncMapBuilderUi();  // Обновить MapBuilder UI
         }
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
@@ -340,10 +410,12 @@ namespace CrystalTable
         public ToolStripStatusLabel StatusLabel => statusLabel;
         public ToolStripStatusLabel FillPercentageLabel => fillPercentageLabel;
         public ToolStripStatusLabel ZoomLabel => zoomLabel;
+        public ToolStripStatusLabel CalibrationStatusLabel => calibrationStatusLabel;
         public ToolStripStatusLabel CoordinatesLabel => coordinatesLabel;
         public ToolStripStatusLabel SensorStatusLabel => sensorStatusLabel;
         public ToolStripStatusLabel TotalCrystalsStatusLabel => totalCrystalsStatusLabel;
         public ToolStripStatusLabel SelectedCrystalStatusLabel => selectedCrystalStatusLabel;
+        public bool DebugModeWithoutComPort => debugModeWithoutComPort;
         public ToolStripButton BtnRoutePreview => btnRoutePreview;
         public ToolStripMenuItem ShowRouteToolStripMenuItem => showRouteToolStripMenuItem;
         public SerialPortController SerialPortController => serialPortController;
@@ -407,3 +479,4 @@ namespace CrystalTable
         // ====== ОБРАБОТЧИКИ ======
     }
 }
+

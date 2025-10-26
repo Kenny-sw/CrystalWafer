@@ -3,6 +3,7 @@ using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Globalization;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace CrystalTable
@@ -131,6 +132,19 @@ namespace CrystalTable
                 {
                     g.FillRectangle(hoveredFill, c.DisplayLeft, c.DisplayTop, w, h);
                     g.DrawRectangle(hoveredBorder, c.DisplayLeft, c.DisplayTop, w, h);
+                }
+            }
+
+            if (waferController.IsCalibrated)
+            {
+                var calibratedCrystal = CrystalManager.Instance.Crystals
+                    .FirstOrDefault(c => c.Index == waferController.CalibrationCrystalIndex);
+                if (calibratedCrystal != null)
+                {
+                    using var highlightPen = new Pen(Color.LimeGreen, 2f);
+                    float width = calibratedCrystal.DisplayRight - calibratedCrystal.DisplayLeft;
+                    float height = calibratedCrystal.DisplayBottom - calibratedCrystal.DisplayTop;
+                    g.DrawRectangle(highlightPen, calibratedCrystal.DisplayLeft, calibratedCrystal.DisplayTop, width, height);
                 }
             }
 

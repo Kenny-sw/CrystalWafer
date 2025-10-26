@@ -10,13 +10,34 @@ namespace CrystalTable
 {
     public partial class Form1
     {
-
+        // ✅ ВНУТРЕННЕЕ ХРАНЕНИЕ: ФИЗИЧЕСКИЕ координаты (машинная система)
+        // pointerMm хранит реальное положение ЛШД в системе координат машины
+        // БЕЗ учёта калибровки виртуальной карты
         private PointF pointerMm = new PointF(0, 0);
         private bool isLoadingInProgress;
 
-        public PointF GetPointerMm() => pointerMm;
+        // ✅ ПУБЛИЧНЫЙ API: возвращает ВИРТУАЛЬНЫЕ координаты (система карты)
+        // Преобразует физическую позицию машины -> виртуальную позицию на карте
+        public PointF GetPointerMm() => ToVirtual(pointerMm);
 
+        // ✅ СЛУЖЕБНЫЙ: возвращает ФИЗИЧЕСКИЕ координаты (машинная система)
+        // Прямой доступ к реальной позиции ЛШД без преобразования
+        public PointF GetPointerMachineMm() => pointerMm;
+
+        // ✅ ПУБЛИЧНЫЙ API: принимает ВИРТУАЛЬНЫЕ координаты карты
+        // Преобразует виртуальную позицию на карте -> физическую позицию машины
+        // Использование: SetPointerMm(crystalVirtualX, crystalVirtualY)
         public void SetPointerMm(float xMm, float yMm)
+        {
+            pointerMm = ToPhysical(new PointF(xMm, yMm));
+            pictureBox1?.Invalidate();
+            UpdateUI();
+        }
+
+        // ✅ СЛУЖЕБНЫЙ: устанавливает ФИЗИЧЕСКИЕ координаты напрямую
+        // БЕЗ преобразования - для прямого управления позицией машины
+        // Использование: SetPointerMachineMm(physicalX, physicalY)
+        public void SetPointerMachineMm(float xMm, float yMm)
         {
             pointerMm = new PointF(xMm, yMm);
             pictureBox1?.Invalidate();
@@ -25,9 +46,19 @@ namespace CrystalTable
 
         public void CenterPointer()
         {
-            pointerMm = new PointF(0f, 0f);
+            // ✅ (0, 0) в ВИРТУАЛЬНЫХ координатах = центр пластины на карте
+            // Преобразуется в физические координаты машины с учётом калибровки
+            pointerMm = ToPhysical(new PointF(0f, 0f));
             pictureBox1?.Invalidate();
+            UpdateUI();
         }
+
+        // ✅ Преобразование координат через WaferController (учитывает калибровку)
+        private PointF ToVirtual(PointF physicalPoint) =>
+            waferController?.ToVirtualCoordinates(physicalPoint) ?? physicalPoint;
+
+        private PointF ToPhysical(PointF virtualPoint) =>
+            waferController?.ToPhysicalCoordinates(virtualPoint) ?? virtualPoint;
 
         private async void buttonMoveLeft_Click(object sender, EventArgs e) => await MoveAxisAsync(Axis.X, negative: true);
         private async void buttonMoveRight_Click(object sender, EventArgs e) => await MoveAxisAsync(Axis.X, negative: false);
@@ -45,10 +76,11 @@ namespace CrystalTable
             float dxMm = stepXum / 1000f;
             float dyMm = stepYum / 1000f;
 
-            float newX = pointerMm.X + dxMm;
-            float newY = pointerMm.Y - dyMm;
+            // ✅ Проверка в ВИРТУАЛЬНЫХ координатах
+            var candidatePhysical = new PointF(pointerMm.X + dxMm, pointerMm.Y - dyMm);
+            var candidateVirtual = ToVirtual(candidatePhysical);
 
-            if (!CanMoveTo(newX, newY))
+            if (!CanMoveTo(candidateVirtual.X, candidateVirtual.Y))
             {
                 MessageBox.Show("Нельзя выйти за пределы пластины.", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
@@ -57,7 +89,7 @@ namespace CrystalTable
             if (!await TrySendAsync(Protocol.Commands.MoveRight, stepXum)) return;
             if (!await TrySendAsync(Protocol.Commands.MoveUp, stepYum)) return;
 
-            pointerMm = new PointF(newX, newY);
+            pointerMm = candidatePhysical;
             pictureBox1.Invalidate();
             UpdateUI();
         }
@@ -128,15 +160,17 @@ namespace CrystalTable
                 stepUm = stepXum;
                 deltaMm = (negative ? -1f : 1f) * (stepXum / 1000f);
 
-                float newX = pointerMm.X + deltaMm;
-                if (!CanMoveTo(newX, pointerMm.Y))
+                // ✅ Проверка в ВИРТУАЛЬНЫХ координатах
+                var candidatePhysical = new PointF(pointerMm.X + deltaMm, pointerMm.Y);
+                var candidateVirtual = ToVirtual(candidatePhysical);
+                if (!CanMoveTo(candidateVirtual.X, candidateVirtual.Y))
                 {
                     MessageBox.Show("Нельзя выйти за пределы пластины.", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
                 if (!await TrySendAsync(cmd, stepUm)) return;
-                pointerMm = new PointF(newX, pointerMm.Y);
+                pointerMm = candidatePhysical;
             }
             else
             {
@@ -144,15 +178,17 @@ namespace CrystalTable
                 stepUm = stepYum;
                 deltaMm = (negative ? -1f : 1f) * (stepYum / 1000f);
 
-                float newY = pointerMm.Y + deltaMm;
-                if (!CanMoveTo(pointerMm.X, newY))
+                // ✅ Проверка в ВИРТУАЛЬНЫХ координатах
+                var candidatePhysical = new PointF(pointerMm.X, pointerMm.Y + deltaMm);
+                var candidateVirtual = ToVirtual(candidatePhysical);
+                if (!CanMoveTo(candidateVirtual.X, candidateVirtual.Y))
                 {
                     MessageBox.Show("Нельзя выйти за пределы пластины.", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
                 if (!await TrySendAsync(cmd, stepUm)) return;
-                pointerMm = new PointF(pointerMm.X, newY);
+                pointerMm = candidatePhysical;
             }
 
             pictureBox1.Invalidate();
@@ -161,6 +197,7 @@ namespace CrystalTable
 
         private async Task<bool> MoveToCenterAsync()
         {
+            // ✅ (0, 0) - это виртуальный центр
             return await MovePointerToAsync(0f, 0f);
         }
 
@@ -192,19 +229,28 @@ namespace CrystalTable
                 return;
             }
 
+            // ✅ Crystal.RealX/Y - это ВИРТУАЛЬНЫЕ координаты на карте
             await MovePointerToAsync(target.RealX, target.RealY);
         }
 
+        /// <summary>
+        /// ✅ Переместить указатель в заданные ВИРТУАЛЬНЫЕ координаты
+        /// </summary>
         private async Task<bool> MovePointerToAsync(float targetXmm, float targetYmm)
         {
+            // ✅ Проверка в виртуальных координатах
             if (!CanMoveTo(targetXmm, targetYmm))
             {
                 MessageBox.Show("Цель вне пределов пластины.", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
 
-            float dx = targetXmm - pointerMm.X;
-            float dy = targetYmm - pointerMm.Y;
+            // ✅ Преобразуем виртуальную цель в физические координаты
+            var physicalTarget = ToPhysical(new PointF(targetXmm, targetYmm));
+            
+            // ✅ Вычисляем дельту в физической системе
+            float dx = physicalTarget.X - pointerMm.X;
+            float dy = physicalTarget.Y - pointerMm.Y;
 
             uint moveXum = (uint)Math.Round(Math.Abs(dx) * 1000f);
             uint moveYum = (uint)Math.Round(Math.Abs(dy) * 1000f);
@@ -233,7 +279,8 @@ namespace CrystalTable
                 pointerMm = new PointF(pointerMm.X, pointerMm.Y + (dy > 0 ? movedMm : -movedMm));
             }
 
-            pointerMm = new PointF(targetXmm, targetYmm);
+            pointerMm = physicalTarget;
+            pictureBox1?.Invalidate();
             UpdateUI();
             return true;
         }
@@ -271,6 +318,12 @@ namespace CrystalTable
 
         private async Task<bool> TrySendAsync(byte commandByte, uint stepUm)
         {
+            if (debugModeWithoutComPort)
+            {
+                AppLogger.Debug($"[DEBUG MODE] Команда 0x{commandByte:X2}, шаг={stepUm} um – отправка пропущена.");
+                return true;
+            }
+
             if (serialPortController == null || MyserialPort == null)
             {
                 AppLogger.Warning($"Attempt to send 0x{commandByte:X2} while serial port controller is not initialised.");
@@ -298,11 +351,14 @@ namespace CrystalTable
 
             return success;
         }
+    
+        /// <summary>
+        /// ✅ Проверка в ВИРТУАЛЬНЫХ координатах
+        /// </summary>
         private bool CanMoveTo(float xMm, float yMm)
         {
             float r = waferController?.WaferDiameter > 0 ? waferController.WaferDiameter / 2f : 100f;
             return (xMm * xMm + yMm * yMm) <= (r * r) + 1e-6f;
         }
-
     }
 }

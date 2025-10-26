@@ -53,6 +53,9 @@ namespace CrystalTable
             this.zoomInToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.zoomOutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.resetZoomToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.debugToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.debugModeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.resetCalibrationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.btnUndo = new System.Windows.Forms.ToolStripButton();
             this.btnRedo = new System.Windows.Forms.ToolStripButton();
@@ -72,6 +75,7 @@ namespace CrystalTable
             this.selectedCrystalStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.fillPercentageLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.zoomLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.calibrationStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.coordinatesLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.sensorStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.MyserialPort = new System.IO.Ports.SerialPort(this.components);
@@ -86,6 +90,7 @@ namespace CrystalTable
             this.buttonMoveDown = new System.Windows.Forms.Button();
             this.scan = new System.Windows.Forms.Button();
             this.buttonStart = new System.Windows.Forms.Button();
+            this.buttonCalibrateZero = new System.Windows.Forms.Button();
             this.checkBoxDiscreteStep = new System.Windows.Forms.CheckBox();
             this.groupBoxConnection = new System.Windows.Forms.GroupBox();
             this.buttonUpdatePort = new System.Windows.Forms.Button();
@@ -165,7 +170,8 @@ namespace CrystalTable
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
             this.editToolStripMenuItem,
-            this.viewToolStripMenuItem});
+            this.viewToolStripMenuItem,
+            this.debugToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(1262, 28);
@@ -361,6 +367,30 @@ namespace CrystalTable
             this.resetZoomToolStripMenuItem.Text = "Сбросить масштаб";
             this.resetZoomToolStripMenuItem.Click += new System.EventHandler(this.resetZoomToolStripMenuItem_Click);
             // 
+            // debugToolStripMenuItem
+            // 
+            this.debugToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.debugModeToolStripMenuItem,
+            this.resetCalibrationToolStripMenuItem});
+            this.debugToolStripMenuItem.Name = "debugToolStripMenuItem";
+            this.debugToolStripMenuItem.Size = new System.Drawing.Size(86, 24);
+            this.debugToolStripMenuItem.Text = "Наладка";
+            // 
+            // debugModeToolStripMenuItem
+            // 
+            this.debugModeToolStripMenuItem.CheckOnClick = true;
+            this.debugModeToolStripMenuItem.Name = "debugModeToolStripMenuItem";
+            this.debugModeToolStripMenuItem.Size = new System.Drawing.Size(250, 26);
+            this.debugModeToolStripMenuItem.Text = "Работа без COM-порта";
+            this.debugModeToolStripMenuItem.CheckedChanged += new System.EventHandler(this.debugModeToolStripMenuItem_CheckedChanged);
+            // 
+            // resetCalibrationToolStripMenuItem
+            // 
+            this.resetCalibrationToolStripMenuItem.Name = "resetCalibrationToolStripMenuItem";
+            this.resetCalibrationToolStripMenuItem.Size = new System.Drawing.Size(250, 26);
+            this.resetCalibrationToolStripMenuItem.Text = "Сбросить калибровку";
+            this.resetCalibrationToolStripMenuItem.Click += new System.EventHandler(this.resetCalibrationToolStripMenuItem_Click);
+            // 
             // toolStrip1
             // 
             this.toolStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
@@ -498,6 +528,7 @@ namespace CrystalTable
             this.selectedCrystalStatusLabel,
             this.fillPercentageLabel,
             this.zoomLabel,
+            this.calibrationStatusLabel,
             this.coordinatesLabel,
             this.sensorStatusLabel});
             this.statusStrip1.Location = new System.Drawing.Point(0, 647);
@@ -535,6 +566,12 @@ namespace CrystalTable
             this.zoomLabel.Name = "zoomLabel";
             this.zoomLabel.Size = new System.Drawing.Size(105, 20);
             this.zoomLabel.Text = "Масштаб: 1.0x";
+            // 
+            // calibrationStatusLabel
+            // 
+            this.calibrationStatusLabel.Name = "calibrationStatusLabel";
+            this.calibrationStatusLabel.Size = new System.Drawing.Size(148, 20);
+            this.calibrationStatusLabel.Text = "Калибровка: нет";
             // 
             // coordinatesLabel
             // 
@@ -610,6 +647,7 @@ namespace CrystalTable
             this.tableLayoutPanel2.Controls.Add(this.buttonMoveDown, 1, 2);
             this.tableLayoutPanel2.Controls.Add(this.scan, 1, 1);
             this.tableLayoutPanel2.Controls.Add(this.buttonStart, 0, 3);
+            this.tableLayoutPanel2.Controls.Add(this.buttonCalibrateZero, 2, 3);
             this.tableLayoutPanel2.Location = new System.Drawing.Point(9, 21);
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
             this.tableLayoutPanel2.RowCount = 4;
@@ -677,16 +715,28 @@ namespace CrystalTable
             // 
             // buttonStart
             // 
-            this.tableLayoutPanel2.SetColumnSpan(this.buttonStart, 3);
+            this.tableLayoutPanel2.SetColumnSpan(this.buttonStart, 2);
             this.buttonStart.Dock = System.Windows.Forms.DockStyle.Fill;
             this.buttonStart.Location = new System.Drawing.Point(3, 96);
             this.buttonStart.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
             this.buttonStart.Name = "buttonStart";
-            this.buttonStart.Size = new System.Drawing.Size(187, 26);
+            this.buttonStart.Size = new System.Drawing.Size(125, 26);
             this.buttonStart.TabIndex = 4;
             this.buttonStart.Text = "Старт";
             this.buttonStart.UseVisualStyleBackColor = true;
             this.buttonStart.Click += new System.EventHandler(this.buttonStart_Click);
+            // 
+            // buttonCalibrateZero
+            // 
+            this.buttonCalibrateZero.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.buttonCalibrateZero.Location = new System.Drawing.Point(131, 96);
+            this.buttonCalibrateZero.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
+            this.buttonCalibrateZero.Name = "buttonCalibrateZero";
+            this.buttonCalibrateZero.Size = new System.Drawing.Size(59, 26);
+            this.buttonCalibrateZero.TabIndex = 5;
+            this.buttonCalibrateZero.Text = "Калибр.";
+            this.buttonCalibrateZero.UseVisualStyleBackColor = true;
+            this.buttonCalibrateZero.Click += new System.EventHandler(this.SetCalibrationZero_Click);
             // 
             // checkBoxDiscreteStep
             // 
@@ -810,6 +860,9 @@ namespace CrystalTable
         private System.Windows.Forms.ToolStripMenuItem zoomInToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem zoomOutToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem resetZoomToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem debugToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem debugModeToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem resetCalibrationToolStripMenuItem;
         private System.Windows.Forms.ToolStrip toolStrip1;
         private System.Windows.Forms.ToolStripButton btnUndo;
         private System.Windows.Forms.ToolStripButton btnRedo;
@@ -829,6 +882,7 @@ namespace CrystalTable
         private System.Windows.Forms.ToolStripStatusLabel selectedCrystalStatusLabel;
         private System.Windows.Forms.ToolStripStatusLabel fillPercentageLabel;
         private System.Windows.Forms.ToolStripStatusLabel zoomLabel;
+        private System.Windows.Forms.ToolStripStatusLabel calibrationStatusLabel;
         private System.Windows.Forms.ToolStripStatusLabel coordinatesLabel;
         private System.Windows.Forms.ToolStripStatusLabel sensorStatusLabel;
         private System.IO.Ports.SerialPort MyserialPort;
@@ -846,6 +900,7 @@ namespace CrystalTable
         private System.Windows.Forms.Button buttonMoveLeft;
         private System.Windows.Forms.Button buttonMoveDown;
         private System.Windows.Forms.Button buttonStart;
+        private System.Windows.Forms.Button buttonCalibrateZero;
         private System.Windows.Forms.Button scan;
         private System.Windows.Forms.CheckBox checkBoxDiscreteStep;
         private System.Windows.Forms.GroupBox groupBoxConnection;

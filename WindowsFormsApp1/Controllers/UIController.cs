@@ -76,36 +76,45 @@ namespace CrystalTable.Controllers
         {
             if (form == null) return;
 
-            // Строка состояния
             if (form.StatusLabel != null)
-                form.StatusLabel.Text = "Готово";
+                form.StatusLabel.Text = form.DebugModeWithoutComPort ? "Debug mode" : "Ready";
 
-            // Масштаб
             if (form.ZoomLabel != null && zoom != null)
-                form.ZoomLabel.Text = $"Масштаб: {zoom.ZoomFactor:F1}x";
+                form.ZoomLabel.Text = $"Zoom: {zoom.ZoomFactor:F1}x";
 
-            // Кол-во кристаллов
             int count = CrystalManager.Instance.Crystals.Count;
             if (form.TotalCrystalsStatusLabel != null)
-                form.TotalCrystalsStatusLabel.Text = $"Общее количество кристаллов: {count}";
+                form.TotalCrystalsStatusLabel.Text = $"Crystals: {count}";
 
-            // Заполнение площади (приблизительно)
             if (form.FillPercentageLabel != null && wafer != null)
             {
                 float cw = wafer.CrystalWidthRaw / 1000f;
                 float ch = wafer.CrystalHeightRaw / 1000f;
                 float waferArea = (float)(Math.PI * Math.Pow(wafer.WaferDiameter / 2f, 2));
                 float fill = waferArea > 0 ? Math.Min(100f, Math.Max(0f, (count * cw * ch) / waferArea * 100f)) : 0f;
-                form.FillPercentageLabel.Text = $"Заполнение: {fill:F1}%";
+                form.FillPercentageLabel.Text = $"Fill: {fill:F1}%";
             }
 
-            // Координаты указателя
-            var p = form.GetPointerMm();
+            var pointer = form.GetPointerMm();
             if (form.CoordinatesLabel != null)
-                form.CoordinatesLabel.Text = $"X: {p.X:F3} мм, Y: {p.Y:F3} мм";
+                form.CoordinatesLabel.Text = $"X: {pointer.X:F3} mm, Y: {pointer.Y:F3} mm";
+
+            if (form.CalibrationStatusLabel != null && wafer != null)
+            {
+                if (wafer.IsCalibrated)
+                {
+                    form.CalibrationStatusLabel.Text =
+                        $"Calibration: #{wafer.CalibrationCrystalIndex} ({wafer.CalibrationOffsetX:+0.00;-0.00;0} mm, {wafer.CalibrationOffsetY:+0.00;-0.00;0} mm)";
+                    form.CalibrationStatusLabel.ForeColor = Color.DarkGreen;
+                }
+                else
+                {
+                    form.CalibrationStatusLabel.Text = "Calibration: not set";
+                    form.CalibrationStatusLabel.ForeColor = SystemColors.ControlText;
+                }
+            }
         }
 
-        /// <summary>Обновление метки выбранных кристаллов (индексация с 1 для UI)</summary>
         public void UpdateSelectionLabel(HashSet<int> selected)
         {
             if (form?.SelectedCrystalStatusLabel == null) return;

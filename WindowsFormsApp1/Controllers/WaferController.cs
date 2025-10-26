@@ -34,6 +34,43 @@ namespace CrystalTable.Controllers
         private PointF firstRefMm;
         private PointF lastRefMm;
 
+        // ✅ КАЛИБРОВКА: Привязка виртуальной карты к физической пластине
+        private bool isCalibrated = false;
+        private int calibrationCrystalIndex = -1;          // Индекс базового кристалла (обычно 0)
+        private float calibrationCrystalX = 0f;            // Координата базового кристалла на карте (мм)
+        private float calibrationCrystalY = 0f;
+        private float calibrationPointerX = 0f;            // Где был указатель ЛШД при калибровке (мм)
+        private float calibrationPointerY = 0f;
+
+        public bool IsCalibrated => isCalibrated;
+        public int CalibrationCrystalIndex => calibrationCrystalIndex;
+        public float CalibrationOffsetX => calibrationCrystalX - calibrationPointerX;
+        public float CalibrationOffsetY => calibrationCrystalY - calibrationPointerY;
+
+        public PointF ToVirtualCoordinates(float physicalX, float physicalY)
+        {
+            if (!isCalibrated)
+            {
+                return new PointF(physicalX, physicalY);
+            }
+
+            return new PointF(physicalX + CalibrationOffsetX, physicalY + CalibrationOffsetY);
+        }
+
+        public PointF ToVirtualCoordinates(PointF physicalPoint) => ToVirtualCoordinates(physicalPoint.X, physicalPoint.Y);
+
+        public PointF ToPhysicalCoordinates(float virtualX, float virtualY)
+        {
+            if (!isCalibrated)
+            {
+                return new PointF(virtualX, virtualY);
+            }
+
+            return new PointF(virtualX - CalibrationOffsetX, virtualY - CalibrationOffsetY);
+        }
+
+        public PointF ToPhysicalCoordinates(PointF virtualPoint) => ToPhysicalCoordinates(virtualPoint.X, virtualPoint.Y);
+
         private readonly WaferMapBuilder mapBuilder = new WaferMapBuilder();
         private readonly WaferBitmapRenderer bitmapRenderer = new WaferBitmapRenderer();
         private WaferMapParameters activeParameters;
@@ -468,6 +505,58 @@ namespace CrystalTable.Controllers
             displayCacheSize = new Size(viewportWidth, viewportHeight);
             displayCacheScale = scale;
             displayCacheValid = true;
+        }
+
+        // ====== КАЛИБРОВКА: Привязка виртуальной карты к физической пластине ======
+
+        /// <summary>
+        /// Установить точку калибровки на первом кристалле (индекс 0, левый верхний)
+        /// Запоминает соответствие: виртуальная позиция кристалла ↔ физическая позиция машины
+        /// </summary>
+        /// <param name="pointerX">Текущая позиция указателя ЛШД по X (мм) - ФИЗИЧЕСКИЕ координаты</param>
+        /// <param name="pointerY">Текущая позиция указателя ЛШД по Y (мм) - ФИЗИЧЕСКИЕ координаты</param>
+        public void SetCalibrationZero(float pointerX, float pointerY)
+        {
+            var crystals = CrystalManager.Instance.Crystals;
+            if (crystals.Count == 0)
+            {
+                throw new InvalidOperationException("Нет кристаллов для калибровки. Создайте карту.");
+            }
+
+            // Всегда используем первый кристалл (индекс 0 - левый верхний)
+            var firstCrystal = crystals.FirstOrDefault(c => c.Index == 0) ?? crystals.First();
+
+            isCalibrated = true;
+            calibrationCrystalIndex = firstCrystal.Index;
+            calibrationCrystalX = firstCrystal.RealX;  // Виртуальные координаты на карте
+            calibrationCrystalY = firstCrystal.RealY;
+            calibrationPointerX = pointerX;  // Физические координаты машины
+            calibrationPointerY = pointerY;
+
+            // НЕ вызываем SetPointerMm - указатель уже в правильной позиции
+            // Калибровка просто запоминает соответствие между системами координат
+        }
+
+        /// <summary>
+        /// Сбросить калибровку (вернуться к работе без привязки)
+        /// </summary>
+        public void ResetCalibration()
+        {
+            isCalibrated = false;
+            calibrationCrystalIndex = -1;
+            calibrationCrystalX = 0f;
+            calibrationCrystalY = 0f;
+            calibrationPointerX = 0f;
+            calibrationPointerY = 0f;
+        }
+
+        /// <summary>
+        /// Получить первый кристалл (базовый для калибровки)
+        /// </summary>
+        public Crystal GetFirstCrystal()
+        {
+            var crystals = CrystalManager.Instance.Crystals;
+            return crystals.FirstOrDefault(c => c.Index == 0) ?? crystals.FirstOrDefault();
         }
 
         public Bitmap GetWaferBitmap(int width, int height)
