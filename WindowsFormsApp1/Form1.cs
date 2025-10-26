@@ -4,6 +4,7 @@ using CrystalTable.Controllers;
 using System;
 using System.Drawing;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 
@@ -28,6 +29,9 @@ namespace CrystalTable
 
         // РЕЖИМ ОТЛАДКИ: Работа без COM-порта
         private bool debugModeWithoutComPort = false;
+
+        // Состояние фиксации
+        private bool isLocked = false;
 
         // Для дросселирования обновления статус-бара по RX
 
@@ -135,22 +139,74 @@ namespace CrystalTable
 
         private void resetButton_Click(object sender, EventArgs e)
         {
-            // TODO: Implement hardware reset logic
+            // Аппаратный сброс - отправка команды Unlock
+            _ = ToggleLockAsync(false);
         }
 
         private void startButton_Click(object sender, EventArgs e)
         {
-            // TODO: Implement start logic
+            // Запуск последовательности - отправка в Form1.Movement.cs
+            _ = ExecuteLoadingSequenceAsync();
         }
 
         private void toOriginButton_Click(object sender, EventArgs e)
         {
-            // TODO: Implement move to origin logic
+            // Перемещение в центр (0,0)
+            _ = MoveToCenterAsync();
+        }
+        
+        /// <summary>
+        /// Обработчик кнопки "Фиксация/Сброс" - переключатель состояния
+        /// </summary>
+        private async void buttonLockToggle_Click(object sender, EventArgs e)
+        {
+            await ToggleLockAsync(!isLocked);
+        }
+        
+        /// <summary>
+        /// Переключение состояния фиксации
+        /// </summary>
+        private async System.Threading.Tasks.Task ToggleLockAsync(bool lockState)
+        {
+            byte command = lockState ? Protocol.Commands.Lock : Protocol.Commands.Unlock;
+            
+            if (debugModeWithoutComPort)
+            {
+                AppLogger.Debug($"[DEBUG MODE] {(lockState ? "Фиксация" : "Сброс")} - команда 0x{command:X2}");
+                isLocked = lockState;
+                UpdateLockButtonState();
+                UpdateUI();
+                return;
+            }
+            
+            if (!await TrySendAsync(command, 0))
+            {
+                MessageBox.Show($"Не удалось выполнить {(lockState ? "фиксацию" : "сброс")}.", 
+                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            
+            isLocked = lockState;
+            UpdateLockButtonState();
+            UpdateUI();
+            
+            AppLogger.Info($"Состояние фиксации: {(isLocked ? "ЗАФИКСИРОВАНО" : "СБРОШЕНО")}");
+        }
+        
+        /// <summary>
+        /// Обновление визуального состояния кнопки фиксации
+        /// </summary>
+        private void UpdateLockButtonState()
+        {
+            // Кнопка будет найдена в Designer
+            var lockButton = this.Controls.Find("buttonLockToggle", true).FirstOrDefault() as Button;
+            if (lockButton != null)
+            {
+                lockButton.Text = isLocked ? "🔒 Сброс" : "🔓 Фиксация";
+                lockButton.BackColor = isLocked ? Color.FromArgb(255, 200, 200) : Color.FromArgb(200, 255, 200);
+            }
         }
 
-        /// <summary>
-        /// Обработчик установки калибровки (привязка виртуальной карты к физической пластине)
-        /// </summary>
         private void SetCalibrationZero_Click(object sender, EventArgs e)
         {
             try
@@ -443,6 +499,7 @@ namespace CrystalTable
 
             string normalized = message.Trim();
 
+            // Обработка событий датчика
             if (normalized.StartsWith("EV S:1", StringComparison.OrdinalIgnoreCase))
             {
                 UpdateSensorStatusLabel("Датчик: ВКЛ");
@@ -450,6 +507,14 @@ namespace CrystalTable
             else if (normalized.StartsWith("EV S:0", StringComparison.OrdinalIgnoreCase))
             {
                 UpdateSensorStatusLabel("Датчик: ВЫКЛ");
+            }
+            // Обработка событий фиксации
+            else if (Protocol.Events.TryParseLockEvent(normalized, out bool lockState))
+            {
+                isLocked = lockState;
+                UpdateLockButtonState();
+                UpdateSensorStatusLabel($"Фиксация: {(lockState ? "ВКЛ" : "ВЫКЛ")}");
+                AppLogger.Info($"Получено событие фиксации от Arduino: {(lockState ? "LOCKED" : "UNLOCKED")}");
             }
             else
             {

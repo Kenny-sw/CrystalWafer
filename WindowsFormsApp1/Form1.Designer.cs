@@ -29,6 +29,7 @@ namespace CrystalTable
             this.resetButton = new System.Windows.Forms.Button();
             this.startButton = new System.Windows.Forms.Button();
             this.toOriginButton = new System.Windows.Forms.Button();
+            this.buttonLockToggle = new System.Windows.Forms.Button();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -53,6 +54,8 @@ namespace CrystalTable
             this.zoomInToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.zoomOutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.resetZoomToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripSeparator();
+            this.darkThemeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugModeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.resetCalibrationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -123,13 +126,14 @@ namespace CrystalTable
             // 
             // groupBoxMainControl
             // 
+            this.groupBoxMainControl.Controls.Add(this.buttonLockToggle);
             this.groupBoxMainControl.Controls.Add(this.resetButton);
             this.groupBoxMainControl.Controls.Add(this.startButton);
             this.groupBoxMainControl.Controls.Add(this.toOriginButton);
             this.groupBoxMainControl.Dock = System.Windows.Forms.DockStyle.Top;
             this.groupBoxMainControl.Location = new System.Drawing.Point(10, 10);
             this.groupBoxMainControl.Name = "groupBoxMainControl";
-            this.groupBoxMainControl.Size = new System.Drawing.Size(290, 65);
+            this.groupBoxMainControl.Size = new System.Drawing.Size(290, 100);
             this.groupBoxMainControl.TabIndex = 4;
             this.groupBoxMainControl.TabStop = false;
             this.groupBoxMainControl.Text = "Главное управление";
@@ -160,9 +164,21 @@ namespace CrystalTable
             this.toOriginButton.Name = "toOriginButton";
             this.toOriginButton.Size = new System.Drawing.Size(85, 28);
             this.toOriginButton.TabIndex = 0;
-            this.toOriginButton.Text = "В исходное";
+            this.toOriginButton.Text = "→ (0,0)";
             this.toOriginButton.UseVisualStyleBackColor = true;
             this.toOriginButton.Click += new System.EventHandler(this.toOriginButton_Click);
+            // 
+            // buttonLockToggle
+            // 
+            this.buttonLockToggle.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(200)))), ((int)(((byte)(255)))), ((int)(((byte)(200)))));
+            this.buttonLockToggle.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.buttonLockToggle.Location = new System.Drawing.Point(9, 57);
+            this.buttonLockToggle.Name = "buttonLockToggle";
+            this.buttonLockToggle.Size = new System.Drawing.Size(273, 35);
+            this.buttonLockToggle.TabIndex = 3;
+            this.buttonLockToggle.Text = "🔓 Фиксация";
+            this.buttonLockToggle.UseVisualStyleBackColor = false;
+            this.buttonLockToggle.Click += new System.EventHandler(this.buttonLockToggle_Click);
             // 
             // menuStrip1
             // 
@@ -316,7 +332,9 @@ namespace CrystalTable
             this.toolStripMenuItem4,
             this.zoomInToolStripMenuItem,
             this.zoomOutToolStripMenuItem,
-            this.resetZoomToolStripMenuItem});
+            this.resetZoomToolStripMenuItem,
+            this.toolStripMenuItem5,
+            this.darkThemeToolStripMenuItem});
             this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
             this.viewToolStripMenuItem.Size = new System.Drawing.Size(49, 24);
             this.viewToolStripMenuItem.Text = "Вид";
@@ -366,6 +384,19 @@ namespace CrystalTable
             this.resetZoomToolStripMenuItem.Size = new System.Drawing.Size(295, 26);
             this.resetZoomToolStripMenuItem.Text = "Сбросить масштаб";
             this.resetZoomToolStripMenuItem.Click += new System.EventHandler(this.resetZoomToolStripMenuItem_Click);
+            // 
+            // toolStripMenuItem5
+            // 
+            this.toolStripMenuItem5.Name = "toolStripMenuItem5";
+            this.toolStripMenuItem5.Size = new System.Drawing.Size(292, 6);
+            // 
+            // darkThemeToolStripMenuItem
+            // 
+            this.darkThemeToolStripMenuItem.CheckOnClick = true;
+            this.darkThemeToolStripMenuItem.Name = "darkThemeToolStripMenuItem";
+            this.darkThemeToolStripMenuItem.Size = new System.Drawing.Size(295, 26);
+            this.darkThemeToolStripMenuItem.Text = "Темная тема";
+            this.darkThemeToolStripMenuItem.Click += new System.EventHandler(this.darkThemeToolStripMenuItem_Click);
             // 
             // debugToolStripMenuItem
             // 
@@ -628,7 +659,7 @@ namespace CrystalTable
             this.groupBoxManualControl.Controls.Add(this.tableLayoutPanel2);
             this.groupBoxManualControl.Controls.Add(this.checkBoxDiscreteStep);
             this.groupBoxManualControl.Dock = System.Windows.Forms.DockStyle.Top;
-            this.groupBoxManualControl.Location = new System.Drawing.Point(10, 368);
+            this.groupBoxManualControl.Location = new System.Drawing.Point(10, 403);
             this.groupBoxManualControl.Name = "groupBoxManualControl";
             this.groupBoxManualControl.Size = new System.Drawing.Size(290, 190);
             this.groupBoxManualControl.TabIndex = 2;
@@ -722,7 +753,7 @@ namespace CrystalTable
             this.buttonStart.Name = "buttonStart";
             this.buttonStart.Size = new System.Drawing.Size(125, 26);
             this.buttonStart.TabIndex = 4;
-            this.buttonStart.Text = "Старт";
+            this.buttonStart.Text = "Загрузка";
             this.buttonStart.UseVisualStyleBackColor = true;
             this.buttonStart.Click += new System.EventHandler(this.buttonStart_Click);
             // 
@@ -756,7 +787,7 @@ namespace CrystalTable
             this.groupBoxConnection.Controls.Add(this.buttonConnect);
             this.groupBoxConnection.Controls.Add(this.comboBoxPorts);
             this.groupBoxConnection.Dock = System.Windows.Forms.DockStyle.Top;
-            this.groupBoxConnection.Location = new System.Drawing.Point(10, 75);
+            this.groupBoxConnection.Location = new System.Drawing.Point(10, 110);
             this.groupBoxConnection.Name = "groupBoxConnection";
             this.groupBoxConnection.Size = new System.Drawing.Size(290, 71);
             this.groupBoxConnection.TabIndex = 0;
@@ -860,6 +891,8 @@ namespace CrystalTable
         private System.Windows.Forms.ToolStripMenuItem zoomInToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem zoomOutToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem resetZoomToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem5;
+        private System.Windows.Forms.ToolStripMenuItem darkThemeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem debugToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem debugModeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem resetCalibrationToolStripMenuItem;
@@ -893,6 +926,7 @@ namespace CrystalTable
         private System.Windows.Forms.Button toOriginButton;
         private System.Windows.Forms.Button startButton;
         private System.Windows.Forms.Button resetButton;
+        private System.Windows.Forms.Button buttonLockToggle;
         private System.Windows.Forms.GroupBox groupBoxManualControl;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
         private System.Windows.Forms.Button buttonMoveRight;

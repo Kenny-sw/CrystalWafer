@@ -47,7 +47,7 @@ namespace CrystalTable
             mapBuilderPanel = new Panel
             {
                 Dock = DockStyle.Top,
-                Height = 320,  // ← УМЕНЬШЕНО с 380 до 320 (удалены кнопки сдвига)
+                Height = 400,  // ← УМЕНЬШЕНО с 380 до 320 (удалены кнопки сдвига)
                 Padding = new Padding(10),
                 BackColor = Color.FromArgb(246, 250, 246),
                 AutoScroll = true
@@ -58,7 +58,7 @@ namespace CrystalTable
                 Text = "Конструктор карты",
                 Font = new Font("Segoe UI", 9f, FontStyle.Bold),
                 Dock = DockStyle.Top,
-                Height = 22
+                Height = 26
             };
 
             mapBuilderStatusLabel = new Label
@@ -217,8 +217,7 @@ namespace CrystalTable
 
         private void CreateMapBuilderToolbarButtons()
         {
-            // ❌ УДАЛЕНО: Дублирующие кнопки "Создать карту" и "Редактировать карту"
-            // Оставлены только уникальные функции
+            
 
             toolStripSavePngButton = new ToolStripButton
             {
