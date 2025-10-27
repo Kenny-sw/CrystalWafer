@@ -285,6 +285,58 @@ namespace CrystalTable
             return true;
         }
 
+        /// <summary>
+        /// Переместить ЛШД на относительное смещение (для калибровки камеры)
+        /// </summary>
+        /// <param name="deltaXmm">Смещение по X в мм (положительно вправо)</param>
+        /// <param name="deltaYmm">Смещение по Y в мм (положительно вниз)</param>
+        /// <returns>True если успешно</returns>
+        public async Task<bool> MoveRelativeAsync(float deltaXmm, float deltaYmm)
+        {
+            if (debugModeWithoutComPort)
+            {
+                System.Diagnostics.Debug.WriteLine($"[DEBUG MODE] Относительное движение: ({deltaXmm:F3}, {deltaYmm:F3}) мм - пропущено");
+                // В debug режиме просто обновляем координаты
+                pointerMm = new PointF(pointerMm.X + deltaXmm, pointerMm.Y + deltaYmm);
+                pictureBox1?.Invalidate();
+                UpdateUI();
+                return true;
+            }
+
+            uint moveXum = (uint)Math.Round(Math.Abs(deltaXmm) * 1000f);
+            uint moveYum = (uint)Math.Round(Math.Abs(deltaYmm) * 1000f);
+
+            // Движение по X
+            if (moveXum > 0)
+            {
+                byte command = deltaXmm > 0 ? Protocol.Commands.MoveRight : Protocol.Commands.MoveLeft;
+                if (!await TrySendAsync(command, moveXum))
+                {
+                    return false;
+                }
+
+                float movedMm = moveXum / 1000f;
+                pointerMm = new PointF(pointerMm.X + (deltaXmm > 0 ? movedMm : -movedMm), pointerMm.Y);
+            }
+
+            // Движение по Y
+            if (moveYum > 0)
+            {
+                byte command = deltaYmm > 0 ? Protocol.Commands.MoveDown : Protocol.Commands.MoveUp;
+                if (!await TrySendAsync(command, moveYum))
+                {
+                    return false;
+                }
+
+                float movedMm = moveYum / 1000f;
+                pointerMm = new PointF(pointerMm.X, pointerMm.Y + (deltaYmm > 0 ? movedMm : -movedMm));
+            }
+
+            pictureBox1?.Invalidate();
+            UpdateUI();
+            return true;
+        }
+
         private bool UseDiscreteStep()
         {
             var ctrl = this.Controls.Find("checkBoxDiscreteStep", true).FirstOrDefault() as CheckBox;
@@ -320,33 +372,33 @@ namespace CrystalTable
         {
             if (debugModeWithoutComPort)
             {
-                AppLogger.Debug($"[DEBUG MODE] Команда 0x{commandByte:X2}, шаг={stepUm} um – отправка пропущена.");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG MODE] Команда 0x{commandByte:X2}, шаг={stepUm} um – отправка пропущена.");
                 return true;
             }
 
             if (serialPortController == null || MyserialPort == null)
             {
-                AppLogger.Warning($"Attempt to send 0x{commandByte:X2} while serial port controller is not initialised.");
+                System.Diagnostics.Debug.WriteLine($"[WARNING] Attempt to send 0x{commandByte:X2} while serial port controller is not initialised.");
                 return false;
             }
 
             if (!MyserialPort.IsOpen)
             {
-                AppLogger.Warning($"Attempt to send 0x{commandByte:X2} while COM port is closed.");
+                System.Diagnostics.Debug.WriteLine($"[WARNING] Attempt to send 0x{commandByte:X2} while COM port is closed.");
                 MessageBox.Show("COM port is closed.", "COM", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
 
-            AppLogger.Debug($"UI -> command 0x{commandByte:X2}, step={stepUm} um");
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] UI -> command 0x{commandByte:X2}, step={stepUm} um");
             bool success = await serialPortController.SendCommandAsync(commandByte, stepUm);
             if (!success)
             {
-                AppLogger.Warning($"Command 0x{commandByte:X2} failed at UI layer.");
+                System.Diagnostics.Debug.WriteLine($"[WARNING] Command 0x{commandByte:X2} failed at UI layer.");
                 MessageBox.Show("Failed to send the command. Check COM port status.", "COM", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             else
             {
-                AppLogger.Debug($"Command 0x{commandByte:X2} acknowledged by controller.");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Command 0x{commandByte:X2} acknowledged by controller.");
             }
 
             return success;

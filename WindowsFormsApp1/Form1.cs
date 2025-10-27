@@ -58,6 +58,7 @@ namespace CrystalTable
             exportImportController = new ExportImportController(this, waferController);
             serialPortController = new SerialPortController(MyserialPort);
             InitializeMapBuilderUi();
+            InitializeCamera();  // ← Инициализация камеры
 
             // RX/STATE > статус-бар
             serialPortController.UnsolicitedEventReceived += SerialPort_UnsolicitedEventReceived;
@@ -65,6 +66,7 @@ namespace CrystalTable
 
             InitializeEventHandlers();
             LoadDefaultConfiguration();
+            LoadCameraCalibration();  // ← Загружаем сохраненную калибровку камеры
             UpdateUI();
         }
 
@@ -172,7 +174,7 @@ namespace CrystalTable
             
             if (debugModeWithoutComPort)
             {
-                AppLogger.Debug($"[DEBUG MODE] {(lockState ? "Фиксация" : "Сброс")} - команда 0x{command:X2}");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG MODE] {(lockState ? "Фиксация" : "Сброс")} - команда 0x{command:X2}");
                 isLocked = lockState;
                 UpdateLockButtonState();
                 UpdateUI();
@@ -190,7 +192,7 @@ namespace CrystalTable
             UpdateLockButtonState();
             UpdateUI();
             
-            AppLogger.Info($"Состояние фиксации: {(isLocked ? "ЗАФИКСИРОВАНО" : "СБРОШЕНО")}");
+            System.Diagnostics.Debug.WriteLine($"[INFO] Состояние фиксации: {(isLocked ? "ЗАФИКСИРОВАНО" : "СБРОШЕНО")}");
         }
         
         /// <summary>
@@ -452,6 +454,7 @@ namespace CrystalTable
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
             serialPortController?.Dispose();
+            DisposeCameraResources();  // ← Освобождение ресурсов камеры
         }
 
         // Публичные свойства для UIController
@@ -514,7 +517,7 @@ namespace CrystalTable
                 isLocked = lockState;
                 UpdateLockButtonState();
                 UpdateSensorStatusLabel($"Фиксация: {(lockState ? "ВКЛ" : "ВЫКЛ")}");
-                AppLogger.Info($"Получено событие фиксации от Arduino: {(lockState ? "LOCKED" : "UNLOCKED")}");
+                System.Diagnostics.Debug.WriteLine($"[INFO] Получено событие фиксации от Arduino: {(lockState ? "LOCKED" : "UNLOCKED")}");
             }
             else
             {
