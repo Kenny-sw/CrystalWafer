@@ -40,10 +40,143 @@ namespace CrystalTable
             // Создаем кнопки в тулбаре
             CreateCameraToolbarButtons();
 
-            // Скрываем превью по умолчанию
+            // Настройка превью камеры
             cameraPictureBox.Visible = false;
             cameraPictureBox.SizeMode = PictureBoxSizeMode.Zoom;
             cameraPictureBox.BackColor = Color.Black;
+            cameraPictureBox.Cursor = Cursors.Hand;
+            
+            // Двойной клик для изменения размера
+            cameraPictureBox.DoubleClick += CameraPictureBox_DoubleClick;
+            
+            // Подсказка
+            var toolTip = new ToolTip();
+            toolTip.SetToolTip(cameraPictureBox, "Двойной клик для изменения размера\nESC для возврата");
+        }
+
+        // Текущий режим отображения камеры
+        private enum CameraDisplayMode
+        {
+            Small,      // 295x245 - в углу
+            Large       // 640x480 - по центру
+        }
+
+        private CameraDisplayMode currentCameraMode = CameraDisplayMode.Small;
+        private Point originalCameraLocation;
+        private Size originalCameraSize;
+        private AnchorStyles originalCameraAnchor;
+        private Panel cameraOverlayPanel; // Затемнение
+
+        /// <summary>
+        /// Обработчик двойного клика для переключения размера камеры
+        /// </summary>
+        private void CameraPictureBox_DoubleClick(object sender, EventArgs e)
+        {
+            if (currentCameraMode == CameraDisplayMode.Small)
+            {
+                ShowLargeCameraPreview();
+            }
+            else
+            {
+                ShowSmallCameraPreview();
+            }
+        }
+
+        /// <summary>
+        /// Показать камеру в большом режиме (по центру)
+        /// </summary>
+        private void ShowLargeCameraPreview()
+        {
+            // Сохраняем текущие параметры
+            originalCameraLocation = cameraPictureBox.Location;
+            originalCameraSize = cameraPictureBox.Size;
+            originalCameraAnchor = cameraPictureBox.Anchor;
+
+            // Создаем затемненный фон
+            cameraOverlayPanel = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.FromArgb(128, 0, 0, 0), // 50% прозрачности
+                Cursor = Cursors.Default
+            };
+
+            // Добавляем подсказку на фон
+            var hintLabel = new Label
+            {
+                Text = "ESC - закрыть    Двойной клик - вернуть",
+                AutoSize = true,
+                ForeColor = Color.White,
+                BackColor = Color.Transparent,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold)
+            };
+            hintLabel.Location = new Point(
+                (pictureBox1.Width - hintLabel.Width) / 2,
+                pictureBox1.Height - hintLabel.Height - 20
+            );
+            cameraOverlayPanel.Controls.Add(hintLabel);
+
+            // Клик по фону закрывает большой режим
+            cameraOverlayPanel.Click += (s, ev) => ShowSmallCameraPreview();
+
+            pictureBox1.Controls.Add(cameraOverlayPanel);
+            cameraOverlayPanel.BringToFront();
+
+            // Меняем размер и позицию камеры
+            cameraPictureBox.Anchor = AnchorStyles.None;
+            cameraPictureBox.Size = new Size(640, 480);
+            cameraPictureBox.Location = new Point(
+                (pictureBox1.Width - 640) / 2,
+                (pictureBox1.Height - 480) / 2
+            );
+            cameraPictureBox.BorderStyle = BorderStyle.Fixed3D;
+            cameraPictureBox.BringToFront();
+
+            currentCameraMode = CameraDisplayMode.Large;
+
+            // Устанавливаем фокус для обработки ESC
+            cameraPictureBox.Focus();
+            this.KeyPreview = true;
+            this.KeyDown += Form1_KeyDown_CameraOverlay;
+        }
+
+        /// <summary>
+        /// Показать камеру в маленьком режиме (в углу)
+        /// </summary>
+        private void ShowSmallCameraPreview()
+        {
+            if (currentCameraMode == CameraDisplayMode.Small)
+                return;
+
+            // Удаляем затемнение
+            if (cameraOverlayPanel != null)
+            {
+                pictureBox1.Controls.Remove(cameraOverlayPanel);
+                cameraOverlayPanel.Dispose();
+                cameraOverlayPanel = null;
+            }
+
+            // Восстанавливаем исходные параметры
+            cameraPictureBox.Anchor = originalCameraAnchor;
+            cameraPictureBox.Size = originalCameraSize;
+            cameraPictureBox.Location = originalCameraLocation;
+            cameraPictureBox.BorderStyle = BorderStyle.FixedSingle;
+
+            currentCameraMode = CameraDisplayMode.Small;
+
+            // Убираем обработчик ESC
+            this.KeyDown -= Form1_KeyDown_CameraOverlay;
+        }
+
+        /// <summary>
+        /// Обработчик ESC для закрытия большого режима камеры
+        /// </summary>
+        private void Form1_KeyDown_CameraOverlay(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Escape && currentCameraMode == CameraDisplayMode.Large)
+            {
+                ShowSmallCameraPreview();
+                e.Handled = true;
+            }
         }
 
         /// <summary>
@@ -379,6 +512,12 @@ namespace CrystalTable
         /// </summary>
         private void DisposeCameraResources()
         {
+            // Возвращаем маленький режим если был большой
+            if (currentCameraMode == CameraDisplayMode.Large)
+            {
+                ShowSmallCameraPreview();
+            }
+
             calibrationController?.Dispose();
             cameraController?.Dispose();
         }

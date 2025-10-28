@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 using WindowsFormsApp1.Camera;
 
@@ -51,17 +52,50 @@ namespace CrystalTable.Camera
             
             InitializeComponent();
             LoadSettings();
+            UpdateCameraStatus();
         }
 
         private void InitializeComponent()
         {
             this.Text = "Настройки камеры";
-            this.Size = new Size(500, 600);
+            this.Size = new Size(500, 650); // Увеличил высоту для статуса
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.StartPosition = FormStartPosition.CenterParent;
 
+            // === СТАТУС КАМЕРЫ (НОВОЕ) ===
+            var statusPanel = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 60,
+                Padding = new Padding(10),
+                BackColor = Color.FromArgb(240, 248, 255)
+            };
+
+            var statusTitleLabel = new Label
+            {
+                Text = "Статус камеры:",
+                Font = new Font("Segoe UI", 9f, FontStyle.Bold),
+                AutoSize = true,
+                Location = new Point(10, 10)
+            };
+
+            var statusValueLabel = new Label
+            {
+                Name = "statusValueLabel",
+                Text = cameraController.IsRunning ? "🟢 Камера работает" : "🔴 Камера не запущена",
+                Font = new Font("Segoe UI", 9f),
+                AutoSize = true,
+                Location = new Point(10, 35),
+                ForeColor = cameraController.IsRunning ? Color.Green : Color.Red
+            };
+
+            statusPanel.Controls.Add(statusTitleLabel);
+            statusPanel.Controls.Add(statusValueLabel);
+            this.Controls.Add(statusPanel);
+
+            // === ОСНОВНАЯ ПАНЕЛЬ (СУЩНОСТЬ) ===
             var mainPanel = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
@@ -300,9 +334,20 @@ namespace CrystalTable.Camera
             };
             applyButton.Click += ApplyButton_Click;
 
+            // НОВАЯ КНОПКА: Проверить поддержку
+            var checkSupportButton = new Button
+            {
+                Text = "Проверить поддержку",
+                Width = 150,
+                Height = 30,
+                Margin = new Padding(5)
+            };
+            checkSupportButton.Click += CheckSupportButton_Click;
+
             buttonPanel.Controls.Add(closeButton);
             buttonPanel.Controls.Add(resetButton);
             buttonPanel.Controls.Add(applyButton);
+            buttonPanel.Controls.Add(checkSupportButton);
 
             this.Controls.Add(mainPanel);
             this.Controls.Add(buttonPanel);
@@ -433,31 +478,76 @@ namespace CrystalTable.Camera
 
         private void ApplyButton_Click(object sender, EventArgs e)
         {
-            // Сохраняем числовые значения
-            workingSettings.Exposure = (int)exposureNumericUpDown.Value;
-            workingSettings.WhiteBalance = (int)whiteBalanceNumericUpDown.Value;
-
-            // Разрешение
-            if (resolutionComboBox.SelectedItem != null)
+            try
             {
-                var parts = resolutionComboBox.SelectedItem.ToString().Split('x');
-                if (parts.Length == 2 && int.TryParse(parts[0], out int width) && int.TryParse(parts[1], out int height))
+                // Проверка: камера должна быть запущена
+                if (!cameraController.IsRunning)
                 {
-                    workingSettings.Resolution = new Size(width, height);
+                    MessageBox.Show("Камера не запущена!\n\nЗапустите камеру перед применением настроек.",
+                        "Настройки камеры", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // Сохраняем числовые значения
+                workingSettings.Exposure = (int)exposureNumericUpDown.Value;
+                workingSettings.WhiteBalance = (int)whiteBalanceNumericUpDown.Value;
+
+                // Разрешение
+                if (resolutionComboBox.SelectedItem != null)
+                {
+                    var parts = resolutionComboBox.SelectedItem.ToString().Split('x');
+                    if (parts.Length == 2 && int.TryParse(parts[0], out int width) && int.TryParse(parts[1], out int height))
+                    {
+                        workingSettings.Resolution = new Size(width, height);
+                    }
+                }
+
+                // FPS
+                if (fpsComboBox.SelectedItem != null && int.TryParse(fpsComboBox.SelectedItem.ToString(), out int fps))
+                {
+                    workingSettings.FrameRate = fps;
+                }
+
+                // Применяем настройки к камере
+                cameraController.Settings = workingSettings;
+
+                // Проверяем результат применения
+                var caps = cameraController.GetCameraCapabilities();
+                int supportedCount = 0;
+                if (caps.SupportsBrightness) supportedCount++;
+                if (caps.SupportsContrast) supportedCount++;
+                if (caps.SupportsSaturation) supportedCount++;
+                if (caps.SupportsSharpness) supportedCount++;
+                if (caps.SupportsGain) supportedCount++;
+                if (caps.SupportsWhiteBalance) supportedCount++;
+                if (caps.SupportsExposure) supportedCount++;
+
+                if (supportedCount == 0)
+                {
+                    MessageBox.Show("⚠️ Камера не поддерживает аппаратные настройки.\n\n" +
+                        "Это может быть связано с:\n" +
+                        "• Дешевой веб-камерой без DirectShow\n" +
+                        "• Устаревшими драйверами\n" +
+                        "• Виртуальной камерой (OBS, ManyCam)\n\n" +
+                        "Попробуйте:\n" +
+                        "1. Обновить драйверы камеры\n" +
+                        "2. Использовать другую USB-камеру\n" +
+                        "3. Нажать 'Проверить поддержку' для деталей",
+                        "Настройки не применены", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+                else
+                {
+                    MessageBox.Show($"✓ Настройки применены!\n\n" +
+                        $"Поддерживается: {supportedCount} из 7 настроек\n\n" +
+                        $"Нажмите 'Проверить поддержку' для подробностей.",
+                        "Настройки камеры", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
-
-            // FPS
-            if (fpsComboBox.SelectedItem != null && int.TryParse(fpsComboBox.SelectedItem.ToString(), out int fps))
+            catch (Exception ex)
             {
-                workingSettings.FrameRate = fps;
+                MessageBox.Show($"Ошибка применения настроек:\n\n{ex.Message}\n\n{ex.StackTrace}",
+                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
-            // Применяем настройки к камере
-            cameraController.Settings = workingSettings;
-
-            MessageBox.Show("Настройки применены успешно!", "Настройки камеры",
-                MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void CloseButton_Click(object sender, EventArgs e)
@@ -474,6 +564,94 @@ namespace CrystalTable.Camera
                 LoadSettings();
                 MessageBox.Show("Настройки сброшены. Нажмите 'Применить' для сохранения.",
                     "Сброс настроек", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        /// <summary>
+        /// Обновить отображение статуса камеры
+        /// </summary>
+        private void UpdateCameraStatus()
+        {
+            var statusLabel = this.Controls.Find("statusValueLabel", true).FirstOrDefault() as Label;
+            if (statusLabel != null)
+            {
+                if (cameraController.IsRunning)
+                {
+                    statusLabel.Text = "🟢 Камера работает - настройки можно применять";
+                    statusLabel.ForeColor = Color.Green;
+                }
+                else
+                {
+                    statusLabel.Text = "🔴 Камера не запущена - запустите камеру для настройки";
+                    statusLabel.ForeColor = Color.Red;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Проверка поддержки настроек камерой
+        /// </summary>
+        private void CheckSupportButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // Проверка: камера должна быть запущена
+                if (!cameraController.IsRunning)
+                {
+                    MessageBox.Show("Камера не запущена!\n\nЗапустите камеру для проверки возможностей.",
+                        "Проверка поддержки", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                var caps = cameraController.GetCameraCapabilities();
+
+                var message = "🔍 Поддержка настроек вашей Kameroy:\n\n";
+                message += "✓ = поддерживается    ✗ = не поддерживается\n\n";
+                message += $"{(caps.SupportsBrightness ? "✓" : "✗")} Яркость (Brightness)\n";
+                message += $"{(caps.SupportsContrast ? "✓" : "✗")} Контраст (Contrast)\n";
+                message += $"{(caps.SupportsSaturation ? "✓" : "✗")} Насыщенность (Saturation)\n";
+                message += $"{(caps.SupportsSharpness ? "✓" : "✗")} Резкость (Sharpness)\n";
+                message += $"{(caps.SupportsGain ? "✓" : "✗")} Усиление (Gain)\n";
+                message += $"{(caps.SupportsWhiteBalance ? "✓" : "✗")} Баланс белого (White Balance)\n";
+                message += $"{(caps.SupportsExposure ? "✓" : "✗")} Экспозиция (Exposure)\n\n";
+
+                int supportedCount = 0;
+                if (caps.SupportsBrightness) supportedCount++;
+                if (caps.SupportsContrast) supportedCount++;
+                if (caps.SupportsSaturation) supportedCount++;
+                if (caps.SupportsSharpness) supportedCount++;
+                if (caps.SupportsGain) supportedCount++;
+                if (caps.SupportsWhiteBalance) supportedCount++;
+                if (caps.SupportsExposure) supportedCount++;
+
+                message += $"📊 Поддерживается: {supportedCount} из 7 настроек\n\n";
+
+                if (supportedCount == 0)
+                {
+                    message += "⚠️ ВНИМАНИЕ: Камера не поддерживает аппаратные настройки!\n\n";
+                    message += "Возможные причины:\n";
+                    message += "• Дешевая веб-камера без DirectShow API\n";
+                    message += "• Драйвер не реализует IAMVideoProcAmp\n";
+                    message += "• Виртуальная камера (OBS, ManyCam)\n";
+                    message += "• Встроенная камера ноутбука с ограничениями\n";
+                }
+                else if (supportedCount < 7)
+                {
+                    message += "ℹ️ Примечание: Неподдерживаемые настройки будут игнорироваться.\n";
+                    message += "Это нормально для большинства веб-камер.";
+                }
+                else
+                {
+                    message += "🎉 Отлично! Камера полностью поддерживает все настройки.";
+                }
+
+                MessageBox.Show(message, "Возможности камеры", 
+                    MessageBoxButtons.OK, supportedCount > 0 ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка проверки поддержки:\n\n{ex.Message}",
+                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }

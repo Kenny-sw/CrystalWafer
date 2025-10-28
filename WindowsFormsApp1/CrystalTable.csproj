@@ -136,8 +136,13 @@
     <None Include="Arduino\StepByStepOOP1.3.ino" />
     <None Include="Arduino\StepByStepOOP1.4.ino" />
     <None Include="CAMERA_CALIBRATION_GUIDE.md" />
+    <None Include="CAMERA_FIXES_SUMMARY.md" />
     <None Include="CAMERA_IMPLEMENTATION.md" />
+    <None Include="CAMERA_IMPROVEMENTS.md" />
+    <None Include="CAMERA_QUICKSTART.md" />
     <None Include="CAMERA_README.md" />
+    <None Include="CAMERA_SETUP_GUIDE.md" />
+    <None Include="CAMERA_TROUBLESHOOTING.md" />
     <None Include="INSTALL_PACKAGES.md" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">

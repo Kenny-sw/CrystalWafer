@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using AForge.Video;
@@ -309,40 +310,248 @@ namespace WindowsFormsApp1.Camera
         /// </summary>
         public void ApplySettings()
         {
-            if (videoSource == null) return;
+            if (videoSource == null)
+            {
+                OnStatusChanged("❌ Камера не инициализирована");
+                return;
+            }
+
+            if (!isRunning)
+            {
+                OnStatusChanged("❌ Камера не запущена. Запустите камеру для применения настроек.");
+                return;
+            }
 
             try
             {
                 // Применяем разрешение
                 ApplyResolution();
 
-                // Применяем настройки изображения через SetCameraProperty
-                // Примечание: не все камеры поддерживают все свойства
-                
-                OnStatusChanged("Настройки применены");
+                // Применяем настройки изображения через DirectShow
+                var appliedSettings = new System.Collections.Generic.List<string>();
+                var failedSettings = new System.Collections.Generic.List<string>();
+
+                // Яркость
+                if (TrySetVideoProcAmpProperty(VideoProcAmpProperty.Brightness, settings.Brightness))
+                    appliedSettings.Add("Яркость");
+                else
+                    failedSettings.Add("Яркость");
+
+                // Контраст
+                if (TrySetVideoProcAmpProperty(VideoProcAmpProperty.Contrast, settings.Contrast))
+                    appliedSettings.Add("Контраст");
+                else
+                    failedSettings.Add("Контраст");
+
+                // Насыщенность
+                if (TrySetVideoProcAmpProperty(VideoProcAmpProperty.Saturation, settings.Saturation))
+                    appliedSettings.Add("Насыщенность");
+                else
+                    failedSettings.Add("Насыщенность");
+
+                // Резкость
+                if (TrySetVideoProcAmpProperty(VideoProcAmpProperty.Sharpness, settings.Sharpness))
+                    appliedSettings.Add("Резкость");
+                else
+                    failedSettings.Add("Резкость");
+
+                // Усиление (Gain)
+                if (TrySetVideoProcAmpProperty(VideoProcAmpProperty.Gain, settings.Gain))
+                    appliedSettings.Add("Усиление");
+                else
+                    failedSettings.Add("Усиление");
+
+                // Баланс белого
+                if (!settings.AutoWhiteBalance)
+                {
+                    if (TrySetVideoProcAmpProperty(VideoProcAmpProperty.WhiteBalance, settings.WhiteBalance, VideoProcAmpFlags.Manual))
+                        appliedSettings.Add("Баланс белого");
+                    else
+                        failedSettings.Add("Баланс белого");
+                }
+                else
+                {
+                    if (TrySetVideoProcAmpProperty(VideoProcAmpProperty.WhiteBalance, 0, VideoProcAmpFlags.Auto))
+                        appliedSettings.Add("Баланс белого (авто)");
+                    else
+                        failedSettings.Add("Баланс белого (авто)");
+                }
+
+                // Экспозиция
+                if (!settings.AutoExposure)
+                {
+                    if (TrySetCameraControlProperty(CameraControlProperty.Exposure, settings.Exposure, CameraControlFlags.Manual))
+                        appliedSettings.Add("Экспозиция");
+                    else
+                        failedSettings.Add("Экспозиция");
+                }
+                else
+                {
+                    if (TrySetCameraControlProperty(CameraControlProperty.Exposure, 0, CameraControlFlags.Auto))
+                        appliedSettings.Add("Экспозиция (авто)");
+                    else
+                        failedSettings.Add("Экспозиция (авто)");
+                }
+
+                // Формируем сообщение о результате
+                if (appliedSettings.Count == 0 && failedSettings.Count > 0)
+                {
+                    OnStatusChanged("❌ Настройки не применены: камера не поддерживает DirectShow API");
+                }
+                else
+                {
+                    string message = "✓ Настройки применены";
+                    if (appliedSettings.Count > 0)
+                    {
+                        message += $"\n✓ Применено ({appliedSettings.Count}): " + string.Join(", ", appliedSettings);
+                    }
+                    if (failedSettings.Count > 0)
+                    {
+                        message += $"\n✗ Не поддерживается ({failedSettings.Count}): " + string.Join(", ", failedSettings);
+                    }
+                    OnStatusChanged(message);
+                }
             }
             catch (Exception ex)
             {
-                OnStatusChanged($"Ошибка применения настроек: {ex.Message}");
+                OnStatusChanged($"❌ Ошибка применения настроек: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// Сброс настроек к значениям по умолчанию
+        /// Попытка установить свойство VideoProcAmp
         /// </summary>
-        public void ResetSettings()
+        private bool TrySetVideoProcAmpProperty(VideoProcAmpProperty property, int value, VideoProcAmpFlags flags = VideoProcAmpFlags.Manual)
         {
-            settings = new CameraSettings();
-            ApplySettings();
-            OnStatusChanged("Настройки сброшены");
+            try
+            {
+                if (videoSource?.SourceObject == null) return false;
+
+                var sourceObject = videoSource.SourceObject as IAMVideoProcAmp;
+                if (sourceObject == null) return false;
+
+                // Получаем диапазон значений
+                int min, max, step, def;
+                VideoProcAmpFlags capsFlags;
+                int hr = sourceObject.GetRange(property, out min, out max, out step, out def, out capsFlags);
+                
+                if (hr != 0) return false;
+
+                // Проверяем поддержку режима
+                if (flags == VideoProcAmpFlags.Auto && (capsFlags & VideoProcAmpFlags.Auto) == 0)
+                    return false;
+
+                // Нормализуем значение в диапазон
+                int normalizedValue = Math.Max(min, Math.Min(max, min + (value * (max - min) / 100)));
+
+                // Устанавливаем значение
+                hr = sourceObject.Set(property, normalizedValue, flags);
+                return hr == 0;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         /// <summary>
-        /// Получить возможности камеры
+        /// Попытка установить свойство CameraControl
         /// </summary>
-        public VideoCapabilities[] GetVideoCapabilities()
+        private bool TrySetCameraControlProperty(CameraControlProperty property, int value, CameraControlFlags flags = CameraControlFlags.Manual)
         {
-            return videoSource?.VideoCapabilities;
+            try
+            {
+                if (videoSource?.SourceObject == null) return false;
+
+                var sourceObject = videoSource.SourceObject as IAMCameraControl;
+                if (sourceObject == null) return false;
+
+                // Получаем диапазон значений
+                int min, max, step, def;
+                CameraControlFlags capsFlags;
+                int hr = sourceObject.GetRange(property, out min, out max, out step, out def, out capsFlags);
+                
+                if (hr != 0) return false;
+
+                // Проверяем поддержку режима
+                if (flags == CameraControlFlags.Auto && (capsFlags & CameraControlFlags.Auto) == 0)
+                    return false;
+
+                // Для экспозиции значение в логарифмической шкале (секунды * 10000)
+                int normalizedValue = flags == CameraControlFlags.Manual ? 
+                    Math.Max(min, Math.Min(max, -value)) : 0;
+
+                // Устанавливаем значение
+                hr = sourceObject.Set(property, normalizedValue, flags);
+                return hr == 0;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Проверить поддержку настроек камерой
+        /// </summary>
+        public CameraCapabilities GetCameraCapabilities()
+        {
+            var caps = new CameraCapabilities();
+
+            if (videoSource?.SourceObject == null)
+                return caps;
+
+            try
+            {
+                var videoProcAmp = videoSource.SourceObject as IAMVideoProcAmp;
+                var cameraControl = videoSource.SourceObject as IAMCameraControl;
+
+                if (videoProcAmp != null)
+                {
+                    caps.SupportsBrightness = CheckVideoProcAmpSupport(videoProcAmp, VideoProcAmpProperty.Brightness);
+                    caps.SupportsContrast = CheckVideoProcAmpSupport(videoProcAmp, VideoProcAmpProperty.Contrast);
+                    caps.SupportsSaturation = CheckVideoProcAmpSupport(videoProcAmp, VideoProcAmpProperty.Saturation);
+                    caps.SupportsSharpness = CheckVideoProcAmpSupport(videoProcAmp, VideoProcAmpProperty.Sharpness);
+                    caps.SupportsGain = CheckVideoProcAmpSupport(videoProcAmp, VideoProcAmpProperty.Gain);
+                    caps.SupportsWhiteBalance = CheckVideoProcAmpSupport(videoProcAmp, VideoProcAmpProperty.WhiteBalance);
+                }
+
+                if (cameraControl != null)
+                {
+                    caps.SupportsExposure = CheckCameraControlSupport(cameraControl, CameraControlProperty.Exposure);
+                }
+            }
+            catch { }
+
+            return caps;
+        }
+
+        private bool CheckVideoProcAmpSupport(IAMVideoProcAmp procAmp, VideoProcAmpProperty property)
+        {
+            try
+            {
+                int min, max, step, def;
+                VideoProcAmpFlags flags;
+                return procAmp.GetRange(property, out min, out max, out step, out def, out flags) == 0;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private bool CheckCameraControlSupport(IAMCameraControl control, CameraControlProperty property)
+        {
+            try
+            {
+                int min, max, step, def;
+                CameraControlFlags flags;
+                return control.GetRange(property, out min, out max, out step, out def, out flags) == 0;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -417,4 +626,109 @@ namespace WindowsFormsApp1.Camera
             return (CameraSettings)this.MemberwiseClone();
         }
     }
+
+    /// <summary>
+    /// Возможности камеры
+    /// </summary>
+    public class CameraCapabilities
+    {
+        public bool SupportsBrightness { get; set; }
+        public bool SupportsContrast { get; set; }
+        public bool SupportsSaturation { get; set; }
+        public bool SupportsSharpness { get; set; }
+        public bool SupportsGain { get; set; }
+        public bool SupportsWhiteBalance { get; set; }
+        public bool SupportsExposure { get; set; }
+    }
+
+    // DirectShow COM интерфейсы
+    [ComImport, Guid("C6E13370-30AC-11d0-A18C-00A0C9118956"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    internal interface IAMVideoProcAmp
+    {
+        [PreserveSig]
+        int GetRange(
+            [In] VideoProcAmpProperty Property,
+            [Out] out int pMin,
+            [Out] out int pMax,
+            [Out] out int pSteppingDelta,
+            [Out] out int pDefault,
+            [Out] out VideoProcAmpFlags pCapsFlags);
+
+        [PreserveSig]
+        int Set(
+            [In] VideoProcAmpProperty Property,
+            [In] int lValue,
+            [In] VideoProcAmpFlags Flags);
+
+        [PreserveSig]
+        int Get(
+            [In] VideoProcAmpProperty Property,
+            [Out] out int lValue,
+            [Out] out VideoProcAmpFlags Flags);
+    }
+
+    [ComImport, Guid("C6E13370-30AC-11d0-A18C-00A0C9118956"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    internal interface IAMCameraControl
+    {
+        [PreserveSig]
+        int GetRange(
+            [In] CameraControlProperty Property,
+            [Out] out int pMin,
+            [Out] out int pMax,
+            [Out] out int pSteppingDelta,
+            [Out] out int pDefault,
+            [Out] out CameraControlFlags pCapsFlags);
+
+        [PreserveSig]
+        int Set(
+            [In] CameraControlProperty Property,
+            [In] int lValue,
+            [In] CameraControlFlags Flags);
+
+        [PreserveSig]
+        int Get(
+            [In] CameraControlProperty Property,
+            [Out] out int lValue,
+            [Out] out CameraControlFlags Flags);
+    }
+
+    internal enum VideoProcAmpProperty
+    {
+        Brightness,
+        Contrast,
+        Hue,
+        Saturation,
+        Sharpness,
+        Gamma,
+        ColorEnable,
+        WhiteBalance,
+        BacklightCompensation,
+        Gain
+    }
+
+    [Flags]
+    internal enum VideoProcAmpFlags
+    {
+        Auto = 0x0001,
+        Manual = 0x0002
+    }
+
+    internal enum CameraControlProperty
+    {
+        Pan,
+        Tilt,
+        Roll,
+        Zoom,
+        Exposure,
+        Iris,
+        Focus
+    }
+
+    [Flags]
+    internal enum CameraControlFlags
+    {
+        Auto = 0x0001,
+        Manual = 0x0002
+    }
+
 }

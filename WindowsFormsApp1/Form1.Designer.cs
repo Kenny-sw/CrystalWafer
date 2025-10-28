@@ -26,10 +26,10 @@ namespace CrystalTable
             this.components = new System.ComponentModel.Container();
             this.cameraPictureBox = new System.Windows.Forms.PictureBox();
             this.groupBoxMainControl = new System.Windows.Forms.GroupBox();
+            this.buttonLockToggle = new System.Windows.Forms.Button();
             this.resetButton = new System.Windows.Forms.Button();
             this.startButton = new System.Windows.Forms.Button();
             this.toOriginButton = new System.Windows.Forms.Button();
-            this.buttonLockToggle = new System.Windows.Forms.Button();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -116,9 +116,9 @@ namespace CrystalTable
             // 
             this.cameraPictureBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cameraPictureBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.cameraPictureBox.Location = new System.Drawing.Point(769, 3);
+            this.cameraPictureBox.Location = new System.Drawing.Point(634, 3);
             this.cameraPictureBox.Name = "cameraPictureBox";
-            this.cameraPictureBox.Size = new System.Drawing.Size(160, 120);
+            this.cameraPictureBox.Size = new System.Drawing.Size(295, 245);
             this.cameraPictureBox.TabIndex = 2;
             this.cameraPictureBox.TabStop = false;
             // 
@@ -135,6 +135,18 @@ namespace CrystalTable
             this.groupBoxMainControl.TabIndex = 4;
             this.groupBoxMainControl.TabStop = false;
             this.groupBoxMainControl.Text = "Главное управление";
+            // 
+            // buttonLockToggle
+            // 
+            this.buttonLockToggle.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(200)))), ((int)(((byte)(255)))), ((int)(((byte)(200)))));
+            this.buttonLockToggle.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.buttonLockToggle.Location = new System.Drawing.Point(9, 57);
+            this.buttonLockToggle.Name = "buttonLockToggle";
+            this.buttonLockToggle.Size = new System.Drawing.Size(273, 35);
+            this.buttonLockToggle.TabIndex = 3;
+            this.buttonLockToggle.Text = "🔓 Фиксация";
+            this.buttonLockToggle.UseVisualStyleBackColor = false;
+            this.buttonLockToggle.Click += new System.EventHandler(this.buttonLockToggle_Click);
             // 
             // resetButton
             // 
@@ -166,18 +178,6 @@ namespace CrystalTable
             this.toOriginButton.UseVisualStyleBackColor = true;
             this.toOriginButton.Click += new System.EventHandler(this.toOriginButton_Click);
             // 
-            // buttonLockToggle
-            // 
-            this.buttonLockToggle.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(200)))), ((int)(((byte)(255)))), ((int)(((byte)(200)))));
-            this.buttonLockToggle.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-            this.buttonLockToggle.Location = new System.Drawing.Point(9, 57);
-            this.buttonLockToggle.Name = "buttonLockToggle";
-            this.buttonLockToggle.Size = new System.Drawing.Size(273, 35);
-            this.buttonLockToggle.TabIndex = 3;
-            this.buttonLockToggle.Text = "🔓 Фиксация";
-            this.buttonLockToggle.UseVisualStyleBackColor = false;
-            this.buttonLockToggle.Click += new System.EventHandler(this.buttonLockToggle_Click);
-            // 
             // menuStrip1
             // 
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
@@ -188,7 +188,7 @@ namespace CrystalTable
             this.debugToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1262, 28);
+            this.menuStrip1.Size = new System.Drawing.Size(1262, 30);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -387,21 +387,21 @@ namespace CrystalTable
             this.debugModeToolStripMenuItem,
             this.resetCalibrationToolStripMenuItem});
             this.debugToolStripMenuItem.Name = "debugToolStripMenuItem";
-            this.debugToolStripMenuItem.Size = new System.Drawing.Size(86, 24);
+            this.debugToolStripMenuItem.Size = new System.Drawing.Size(81, 24);
             this.debugToolStripMenuItem.Text = "Наладка";
             // 
             // debugModeToolStripMenuItem
             // 
             this.debugModeToolStripMenuItem.CheckOnClick = true;
             this.debugModeToolStripMenuItem.Name = "debugModeToolStripMenuItem";
-            this.debugModeToolStripMenuItem.Size = new System.Drawing.Size(250, 26);
+            this.debugModeToolStripMenuItem.Size = new System.Drawing.Size(252, 26);
             this.debugModeToolStripMenuItem.Text = "Работа без COM-порта";
             this.debugModeToolStripMenuItem.CheckedChanged += new System.EventHandler(this.debugModeToolStripMenuItem_CheckedChanged);
             // 
             // resetCalibrationToolStripMenuItem
             // 
             this.resetCalibrationToolStripMenuItem.Name = "resetCalibrationToolStripMenuItem";
-            this.resetCalibrationToolStripMenuItem.Size = new System.Drawing.Size(250, 26);
+            this.resetCalibrationToolStripMenuItem.Size = new System.Drawing.Size(252, 26);
             this.resetCalibrationToolStripMenuItem.Text = "Сбросить калибровку";
             this.resetCalibrationToolStripMenuItem.Click += new System.EventHandler(this.resetCalibrationToolStripMenuItem_Click);
             // 
@@ -421,9 +421,9 @@ namespace CrystalTable
             this.btnZoomIn,
             this.btnZoomOut,
             this.btnZoomReset});
-            this.toolStrip1.Location = new System.Drawing.Point(0, 28);
+            this.toolStrip1.Location = new System.Drawing.Point(0, 30);
             this.toolStrip1.Name = "toolStrip1";
-            this.toolStrip1.Size = new System.Drawing.Size(1262, 27);
+            this.toolStrip1.Size = new System.Drawing.Size(1262, 31);
             this.toolStrip1.TabIndex = 1;
             this.toolStrip1.Text = "toolStrip1";
             // 
@@ -584,7 +584,7 @@ namespace CrystalTable
             // calibrationStatusLabel
             // 
             this.calibrationStatusLabel.Name = "calibrationStatusLabel";
-            this.calibrationStatusLabel.Size = new System.Drawing.Size(148, 20);
+            this.calibrationStatusLabel.Size = new System.Drawing.Size(123, 20);
             this.calibrationStatusLabel.Text = "Калибровка: нет";
             // 
             // coordinatesLabel
@@ -603,10 +603,10 @@ namespace CrystalTable
             // 
             this.mainPanel.Controls.Add(this.pictureBox1);
             this.mainPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.mainPanel.Location = new System.Drawing.Point(0, 55);
+            this.mainPanel.Location = new System.Drawing.Point(0, 61);
             this.mainPanel.Name = "mainPanel";
             this.mainPanel.Padding = new System.Windows.Forms.Padding(10);
-            this.mainPanel.Size = new System.Drawing.Size(952, 592);
+            this.mainPanel.Size = new System.Drawing.Size(952, 586);
             this.mainPanel.TabIndex = 4;
             // 
             // pictureBox1
@@ -617,7 +617,7 @@ namespace CrystalTable
             this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pictureBox1.Location = new System.Drawing.Point(10, 10);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(932, 572);
+            this.pictureBox1.Size = new System.Drawing.Size(932, 566);
             this.pictureBox1.TabIndex = 1;
             this.pictureBox1.TabStop = false;
             this.pictureBox1.Paint += new System.Windows.Forms.PaintEventHandler(this.PictureBox1_Paint);
@@ -631,10 +631,10 @@ namespace CrystalTable
             this.rightPanel.Controls.Add(this.groupBoxConnection);
             this.rightPanel.Controls.Add(this.groupBoxMainControl);
             this.rightPanel.Dock = System.Windows.Forms.DockStyle.Right;
-            this.rightPanel.Location = new System.Drawing.Point(952, 55);
+            this.rightPanel.Location = new System.Drawing.Point(952, 61);
             this.rightPanel.Name = "rightPanel";
             this.rightPanel.Padding = new System.Windows.Forms.Padding(10, 10, 10, 0);
-            this.rightPanel.Size = new System.Drawing.Size(310, 592);
+            this.rightPanel.Size = new System.Drawing.Size(310, 586);
             this.rightPanel.TabIndex = 3;
             // 
             // groupBoxManualControl
@@ -642,7 +642,7 @@ namespace CrystalTable
             this.groupBoxManualControl.Controls.Add(this.tableLayoutPanel2);
             this.groupBoxManualControl.Controls.Add(this.checkBoxDiscreteStep);
             this.groupBoxManualControl.Dock = System.Windows.Forms.DockStyle.Top;
-            this.groupBoxManualControl.Location = new System.Drawing.Point(10, 403);
+            this.groupBoxManualControl.Location = new System.Drawing.Point(10, 181);
             this.groupBoxManualControl.Name = "groupBoxManualControl";
             this.groupBoxManualControl.Size = new System.Drawing.Size(290, 190);
             this.groupBoxManualControl.TabIndex = 2;
@@ -734,7 +734,7 @@ namespace CrystalTable
             this.buttonStart.Location = new System.Drawing.Point(3, 96);
             this.buttonStart.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
             this.buttonStart.Name = "buttonStart";
-            this.buttonStart.Size = new System.Drawing.Size(125, 26);
+            this.buttonStart.Size = new System.Drawing.Size(122, 26);
             this.buttonStart.TabIndex = 4;
             this.buttonStart.Text = "Загрузка";
             this.buttonStart.UseVisualStyleBackColor = true;
