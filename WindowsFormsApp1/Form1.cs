@@ -174,7 +174,7 @@ namespace CrystalTable
             
             if (debugModeWithoutComPort)
             {
-                System.Diagnostics.Debug.WriteLine($"[DEBUG MODE] {(lockState ? "Фиксация" : "Сброс")} - команда 0x{command:X2}");
+                AppLogger.Debug($"[DEBUG MODE] {(lockState ? "Фиксация" : "Сброс")} - команда 0x{command:X2}");
                 isLocked = lockState;
                 UpdateLockButtonState();
                 UpdateUI();
@@ -192,7 +192,7 @@ namespace CrystalTable
             UpdateLockButtonState();
             UpdateUI();
             
-            System.Diagnostics.Debug.WriteLine($"[INFO] Состояние фиксации: {(isLocked ? "ЗАФИКСИРОВАНО" : "СБРОШЕНО")}");
+            AppLogger.Info($"Состояние фиксации: {(isLocked ? "ЗАФИКСИРОВАНО" : "СБРОШЕНО")}");
         }
         
         /// <summary>
@@ -517,7 +517,7 @@ namespace CrystalTable
                 isLocked = lockState;
                 UpdateLockButtonState();
                 UpdateSensorStatusLabel($"Фиксация: {(lockState ? "ВКЛ" : "ВЫКЛ")}");
-                System.Diagnostics.Debug.WriteLine($"[INFO] Получено событие фиксации от Arduino: {(lockState ? "LOCKED" : "UNLOCKED")}");
+                AppLogger.Info($"Получено событие фиксации от Arduino: {(lockState ? "LOCKED" : "UNLOCKED")}");
             }
             else
             {

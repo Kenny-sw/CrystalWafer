@@ -54,8 +54,6 @@ namespace CrystalTable
             this.zoomInToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.zoomOutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.resetZoomToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripSeparator();
-            this.darkThemeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugModeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.resetCalibrationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -332,9 +330,7 @@ namespace CrystalTable
             this.toolStripMenuItem4,
             this.zoomInToolStripMenuItem,
             this.zoomOutToolStripMenuItem,
-            this.resetZoomToolStripMenuItem,
-            this.toolStripMenuItem5,
-            this.darkThemeToolStripMenuItem});
+            this.resetZoomToolStripMenuItem});
             this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
             this.viewToolStripMenuItem.Size = new System.Drawing.Size(49, 24);
             this.viewToolStripMenuItem.Text = "Вид";
@@ -384,19 +380,6 @@ namespace CrystalTable
             this.resetZoomToolStripMenuItem.Size = new System.Drawing.Size(295, 26);
             this.resetZoomToolStripMenuItem.Text = "Сбросить масштаб";
             this.resetZoomToolStripMenuItem.Click += new System.EventHandler(this.resetZoomToolStripMenuItem_Click);
-            // 
-            // toolStripMenuItem5
-            // 
-            this.toolStripMenuItem5.Name = "toolStripMenuItem5";
-            this.toolStripMenuItem5.Size = new System.Drawing.Size(292, 6);
-            // 
-            // darkThemeToolStripMenuItem
-            // 
-            this.darkThemeToolStripMenuItem.CheckOnClick = true;
-            this.darkThemeToolStripMenuItem.Name = "darkThemeToolStripMenuItem";
-            this.darkThemeToolStripMenuItem.Size = new System.Drawing.Size(295, 26);
-            this.darkThemeToolStripMenuItem.Text = "Темная тема";
-            this.darkThemeToolStripMenuItem.Click += new System.EventHandler(this.darkThemeToolStripMenuItem_Click);
             // 
             // debugToolStripMenuItem
             // 
@@ -891,8 +874,6 @@ namespace CrystalTable
         private System.Windows.Forms.ToolStripMenuItem zoomInToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem zoomOutToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem resetZoomToolStripMenuItem;
-        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem5;
-        private System.Windows.Forms.ToolStripMenuItem darkThemeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem debugToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem debugModeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem resetCalibrationToolStripMenuItem;

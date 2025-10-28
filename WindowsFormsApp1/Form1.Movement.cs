@@ -295,7 +295,7 @@ namespace CrystalTable
         {
             if (debugModeWithoutComPort)
             {
-                System.Diagnostics.Debug.WriteLine($"[DEBUG MODE] Относительное движение: ({deltaXmm:F3}, {deltaYmm:F3}) мм - пропущено");
+                AppLogger.Debug($"[DEBUG MODE] Относительное движение: ({deltaXmm:F3}, {deltaYmm:F3}) мм - пропущено");
                 // В debug режиме просто обновляем координаты
                 pointerMm = new PointF(pointerMm.X + deltaXmm, pointerMm.Y + deltaYmm);
                 pictureBox1?.Invalidate();
@@ -372,33 +372,33 @@ namespace CrystalTable
         {
             if (debugModeWithoutComPort)
             {
-                System.Diagnostics.Debug.WriteLine($"[DEBUG MODE] Команда 0x{commandByte:X2}, шаг={stepUm} um – отправка пропущена.");
+                AppLogger.Debug($"[DEBUG MODE] Команда 0x{commandByte:X2}, шаг={stepUm} um – отправка пропущена.");
                 return true;
             }
 
             if (serialPortController == null || MyserialPort == null)
             {
-                System.Diagnostics.Debug.WriteLine($"[WARNING] Attempt to send 0x{commandByte:X2} while serial port controller is not initialised.");
+                AppLogger.Warning($"Attempt to send 0x{commandByte:X2} while serial port controller is not initialised.");
                 return false;
             }
 
             if (!MyserialPort.IsOpen)
             {
-                System.Diagnostics.Debug.WriteLine($"[WARNING] Attempt to send 0x{commandByte:X2} while COM port is closed.");
+                AppLogger.Warning($"Attempt to send 0x{commandByte:X2} while COM port is closed.");
                 MessageBox.Show("COM port is closed.", "COM", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
 
-            System.Diagnostics.Debug.WriteLine($"[DEBUG] UI -> command 0x{commandByte:X2}, step={stepUm} um");
+            AppLogger.Debug($"UI -> command 0x{commandByte:X2}, step={stepUm} um");
             bool success = await serialPortController.SendCommandAsync(commandByte, stepUm);
             if (!success)
             {
-                System.Diagnostics.Debug.WriteLine($"[WARNING] Command 0x{commandByte:X2} failed at UI layer.");
+                AppLogger.Warning($"Command 0x{commandByte:X2} failed at UI layer.");
                 MessageBox.Show("Failed to send the command. Check COM port status.", "COM", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine($"[DEBUG] Command 0x{commandByte:X2} acknowledged by controller.");
+                AppLogger.Debug($"Command 0x{commandByte:X2} acknowledged by controller.");
             }
 
             return success;

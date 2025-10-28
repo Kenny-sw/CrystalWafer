@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using WindowsFormsApp1.Camera;
 using WindowsFormsApp1.ComputerVision;
 using CrystalTable.Camera;
+using CrystalTable.Logic;
 
 namespace CrystalTable
 {
@@ -126,7 +127,7 @@ namespace CrystalTable
                     return;
                 }
 
-                // Если камер несколько - даем выбрать
+                // Если camer несколько - даем выбрать
                 int selectedCamera = 0;
                 if (cameras.Count > 1)
                 {
@@ -239,11 +240,11 @@ namespace CrystalTable
                 Properties.Settings.Default.CameraCalibrationResolution = $"{data.ImageResolution.Width}x{data.ImageResolution.Height}";
                 Properties.Settings.Default.Save();
                 
-                System.Diagnostics.Debug.WriteLine($"[INFO] Калибровка камеры сохранена: {data.MillimetersPerPixel:F5} мм/px");
+                AppLogger.Info($"Калибровка камеры сохранена: {data.MillimetersPerPixel:F5} мм/px");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[ERROR] Ошибка сохранения калибровки: {ex.Message}");
+                AppLogger.Error($"Ошибка сохранения калибровки: {ex.Message}", ex);
             }
         }
 
@@ -262,12 +263,12 @@ namespace CrystalTable
                     var date = Properties.Settings.Default.CameraCalibrationDate;
                     var resolution = Properties.Settings.Default.CameraCalibrationResolution;
                     
-                    System.Diagnostics.Debug.WriteLine($"[INFO] Калибровка камеры загружена: {scale:F5} мм/px (от {date:yyyy-MM-dd}, {resolution})");
+                    AppLogger.Info($"Калибровка камеры загружена: {scale:F5} мм/px (от {date:yyyy-MM-dd}, {resolution})");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[WARNING] Не удалось загрузить калибровку камеры: {ex.Message}");
+                AppLogger.Warning($"Не удалось загрузить калибровку камеры: {ex.Message}");
             }
         }
 
@@ -340,7 +341,7 @@ namespace CrystalTable
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Ошибка обновления превью: {ex.Message}");
+                AppLogger.Error($"Ошибка обновления превью: {ex.Message}", ex);
             }
         }
 
@@ -370,7 +371,7 @@ namespace CrystalTable
         /// </summary>
         private void CvController_StatusChanged(object sender, string message)
         {
-            System.Diagnostics.Debug.WriteLine($"[CV] {message}");
+            AppLogger.Debug($"CV: {message}");
         }
 
         /// <summary>

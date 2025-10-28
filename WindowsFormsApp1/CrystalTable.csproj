@@ -104,9 +104,6 @@
     <Compile Include="Form1.MapBuilder.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form1.Theme.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="Logic\CommandHistory.cs" />
     <Compile Include="Logic\CrystalManager.cs" />
     <Compile Include="Logic\CrystalCache.cs" />
