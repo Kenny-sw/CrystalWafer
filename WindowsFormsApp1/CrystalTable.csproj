@@ -135,6 +135,8 @@
     </Compile>
     <None Include="Arduino\StepByStepOOP1.3.ino" />
     <None Include="Arduino\StepByStepOOP1.4.ino" />
+    <None Include="ARDUINO_FULL_GUIDE.md" />
+    <None Include="ARDUINO_MIGRATION_V2.md" />
     <None Include="CAMERA_CALIBRATION_GUIDE.md" />
     <None Include="CAMERA_FIXES_SUMMARY.md" />
     <None Include="CAMERA_IMPLEMENTATION.md" />

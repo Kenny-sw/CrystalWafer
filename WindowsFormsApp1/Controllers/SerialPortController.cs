@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.IO.Ports;
 using System.Linq;
@@ -189,13 +189,13 @@ namespace CrystalTable.Controllers
 
         private static byte CalculateChecksum(byte[] buffer, int length)
         {
-            int sum = 0;
+            byte checksum = 0;
             for (int i = 0; i < length; i++)
             {
-                sum = (sum + buffer[i]) & 0xFF;
+                checksum ^= buffer[i];  // XOR вместо суммы
             }
 
-            return (byte)sum;
+            return checksum;
         }
 
         private void StartListener()

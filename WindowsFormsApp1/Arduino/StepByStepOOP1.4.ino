@@ -5,7 +5,7 @@ const uint8_t PIN_DIR_X  = 2;
 const uint8_t PIN_STEP_X = 5;
 const uint8_t PIN_DIR_Y  = 3;
 const uint8_t PIN_STEP_Y = 4;
-const uint8_t PIN_ENA    = 6;   // ENABLE драйверов (LOW=включено — проверь свой драйвер)
+const uint8_t PIN_ENA    = 6;   // ENABLE драйверов: HIGH=моторы работают/стол зафиксирован, LOW=моторы выключены/стол сброшен
 const uint8_t PIN_EDGE   = 7;   // Датчик края (оптика/индуктивный и т.п.)
 
 // Логика датчика: true = «пластина под датчиком»
@@ -20,17 +20,21 @@ byte accelPercent  = 30;
 byte cruisePercent = 40;
 byte decelPercent  = 30;
 
-// -------------------- Команды протокола (как у тебя + новые) --------------------
+// -------------------- Команды протокола --------------------
 enum Commands : byte {
   cmdStepXL     = 1,   // X влево
   cmdStepXR     = 2,   // X вправо
   cmdStepYup    = 3,   // Y вверх
   cmdStepYdown  = 4,   // Y вниз
-  cmdScan       = 5,   // демо-скан
-  cmdSetProfile = 7,   // (как у тебя; можно оставить закомментированным)
-  cmdSensorQ    = 11,  // новый: опрос датчика (мгновенный ответ S:1/S:0)
-  cmdEdgeTouchT = 12   // новый: шаблон «ощупать край по Z» (пока заглушка)
+  cmdLock       = 5,   // Фиксация (HIGH на PIN_ENA = моторы включены, стол зафиксирован)
+  cmdUnlock     = 6,   // Сброс (LOW на PIN_ENA = моторы выключены, стол расфиксирован)
+  cmdSetProfile = 7,   // (можно оставить закомментированным)
+  cmdSensorQ    = 11,  // опрос датчика (мгновенный ответ S:1/S:0)
+  cmdEdgeTouchT = 12   // шаблон «ощупать край по Z» (пока заглушка)
 };
+
+// -------------------- Состояние фиксации --------------------
+volatile bool g_isLocked = false;
 
 // -------------------- Датчик края: прерывание + событие в порт --------------------
 const uint32_t EDGE_DEBOUNCE_US = 300; // фильтр дребезга
@@ -74,6 +78,16 @@ inline bool edgeActive() {
   return s;
 }
 
+// -------------------- Управление фиксацией через PIN_ENA --------------------
+void setLock(bool locked) {
+  digitalWrite(PIN_ENA, locked ? HIGH : LOW);
+  g_isLocked = locked;
+  // Отправка события о смене состояния фиксации
+  Serial.print(F("EV L:"));
+  Serial.println(locked ? 1 : 0);
+  Serial.println(F("OK"));
+}
+
 // -------------------- Утилиты протокола --------------------
 byte xorChecksum(const byte* data, int len) {
   byte c = 0; for (int i=0;i<len;i++) c ^= data[i]; return c;
@@ -82,7 +96,7 @@ uint32_t bytesToU32(const byte* b) {
   return (uint32_t)b[0] | ((uint32_t)b[1]<<8) | ((uint32_t)b[2]<<16) | ((uint32_t)b[3]<<24);
 }
 
-// -------------------- Класс оси (без «самостоятельной логики направления») --------------------
+// -------------------- Класс оси --------------------
 class Axis {
   uint8_t dirPin, stepPin;
 public:
@@ -122,7 +136,7 @@ public:
     for (uint32_t i=1; i<=accel; ++i) {
       pulseStep();
       delayMicroseconds( lerp(maxDelay, minDelay, i, accel) );
-      pumpEdgeEvent(); // не мешает движению; шлём событие только на реальном изменении
+      pumpEdgeEvent();
     }
     // Крейсер
     for (uint32_t i=0; i<cruise; ++i) {
@@ -144,6 +158,12 @@ Axis Y(PIN_DIR_Y, PIN_STEP_Y);
 
 // -------------------- Обработчики команд --------------------
 void doMoveCmd(byte cmd, uint32_t steps) {
+  // Проверка: можно двигаться только если стол зафиксирован (PIN_ENA = HIGH)
+  if (!g_isLocked) {
+    Serial.println(F("ERR:UNLOCKED"));
+    return;
+  }
+  
   switch (cmd) {
     case cmdStepXL:    X.moveProfile(steps, /*dirHigh=*/false); break;
     case cmdStepXR:    X.moveProfile(steps, /*dirHigh=*/true ); break;
@@ -151,26 +171,6 @@ void doMoveCmd(byte cmd, uint32_t steps) {
     case cmdStepYdown: Y.moveProfile(steps, /*dirHigh=*/false); break;
   }
   Serial.println(F("OK"));
-}
-
-// Демонстрация «сканирования» (оставлено как пример; события датчика будут приходить параллельно)
-void doScanDemo(uint32_t steps) {
-  Y.moveProfile(steps, true);
-  X.moveProfile(steps, false);
-  delay(300);
-  for (byte i=0;i<4;i++) {
-    X.moveProfile(20000, false); delay(100);
-    X.moveProfile(20000, true ); delay(100);
-  }
-  Serial.println(F("OK"));
-}
-
-// Заглушка «ощупать край по Z» — сейчас НИЧЕГО не трогает, только сообщает «не реализовано»
-void doEdgeTouchTemplate(uint32_t param) {
-  // Здесь в будущем: опустить Z на N шагов до касания, зафиксировать точку, поднять Z и т.п.
-  // Сейчас — просто сообщение, чтобы не мешать основному коду.
-  (void)param;
-  Serial.println(F("NA")); // Not Available
 }
 
 // -------------------- Приём и разбор команд --------------------
@@ -188,7 +188,8 @@ void setup() {
   Serial.begin(115200);
 
   pinMode(PIN_ENA, OUTPUT);
-  digitalWrite(PIN_ENA, LOW); // включить драйверы (если у тебя наоборот — поставь HIGH)
+  digitalWrite(PIN_ENA, LOW); // стартовое состояние: сброс (моторы выключены)
+  g_isLocked = false;
 
   pinMode(PIN_EDGE, INPUT_PULLUP); // подстрой под свой датчик (внешняя подтяжка/инверсия)
   // Сразу читаем стартовое состояние
@@ -209,16 +210,26 @@ void loop() {
 
   byte cmd = Serial.read();
 
-  // Команда без полезной нагрузки: мгновенный опрос датчика
+  // Команды без полезной нагрузки
   if (cmd == cmdSensorQ) {
     Serial.print(F("S:"));
     Serial.println(edgeActive() ? 1 : 0);
     return;
   }
 
+  if (cmd == cmdLock) {
+    setLock(true);  // HIGH = моторы включены, стол зафиксирован
+    return;
+  }
+
+  if (cmd == cmdUnlock) {
+    setLock(false);  // LOW = моторы выключены, стол расфиксирован
+    return;
+  }
+
   // Команды с 4 байтами данных + 1 байтом XOR
   if (cmd==cmdStepXL || cmd==cmdStepXR || cmd==cmdStepYup || cmd==cmdStepYdown ||
-      cmd==cmdScan   || cmd==cmdSetProfile || cmd==cmdEdgeTouchT) {
+      cmd==cmdSetProfile || cmd==cmdEdgeTouchT) {
 
     byte buf[5];
     if (!read5(buf)) { Serial.println(F("ERR:TIMEOUT")); return; }
@@ -227,24 +238,18 @@ void loop() {
     if (rxCS != calc) { Serial.println(F("ERR:CS")); return; }
 
     if (cmd == cmdSetProfile) {
-      // формат: [minDelay u32][maxDelay u32][accel% u8][cruise% u8][decel% u8] — у тебя было 12 байт
-      // тут оставлено как «совместимость»: сейчас 4 байта. Раскомментируй и переделай формат, если нужно.
       Serial.println(F("NA")); // сейчас не используем
       return;
     }
 
     uint32_t val = bytesToU32(buf);
 
-    if (cmd == cmdScan) {
-      doScanDemo(val);
-      return;
-    }
     if (cmd == cmdEdgeTouchT) {
-      doEdgeTouchTemplate(val);
+      Serial.println(F("NA")); // Not Available
       return;
     }
 
-    // Обычное движение (ПК указывает направление командой)
+    // Обычное движение (требует фиксации)
     doMoveCmd(cmd, val);
     return;
   }
