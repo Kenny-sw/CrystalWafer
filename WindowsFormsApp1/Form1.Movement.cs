@@ -376,32 +376,99 @@ namespace CrystalTable
                 return true;
             }
 
-            if (serialPortController == null || MyserialPort == null)
+            // ✅ ДОБАВЛЕНО: Поддержка упрощенного протокола
+            if (useSimpleProtocol && simpleSerialController != null)
             {
-                AppLogger.Warning($"Attempt to send 0x{commandByte:X2} while serial port controller is not initialised.");
+                AppLogger.Debug($"[SIMPLE MODE] Отправка команды 0x{commandByte:X2}, шаг={stepUm} um");
+                
+                try
+                {
+                    bool success = simpleSerialController.SendCommand(commandByte, stepUm);
+                    
+                    if (!success)
+                    {
+                        AppLogger.Warning($"[SIMPLE MODE] Команда 0x{commandByte:X2} не выполнена.");
+                        MessageBox.Show(
+                            $"Упрощенный протокол: Команда 0x{commandByte:X2} не выполнена.\n\n" +
+                            "Проверьте логи для деталей.",
+                            "Ошибка",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Warning);
+                    }
+                    else
+                    {
+                        AppLogger.Debug($"[SIMPLE MODE] Команда 0x{commandByte:X2} успешно выполнена.");
+                    }
+                    
+                    return success;
+                }
+                catch (Exception ex)
+                {
+                    AppLogger.Error($"[SIMPLE MODE] Исключение при отправке команды 0x{commandByte:X2}", ex);
+                    MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
+            }
+
+            // Стандартный протокол
+            if (serialPortController == null)
+            {
+                AppLogger.Error($"Попытка отправить 0x{commandByte:X2}: serialPortController == null");
+                MessageBox.Show("Контроллер последовательного порта не инициализирован.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+
+            if (MyserialPort == null)
+            {
+                AppLogger.Error($"Попытка отправить 0x{commandByte:X2}: MyserialPort == null");
+                MessageBox.Show("Последовательный порт не инициализирован.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
 
             if (!MyserialPort.IsOpen)
             {
-                AppLogger.Warning($"Attempt to send 0x{commandByte:X2} while COM port is closed.");
-                MessageBox.Show("COM port is closed.", "COM", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                AppLogger.Warning($"Попытка отправить 0x{commandByte:X2}: COM порт закрыт");
+                MessageBox.Show("COM порт закрыт. Подключитесь к порту и повторите попытку.", "COM", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
 
-            AppLogger.Debug($"UI -> command 0x{commandByte:X2}, step={stepUm} um");
-            bool success = await serialPortController.SendCommandAsync(commandByte, stepUm);
-            if (!success)
+            AppLogger.Debug($"UI -> отправка команды 0x{commandByte:X2}, шаг={stepUm} um");
+            
+            try
             {
-                AppLogger.Warning($"Command 0x{commandByte:X2} failed at UI layer.");
-                MessageBox.Show("Failed to send the command. Check COM port status.", "COM", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                bool success = await serialPortController.SendCommandAsync(commandByte, stepUm);
+                
+                if (!success)
+                {
+                    AppLogger.Warning($"Команда 0x{commandByte:X2} не выполнена (SendCommandAsync вернул false).");
+                    MessageBox.Show(
+                        $"Не удалось выполнить команду 0x{commandByte:X2}.\n\n" +
+                        "Возможные причины:\n" +
+                        "• Arduino не отвечает (проверьте подключение)\n" +
+                        "• Тайм-аут команды (3 секунды)\n" +
+                        "• Arduino вернул ошибку (проверьте логи)\n\n" +
+                        "Проверьте Serial Monitor Arduino и логи приложения.",
+                        "Ошибка отправки команды",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                }
+                else
+                {
+                    AppLogger.Debug($"Команда 0x{commandByte:X2} успешно выполнена.");
+                }
+                
+                return success;
             }
-            else
+            catch (Exception ex)
             {
-                AppLogger.Debug($"Command 0x{commandByte:X2} acknowledged by controller.");
+                AppLogger.Error($"Исключение при отправке команды 0x{commandByte:X2}", ex);
+                MessageBox.Show(
+                    $"Исключение при отправке команды:\n{ex.Message}",
+                    "Ошибка",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+                return false;
             }
-
-            return success;
         }
     
         /// <summary>

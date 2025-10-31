@@ -1,11 +1,14 @@
 #include <Arduino.h>
 
-// -------------------- Пины (подстрой под свою схему) --------------------
-const uint8_t PIN_DIR_X  = 2;
-const uint8_t PIN_STEP_X = 5;
-const uint8_t PIN_DIR_Y  = 3;
-const uint8_t PIN_STEP_Y = 4;
-const uint8_t PIN_ENA    = 6;   // ENABLE драйверов: HIGH=моторы работают/стол зафиксирован, LOW=моторы выключены/стол сброшен
+// -------------------- Пины  --------------------
+const uint8_t PIN_STEP_X = 2; 
+const uint8_t PIN_STEP_Y = 3;
+
+const uint8_t PIN_DIR_X  = 4;
+const uint8_t PIN_DIR_Y  = 5;
+
+const uint8_t PIN_ENA    = 6;   // Сброс/Фиксация
+  
 const uint8_t PIN_EDGE   = 7;   // Датчик края (оптика/индуктивный и т.п.)
 
 // Логика датчика: true = «пластина под датчиком»
@@ -13,7 +16,7 @@ const bool EDGE_ACTIVE_HIGH = true;
 
 // -------------------- Профиль движения (стартовые значения) --------------------
 // Реальные драйверы любят >=3–5 мкс импульс и десятки–сотни мкс между импульсами.
-const uint16_t STEP_PULSE_US = 4;   // длительность импульса STEP
+const uint16_t STEP_PULSE_US = 5;   // ✅ ИСПРАВЛЕНО: увеличено до 5мкс для надежности
 uint16_t minDelay = 200;            // мкс, «крейсерская» пауза (скорость)
 uint16_t maxDelay = 800;            // мкс, начало/конец (медленнее)
 byte accelPercent  = 30;
@@ -58,7 +61,7 @@ void ISR_edgeChange() {
   }
 }
 
-// Отправка события (только при изменении). Вызывать часто и из циклов движения.
+// ✅ ИСПРАВЛЕНО: Отправка события только если НЕ выполняется движение
 inline void pumpEdgeEvent() {
   if (g_edgeChanged) {
     noInterrupts();
@@ -116,7 +119,8 @@ public:
     digitalWrite(stepPin, LOW);
   }
 
-  // Движение по профилю (трапеция). ПК указывает «куда» и «сколько».
+  // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Убрано pumpEdgeEvent() из циклов движения
+  // Причина: Serial.print занимает 100-500мкс, нарушает timing моторов
   void moveProfile(uint32_t totalSteps, bool dirHigh) {
     setDir(dirHigh);
     if (totalSteps == 0) return;
@@ -132,24 +136,28 @@ public:
       return (uint16_t)(a + (diff * (int32_t)i) / (int32_t)n);
     };
 
+    // ✅ ИСПРАВЛЕНО: НЕТ Serial.print во время движения!
     // Разгон: от maxDelay к minDelay
     for (uint32_t i=1; i<=accel; ++i) {
       pulseStep();
       delayMicroseconds( lerp(maxDelay, minDelay, i, accel) );
-      pumpEdgeEvent();
+      // pumpEdgeEvent(); ← УБРАНО! Serial.print нарушает timing
     }
     // Крейсер
     for (uint32_t i=0; i<cruise; ++i) {
       pulseStep();
       delayMicroseconds(minDelay);
-      pumpEdgeEvent();
+      // pumpEdgeEvent(); ← УБРАНО!
     }
     // Торможение: от minDelay к maxDelay
     for (uint32_t i=1; i<=decel; ++i) {
       pulseStep();
       delayMicroseconds( lerp(minDelay, maxDelay, i, decel) );
-      pumpEdgeEvent();
+      // pumpEdgeEvent(); ← УБРАНО!
     }
+    
+    // ✅ События отправляются ПОСЛЕ завершения движения
+    pumpEdgeEvent();
   }
 };
 
@@ -178,7 +186,10 @@ bool read5(byte* buf5) {
   // читаем 4 байта данных + 1 байт XOR
   for (byte i=0;i<5;i++) {
     uint32_t t0 = millis();
-    while (!Serial.available()) { pumpEdgeEvent(); if (millis()-t0>100) return false; }
+    while (!Serial.available()) { 
+      pumpEdgeEvent(); 
+      if (millis()-t0>100) return false; 
+    }
     buf5[i] = Serial.read();
   }
   return true;
@@ -232,10 +243,24 @@ void loop() {
       cmd==cmdSetProfile || cmd==cmdEdgeTouchT) {
 
     byte buf[5];
-    if (!read5(buf)) { Serial.println(F("ERR:TIMEOUT")); return; }
+    if (!read5(buf)) { 
+      Serial.println(F("ERR:TIMEOUT")); 
+      return; 
+    }
+    
+    // ✅ ИСПРАВЛЕНО: XOR считается от CMD + 4 байта данных
+    // C# отправляет: [CMD][D0][D1][D2][D3][XOR(CMD^D0^D1^D2^D3)]
     byte rxCS = buf[4];
-    byte calc = xorChecksum(buf,4);
-    if (rxCS != calc) { Serial.println(F("ERR:CS")); return; }
+    byte calc = cmd ^ buf[0] ^ buf[1] ^ buf[2] ^ buf[3];  // XOR от cmd + 4 байта данных
+    
+    if (rxCS != calc) { 
+      // Отладочный вывод для диагностики
+      Serial.print(F("ERR:CS rx=0x"));
+      Serial.print(rxCS, HEX);
+      Serial.print(F(" calc=0x"));
+      Serial.println(calc, HEX);
+      return; 
+    }
 
     if (cmd == cmdSetProfile) {
       Serial.println(F("NA")); // сейчас не используем

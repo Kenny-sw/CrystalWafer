@@ -75,6 +75,7 @@
     <Compile Include="Controllers\ExportImportController.cs" />
     <Compile Include="Controllers\MouseController.cs" />
     <Compile Include="Controllers\SerialPortController.cs" />
+    <Compile Include="Controllers\SimpleSerialController.cs" />
     <Compile Include="Controllers\UIController.cs" />
     <Compile Include="Controllers\WaferController.cs" />
     <Compile Include="Controllers\\ZoomPanController.cs" />
@@ -102,6 +103,9 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Form1.MapBuilder.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\LogViewerForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Logic\CommandHistory.cs" />
@@ -133,8 +137,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <None Include="Arduino\StepByStepOOP1.3.ino" />
-    <None Include="Arduino\StepByStepOOP1.4.ino" />
+    <None Include="Arduino\StepByStep1.5.ino.ino" />
     <None Include="ARDUINO_FULL_GUIDE.md" />
     <None Include="ARDUINO_MIGRATION_V2.md" />
     <None Include="CAMERA_CALIBRATION_GUIDE.md" />
@@ -145,6 +148,12 @@
     <None Include="CAMERA_README.md" />
     <None Include="CAMERA_SETUP_GUIDE.md" />
     <None Include="CAMERA_TROUBLESHOOTING.md" />
+    <None Include="CHANGES_SUMMARY.md" />
+    <None Include="CRITICAL_FIXES_AND_SIMPLE_PROTOCOL.md" />
+    <None Include="CRITICAL_FIX_NEWLINE.md" />
+    <None Include="FINAL_REPORT_PROTOCOL.md" />
+    <None Include="FIX_COMPILATION_ERROR.md" />
+    <None Include="FIX_LISTENER_CRASH.md" />
     <None Include="INSTALL_PACKAGES.md" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -156,6 +165,11 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <None Include="PROTOCOL_ANALYSIS.md" />
+    <None Include="QUICKSTART_AFTER_FIX.md" />
+    <None Include="QUICK_FIX_GUIDE.md" />
+    <None Include="QUICK_LISTENER_FIX.md" />
+    <None Include="TROUBLESHOOTING_COM_PORT.md" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

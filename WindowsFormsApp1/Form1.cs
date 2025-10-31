@@ -19,6 +19,10 @@ namespace CrystalTable
         private readonly UIController uiController;
         private readonly ExportImportController exportImportController;
         private readonly SerialPortController serialPortController;
+        
+        // ✅ ДОБАВЛЕНО: Упрощенный контроллер для тестирования
+        private SimpleSerialController simpleSerialController;
+        private bool useSimpleProtocol = false; // Флаг использования упрощенного протокола
 
         // История операций
         private readonly CommandHistory commandHistory = new CommandHistory();
@@ -266,6 +270,48 @@ namespace CrystalTable
             debugModeWithoutComPort = debugModeToolStripMenuItem.Checked;
             UpdateUI();
         }
+        
+        /// <summary>
+        /// ✅ ДОБАВЛЕНО: Переключение упрощенного протокола для тестирования
+        /// Временно: управляется через Shift+Click на кнопке Connect
+        /// </summary>
+        public void ToggleSimpleProtocol()
+        {
+            useSimpleProtocol = !useSimpleProtocol;
+            
+            if (useSimpleProtocol)
+            {
+                // Инициализация упрощенного контроллера
+                if (simpleSerialController == null)
+                {
+                    simpleSerialController = new SimpleSerialController(MyserialPort);
+                }
+                
+                AppLogger.Info("ПЕРЕКЛЮЧЕНО на упрощенный протокол (для тестирования)");
+                MessageBox.Show(
+                    "Включен упрощенный протокол.\n\n" +
+                    "Особенности:\n" +
+                    "• Синхронная отправка/прием\n" +
+                    "• Нет отдельного listener thread\n" +
+                    "• Простая диагностика\n\n" +
+                    "Используйте для тестирования шагов ЛШД.\n\n" +
+                    "Для возврата к стандартному - повторите Shift+Click на Connect.",
+                    "Упрощенный протокол",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+            else
+            {
+                AppLogger.Info("ПЕРЕКЛЮЧЕНО на стандартный протокол");
+                MessageBox.Show(
+                    "Возврат к стандартному протоколу.",
+                    "Стандартный протокол",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+            
+            UpdateUI();
+        }
 
         /// <summary>
         /// Обработчик сброса калибровки
@@ -276,6 +322,24 @@ namespace CrystalTable
             MessageBox.Show("Калибровка сброшена.", "Калибровка", MessageBoxButtons.OK, MessageBoxIcon.Information);
             UpdateUI();
         }
+        
+        /// <summary>
+        /// Обработчик пункта меню "Просмотр логов"
+        /// </summary>
+        private void viewLogToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var logViewer = new CrystalTable.Forms.LogViewerForm();
+                logViewer.ShowDialog(this);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error("Ошибка открытия окна логов", ex);
+                MessageBox.Show($"Ошибка открытия просмотрщика логов: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        
         private void btnUndo_Click(object sender, EventArgs e) => HandleUndo();
         private void btnRedo_Click(object sender, EventArgs e) => HandleRedo();
         private void btnExport_Click(object sender, EventArgs e) => exportImportController.ExportData();
@@ -307,8 +371,45 @@ namespace CrystalTable
         private void resetZoomToolStripMenuItem_Click(object sender, EventArgs e) => ResetZoom();
 
         // ===== COM-порт =====
-        private void buttonConnect_Click(object sender, EventArgs e) =>
-            serialPortController.ToggleConnection(comboBoxPorts.Text, buttonConnect, comboBoxPorts);
+        private void buttonConnect_Click(object sender, EventArgs e)
+        {
+            // ✅ ДОБАВЛЕНО: Shift+Click переключает упрощенный протокол
+            if (Control.ModifierKeys == Keys.Shift)
+            {
+                ToggleSimpleProtocol();
+                return;
+            }
+            
+            // ✅ Выбор контроллера в зависимости от режима
+            if (useSimpleProtocol && simpleSerialController != null)
+            {
+                if (simpleSerialController.IsOpen)
+                {
+                    simpleSerialController.Disconnect();
+                    buttonConnect.Text = "Connect";
+                    StatusLabel.Text = "COM отключён";
+                }
+                else
+                {
+                    try
+                    {
+                        simpleSerialController.Connect(comboBoxPorts.Text);
+                        buttonConnect.Text = "Disconnect";
+                        StatusLabel.Text = $"COM подключён (SIMPLE): {comboBoxPorts.Text}";
+                    }
+                    catch (Exception ex)
+                    {
+                        AppLogger.Error("[SIMPLE] Ошибка подключения", ex);
+                        MessageBox.Show($"Ошибка подключения: {ex.Message}", "COM", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+            else
+            {
+                // Стандартный протокол
+                serialPortController.ToggleConnection(comboBoxPorts.Text, buttonConnect, comboBoxPorts);
+            }
+        }
 
         private void buttonUpdatePort_Click(object sender, EventArgs e) =>
             serialPortController.UpdatePortList(comboBoxPorts);
