@@ -72,6 +72,7 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="ComputerVision\ComputerVisionController.cs" />
+    <Compile Include="Controllers\DebugOverlayRenderer.cs" />
     <Compile Include="Controllers\ExportImportController.cs" />
     <Compile Include="Controllers\MouseController.cs" />
     <Compile Include="Controllers\SerialPortController.cs" />
@@ -110,7 +111,6 @@
     </Compile>
     <Compile Include="Logic\CommandHistory.cs" />
     <Compile Include="Logic\CrystalManager.cs" />
-    <Compile Include="Logic\CrystalCache.cs" />
     <Compile Include="Logic\AppLogger.cs" />
     <Compile Include="Logic\Protocol.cs" />
     <Compile Include="Logic\DataExporter.cs" />

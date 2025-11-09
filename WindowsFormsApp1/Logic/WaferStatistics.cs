@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using CrystalTable.Data;
@@ -46,27 +46,77 @@ namespace CrystalTable.Logic
         }
 
         /// <summary>
-        /// Получает распределение кристаллов по радиусу (от центра к краю)
+        /// Получает распределение кристаллов по рядам
         /// </summary>
-        /// <param name="bins">Количество концентрических колец для анализа</param>
-        /// <returns>Словарь: радиус кольца -> количество кристаллов</returns>
-        public Dictionary<float, int> GetRadialDistribution(int bins = 10)
+        /// <returns>Словарь: номер ряда -> количество кристаллов</returns>
+        public Dictionary<int, int> GetRowDistribution()
         {
-            var distribution = new Dictionary<float, int>();
+            var distribution = new Dictionary<int, int>();
 
-            if (bins <= 0 || waferDiameter <= 0)
+            if (crystals.Count == 0)
+                return distribution;
+
+            // Группируем по Y-координате (ряды)
+            var rows = crystals
+                .GroupBy(c => Math.Round(c.RealY, 1))
+                .OrderBy(g => g.Key)
+                .ToList();
+
+            for (int i = 0; i < rows.Count; i++)
+            {
+                distribution[i] = rows[i].Count();
+            }
+
+            return distribution;
+        }
+
+        /// <summary>
+        /// Получает распределение кристаллов по колонкам
+        /// </summary>
+        /// <returns>Словарь: номер колонки -> количество кристаллов</returns>
+        public Dictionary<int, int> GetColumnDistribution()
+        {
+            var distribution = new Dictionary<int, int>();
+
+            if (crystals.Count == 0)
+                return distribution;
+
+            // Группируем по X-координате (колонки)
+            var columns = crystals
+                    .GroupBy(c => Math.Round(c.RealX, 1))
+                .OrderBy(g => g.Key)
+                    .ToList();
+
+            for (int i = 0; i < columns.Count; i++)
+            {
+                distribution[i] = columns[i].Count();
+            }
+
+            return distribution;
+        }
+
+        /// <summary>
+        /// Получает статистику по радиальному распределению (зоны от центра)
+        /// </summary>
+        /// <param name="zones">Количество концентрических зон</param>
+        /// <returns>Словарь: зона (0=центр) -> количество кристаллов</returns>
+        public Dictionary<int, int> GetRadialZoneDistribution(int zones = 5)
+        {
+            var distribution = new Dictionary<int, int>();
+
+            if (zones <= 0 || waferDiameter <= 0)
                 return distribution;
 
             float radius = waferDiameter / 2;
-            float binSize = radius / bins;
+            float zoneSize = radius / zones;
 
-            // Инициализация bins
-            for (int i = 0; i < bins; i++)
+            // Инициализация зон
+            for (int i = 0; i < zones; i++)
             {
-                distribution[i * binSize] = 0;
+                distribution[i] = 0;
             }
 
-            // Подсчет кристаллов в каждом кольце
+            // Подсчет кристаллов в каждой зоне
             foreach (var crystal in crystals)
             {
                 // Расстояние от центра
@@ -74,61 +124,77 @@ namespace CrystalTable.Logic
                     crystal.RealX * crystal.RealX +
                     crystal.RealY * crystal.RealY);
 
-                // Определяем в какое кольцо попадает
-                int binIndex = (int)(distance / binSize);
-                if (binIndex < bins)
-                {
-                    distribution[binIndex * binSize]++;
-                }
+                // Определяем в какую зону попадает
+                int zoneIndex = (int)(distance / zoneSize);
+                if (zoneIndex >= zones)
+                    zoneIndex = zones - 1;
+
+                distribution[zoneIndex]++;
             }
 
             return distribution;
         }
 
         /// <summary>
-        /// Получает статистику по квадрантам пластины
+        /// Получает оценку времени сканирования маршрута
         /// </summary>
-        /// <returns>Распределение кристаллов по квадрантам</returns>
-        public Dictionary<string, int> GetQuadrantDistribution()
+        /// <param name="crystalWidth">Ширина кристалла в мм</param>
+        /// <param name="crystalHeight">Высота кристалла в мм</param>
+        /// <param name="speedMmPerSec">Скорость перемещения в мм/с</param>
+        /// <param name="measurementTimeMs">Время измерения на кристалл в мс</param>
+        /// <returns>Оценка времени в секундах</returns>
+        public float EstimateScanTime(float crystalWidth, float crystalHeight, 
+            float speedMmPerSec = 10f, float measurementTimeMs = 100f)
         {
-            var quadrants = new Dictionary<string, int>
-            {
-                ["Q1 (Верх-Право)"] = 0,
-                ["Q2 (Верх-Лево)"] = 0,
-                ["Q3 (Низ-Лево)"] = 0,
-                ["Q4 (Низ-Право)"] = 0
-            };
+            if (crystals.Count == 0 || speedMmPerSec <= 0)
+                return 0;
 
-            foreach (var crystal in crystals)
+            // Оценка общего расстояния (змейка по рядам)
+            float totalDistance = 0;
+            var rows = crystals
+                .GroupBy(c => Math.Round(c.RealY, 1))
+                .OrderBy(g => g.Key)
+                .ToList();
+
+            for (int i = 0; i < rows.Count - 1; i++)
             {
-                if (crystal.RealX >= 0 && crystal.RealY >= 0)
-                    quadrants["Q1 (Верх-Право)"]++;
-                else if (crystal.RealX < 0 && crystal.RealY >= 0)
-                    quadrants["Q2 (Верх-Лево)"]++;
-                else if (crystal.RealX < 0 && crystal.RealY < 0)
-                    quadrants["Q3 (Низ-Лево)"]++;
-                else
-                    quadrants["Q4 (Низ-Право)"]++;
+                var currentRow = rows[i].OrderBy(c => c.RealX).ToList();
+                var nextRow = rows[i + 1].OrderBy(c => c.RealX).ToList();
+
+                // Расстояние внутри ряда
+                for (int j = 0; j < currentRow.Count - 1; j++)
+                {
+                    totalDistance += crystalWidth;
+                }
+
+                // Переход между рядами
+                if (currentRow.Count > 0 && nextRow.Count > 0)
+                {
+                    totalDistance += crystalHeight;
+                }
             }
 
-            return quadrants;
+            float travelTime = totalDistance / speedMmPerSec;
+            float measurementTime = (crystals.Count * measurementTimeMs) / 1000f;
+
+            return travelTime + measurementTime;
         }
 
         /// <summary>
-        /// Получает распределение кристаллов по краям пластины
+        /// Проверяет корректность исключения краев пластины
         /// </summary>
-        /// <param name="edgeThickness">Толщина края в мм</param>
-        /// <returns>Количество кристаллов на краю и в центре</returns>
-        public Dictionary<string, int> GetEdgeDistribution(float edgeThickness = 5.0f)
+        /// <param name="edgeExclusionMm">Размер зоны исключения от края в мм</param>
+        /// <returns>Информация о кристаллах в зоне исключения</returns>
+        public Dictionary<string, object> ValidateEdgeExclusion(float edgeExclusionMm)
         {
-            var distribution = new Dictionary<string, int>
-            {
-                ["Край"] = 0,
-                ["Центр"] = 0
-            };
+            if (waferDiameter <= 0)
+                return new Dictionary<string, object>();
 
-            float radius = waferDiameter / 2;
-            float innerRadius = radius - edgeThickness;
+            float maxRadius = waferDiameter / 2f;
+            float minRadius = maxRadius - edgeExclusionMm;
+
+            int inExclusionZone = 0;
+            int outsideWafer = 0;
 
             foreach (var crystal in crystals)
             {
@@ -136,47 +202,52 @@ namespace CrystalTable.Logic
                     crystal.RealX * crystal.RealX +
                     crystal.RealY * crystal.RealY);
 
-                if (distance > innerRadius)
-                    distribution["Край"]++;
-                else
-                    distribution["Центр"]++;
+                if (distance > maxRadius)
+                    outsideWafer++;
+                else if (distance > minRadius)
+                    inExclusionZone++;
             }
 
-            return distribution;
+            return new Dictionary<string, object>
+            {
+                ["Зона исключения (мм)"] = edgeExclusionMm,
+                ["Кристаллы в зоне исключения"] = inExclusionZone,
+                ["Кристаллы за пределами пластины"] = outsideWafer,
+                ["Корректность"] = outsideWafer == 0 ? "✓ OK" : "✗ Ошибка"
+            };
         }
 
         /// <summary>
-        /// Получает координаты центра масс всех кристаллов
+        /// Получает границы области с кристаллами
         /// </summary>
-        /// <returns>Координаты центра масс (X, Y)</returns>
-        public (float X, float Y) GetCenterOfMass()
+        /// <returns>Информация о границах</returns>
+        public Dictionary<string, object> GetBounds()
         {
             if (crystals.Count == 0)
-                return (0, 0);
-
-            float sumX = 0;
-            float sumY = 0;
-
-            foreach (var crystal in crystals)
             {
-                sumX += crystal.RealX;
-                sumY += crystal.RealY;
+                return new Dictionary<string, object>
+                {
+                    ["Границы"] = "Нет кристаллов"
+                };
             }
 
-            return (sumX / crystals.Count, sumY / crystals.Count);
-        }
+            float minX = crystals.Min(c => c.RealX);
+            float maxX = crystals.Max(c => c.RealX);
+            float minY = crystals.Min(c => c.RealY);
+            float maxY = crystals.Max(c => c.RealY);
 
-        /// <summary>
-        /// Получает плотность кристаллов (количество на единицу площади)
-        /// </summary>
-        /// <returns>Плотность кристаллов на мм²</returns>
-        public float GetCrystalDensity()
-        {
-            if (waferDiameter <= 0)
-                return 0;
+            float width = maxX - minX;
+            float height = maxY - minY;
 
-            float waferArea = (float)(Math.PI * Math.Pow(waferDiameter / 2, 2));
-            return crystals.Count / waferArea;
+            return new Dictionary<string, object>
+            {
+                ["Мин X (мм)"] = minX,
+                ["Макс X (мм)"] = maxX,
+                ["Мин Y (мм)"] = minY,
+                ["Макс Y (мм)"] = maxY,
+                ["Ширина области (мм)"] = width,
+                ["Высота области (мм)"] = height
+            };
         }
 
         /// <summary>
@@ -192,13 +263,37 @@ namespace CrystalTable.Logic
             {
                 ["Общее количество кристаллов"] = crystals.Count,
                 ["Диаметр пластины (мм)"] = waferDiameter,
-                ["Размер кристалла (мм)"] = $"{crystalWidth} x {crystalHeight}",
-                ["Процент заполнения"] = CalculateFillPercentage(crystalWidth, crystalHeight),
-                ["Плотность (кристаллов/мм²)"] = GetCrystalDensity(),
-                ["Распределение по квадрантам"] = GetQuadrantDistribution(),
-                ["Распределение край/центр"] = GetEdgeDistribution(),
-                ["Центр масс (X, Y)"] = GetCenterOfMass()
+                ["Размер кристалла (мм)"] = $"{crystalWidth:F3} x {crystalHeight:F3}",
+                ["Процент заполнения"] = $"{CalculateFillPercentage(crystalWidth, crystalHeight):F2}%"
             };
+
+            // Добавляем границы
+            var bounds = GetBounds();
+            foreach (var kv in bounds)
+            {
+                report[kv.Key] = kv.Value;
+            }
+
+            // Добавляем оценку времени сканирования
+            float scanTime = EstimateScanTime(crystalWidth, crystalHeight);
+            report["Оценка времени сканирования"] = $"{scanTime:F1} сек ({scanTime / 60:F1} мин)";
+
+            // Распределение по рядам/колонкам
+            var rowDist = GetRowDistribution();
+            if (rowDist.Count > 0)
+            {
+                report["Количество рядов"] = rowDist.Count;
+                report["Макс. кристаллов в ряду"] = rowDist.Values.Max();
+                report["Мин. кристаллов в ряду"] = rowDist.Values.Min();
+            }
+
+            var colDist = GetColumnDistribution();
+            if (colDist.Count > 0)
+            {
+                report["Количество колонок"] = colDist.Count;
+                report["Макс. кристаллов в колонке"] = colDist.Values.Max();
+                report["Мин. кристаллов в колонке"] = colDist.Values.Min();
+            }
 
             return report;
         }
@@ -250,9 +345,10 @@ namespace CrystalTable.Logic
             return new Dictionary<string, object>
             {
                 ["Выбрано кристаллов"] = selectedCrystals.Count,
-                ["Процент от общего"] = (selectedCrystals.Count * 100.0 / crystals.Count),
-                ["Границы области (мм)"] = $"X: [{minX:F2}, {maxX:F2}], Y: [{minY:F2}, {maxY:F2}]",
-                ["Центр выделения"] = $"({centerX:F2}, {centerY:F2})",
+                ["Процент от общего"] = $"{(selectedCrystals.Count * 100.0 / crystals.Count):F1}%",
+                ["Границы X (мм)"] = $"[{minX:F2}, {maxX:F2}]",
+                ["Границы Y (мм)"] = $"[{minY:F2}, {maxY:F2}]",
+                ["Центр выделения (мм)"] = $"({centerX:F2}, {centerY:F2})",
                 ["Размер области (мм)"] = $"{(maxX - minX):F2} x {(maxY - minY):F2}"
             };
         }

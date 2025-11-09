@@ -24,6 +24,9 @@ namespace CrystalTable
         private SimpleSerialController simpleSerialController;
         private bool useSimpleProtocol = false; // Флаг использования упрощенного протокола
 
+        // ✅ ДОБАВЛЕНО: Рендерер отладочных оверлеев
+        private readonly DebugOverlayRenderer debugOverlay;
+
         // История операций
         private readonly CommandHistory commandHistory = new CommandHistory();
 
@@ -61,17 +64,25 @@ namespace CrystalTable
             uiController = new UIController(this);
             exportImportController = new ExportImportController(this, waferController);
             serialPortController = new SerialPortController(MyserialPort);
-            InitializeMapBuilderUi();
+   
+      // ✅ ДОБАВЛЕНО: Инициализация отладочных оверлеев
+debugOverlay = new DebugOverlayRenderer
+      {
+          ShowPositionDiagnostics = false,
+          ShowCalibrationPoints = false
+            };
+            
+      InitializeMapBuilderUi();
             InitializeCamera();  // ← Инициализация камеры
 
-            // RX/STATE > статус-бар
+        // RX/STATE > статус-бар
             serialPortController.UnsolicitedEventReceived += SerialPort_UnsolicitedEventReceived;
-            serialPortController.ConnectionStateChanged += SerialPort_ConnectionStateChanged;
+   serialPortController.ConnectionStateChanged += SerialPort_ConnectionStateChanged;
 
-            InitializeEventHandlers();
-            LoadDefaultConfiguration();
+     InitializeEventHandlers();
+    LoadDefaultConfiguration();
             LoadCameraCalibration();  // ← Загружаем сохраненную калибровку камеры
-            UpdateUI();
+   UpdateUI();
         }
 
         private void InitializeEventHandlers()
@@ -644,6 +655,28 @@ namespace CrystalTable
                 sensorStatusLabel.Text = text;
             }
         }
+
+        // ====== ОБРАБОТЧИКИ ОВЕРЛЕЕВ ОТЛАДКИ ======
+        
+        /// <summary>
+   /// Переключение диагностики позиции
+   /// </summary>
+      private void inspectorCoordinatesToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+      debugOverlay.ShowPositionDiagnostics = inspectorCoordinatesToolStripMenuItem.Checked;
+   pictureBox1.Invalidate();
+   AppLogger.Debug($"Диагностика позиции: {(debugOverlay.ShowPositionDiagnostics ? "ВКЛ" : "ВЫКЛ")}");
+}
+        
+        /// <summary>
+        /// Переключение точек калибровки
+        /// </summary>
+ private void inspectorCalibrationToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+   {
+  debugOverlay.ShowCalibrationPoints = inspectorCalibrationToolStripMenuItem.Checked;
+   pictureBox1.Invalidate();
+AppLogger.Debug($"Точки калибровки: {(debugOverlay.ShowCalibrationPoints ? "ВКЛ" : "ВЫКЛ")}");
+   }
 
         // ====== ОБРАБОТЧИКИ ======
     }

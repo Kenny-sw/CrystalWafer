@@ -57,18 +57,22 @@ namespace CrystalTable
             this.debugToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugModeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.resetCalibrationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.debugOverlaysToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.inspectorCoordinatesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.inspectorCalibrationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewLogToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.btnUndo = new System.Windows.Forms.ToolStripButton();
             this.btnRedo = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.btnExport = new System.Windows.Forms.ToolStripButton();
             this.btnImport = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.btnRoutePreview = new System.Windows.Forms.ToolStripButton();
             this.btnStatistics = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.btnZoomIn = new System.Windows.Forms.ToolStripButton();
             this.btnZoomOut = new System.Windows.Forms.ToolStripButton();
             this.btnZoomReset = new System.Windows.Forms.ToolStripButton();
@@ -388,7 +392,9 @@ namespace CrystalTable
             // 
             this.debugToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.debugModeToolStripMenuItem,
-            this.resetCalibrationToolStripMenuItem});
+            this.resetCalibrationToolStripMenuItem,
+            this.toolStripSeparator1,
+            this.debugOverlaysToolStripMenuItem});
             this.debugToolStripMenuItem.Name = "debugToolStripMenuItem";
             this.debugToolStripMenuItem.Size = new System.Drawing.Size(81, 24);
             this.debugToolStripMenuItem.Text = "Наладка";
@@ -407,6 +413,36 @@ namespace CrystalTable
             this.resetCalibrationToolStripMenuItem.Size = new System.Drawing.Size(252, 26);
             this.resetCalibrationToolStripMenuItem.Text = "Сбросить калибровку";
             this.resetCalibrationToolStripMenuItem.Click += new System.EventHandler(this.resetCalibrationToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(249, 6);
+            // 
+            // debugOverlaysToolStripMenuItem
+            // 
+            this.debugOverlaysToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.inspectorCoordinatesToolStripMenuItem,
+            this.inspectorCalibrationToolStripMenuItem});
+            this.debugOverlaysToolStripMenuItem.Name = "debugOverlaysToolStripMenuItem";
+            this.debugOverlaysToolStripMenuItem.Size = new System.Drawing.Size(252, 26);
+            this.debugOverlaysToolStripMenuItem.Text = "Оверлеи отладки ▶";
+            // 
+            // inspectorCoordinatesToolStripMenuItem
+            // 
+            this.inspectorCoordinatesToolStripMenuItem.CheckOnClick = true;
+            this.inspectorCoordinatesToolStripMenuItem.Name = "inspectorCoordinatesToolStripMenuItem";
+            this.inspectorCoordinatesToolStripMenuItem.Size = new System.Drawing.Size(230, 26);
+            this.inspectorCoordinatesToolStripMenuItem.Text = "☐ Диагностика позиции";
+            this.inspectorCoordinatesToolStripMenuItem.CheckedChanged += new System.EventHandler(this.inspectorCoordinatesToolStripMenuItem_CheckedChanged);
+            // 
+            // inspectorCalibrationToolStripMenuItem
+            // 
+            this.inspectorCalibrationToolStripMenuItem.CheckOnClick = true;
+            this.inspectorCalibrationToolStripMenuItem.Name = "inspectorCalibrationToolStripMenuItem";
+            this.inspectorCalibrationToolStripMenuItem.Size = new System.Drawing.Size(230, 26);
+            this.inspectorCalibrationToolStripMenuItem.Text = "☐ Точки калибровки";
+            this.inspectorCalibrationToolStripMenuItem.CheckedChanged += new System.EventHandler(this.inspectorCalibrationToolStripMenuItem_CheckedChanged);
             // 
             // helpToolStripMenuItem
             // 
@@ -429,13 +465,13 @@ namespace CrystalTable
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.btnUndo,
             this.btnRedo,
-            this.toolStripSeparator1,
+            this.toolStripSeparator2,
             this.btnExport,
             this.btnImport,
-            this.toolStripSeparator2,
+            this.toolStripSeparator3,
             this.btnRoutePreview,
             this.btnStatistics,
-            this.toolStripSeparator3,
+            this.toolStripSeparator4,
             this.btnZoomIn,
             this.btnZoomOut,
             this.btnZoomReset});
@@ -465,10 +501,10 @@ namespace CrystalTable
             this.btnRedo.Text = "Повторить (Ctrl+Y)";
             this.btnRedo.Click += new System.EventHandler(this.btnRedo_Click);
             // 
-            // toolStripSeparator1
+            // toolStripSeparator2
             // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 27);
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 27);
             // 
             // btnExport
             // 
@@ -490,10 +526,10 @@ namespace CrystalTable
             this.btnImport.Text = "Импорт (Ctrl+I)";
             this.btnImport.Click += new System.EventHandler(this.btnImport_Click);
             // 
-            // toolStripSeparator2
+            // toolStripSeparator3
             // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 27);
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 27);
             // 
             // btnRoutePreview
             // 
@@ -516,10 +552,10 @@ namespace CrystalTable
             this.btnStatistics.Text = "Статистика (Ctrl+T)";
             this.btnStatistics.Click += new System.EventHandler(this.btnStatistics_Click);
             // 
-            // toolStripSeparator3
+            // toolStripSeparator4
             // 
-            this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 27);
+            this.toolStripSeparator4.Name = "toolStripSeparator4";
+            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 27);
             // 
             // btnZoomIn
             // 
@@ -895,18 +931,22 @@ namespace CrystalTable
         private System.Windows.Forms.ToolStripMenuItem debugToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem debugModeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem resetCalibrationToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripMenuItem debugOverlaysToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem inspectorCoordinatesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem inspectorCalibrationToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem viewLogToolStripMenuItem;
         private System.Windows.Forms.ToolStrip toolStrip1;
         private System.Windows.Forms.ToolStripButton btnUndo;
         private System.Windows.Forms.ToolStripButton btnRedo;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripButton btnExport;
         private System.Windows.Forms.ToolStripButton btnImport;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripButton btnRoutePreview;
         private System.Windows.Forms.ToolStripButton btnStatistics;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.ToolStripButton btnZoomIn;
         private System.Windows.Forms.ToolStripButton btnZoomOut;
         private System.Windows.Forms.ToolStripButton btnZoomReset;

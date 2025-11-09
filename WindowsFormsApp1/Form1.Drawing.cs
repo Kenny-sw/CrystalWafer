@@ -47,6 +47,9 @@ namespace CrystalTable
 
             DrawUIElements(g);
             uiController.DrawZoomInfo(g, zoomPanController.ZoomFactor);
+
+            // ✅ ДОБАВЛЕНО: Отрисовка отладочных оверлеев (поверх всего)
+            debugOverlay?.Draw(g, this);
         }
 
         private bool IsInputValid()
