@@ -12,6 +12,8 @@ namespace CrystalTable.Logic
             public const byte MoveDown = 0x04;
             public const byte Lock = 0x05;      // Фиксация (HIGH на пине)
             public const byte Unlock = 0x06;    // Сброс (LOW на пине)
+            public const byte SetProfile = 0x07; // ✅ НОВОЕ: Установка профиля движения
+            public const byte GetProfile = 0x08; // ✅ НОВОЕ: Запрос текущего профиля
         }
 
         public static class Events
@@ -85,6 +87,8 @@ namespace CrystalTable.Logic
         {
             public const string Ok = "OK";
             public const string ErrorPrefix = "ERR";
+            public const string ProfileSet = "PSET";// ✅ НОВОЕ: Профиль установлен
+            public const string ProfileData = "PROFILE:";  // ✅ НОВОЕ: Данные профиля
 
             public static bool IsOk(string message) =>
                 string.Equals(message, Ok, StringComparison.OrdinalIgnoreCase);
@@ -92,6 +96,15 @@ namespace CrystalTable.Logic
             public static bool IsError(string message) =>
                 !string.IsNullOrWhiteSpace(message) &&
                 message.StartsWith(ErrorPrefix, StringComparison.OrdinalIgnoreCase);
+  
+            // ✅ НОВОЕ: Проверка ответа "PSET"
+            public static bool IsProfileSet(string message) =>
+                string.Equals(message, ProfileSet, StringComparison.OrdinalIgnoreCase);
+
+            // ✅ НОВОЕ: Проверка ответа "PROFILE:..."
+            public static bool IsProfileData(string message) =>
+                !string.IsNullOrWhiteSpace(message) &&
+                message.StartsWith(ProfileData, StringComparison.OrdinalIgnoreCase);
         }
 
         public static class Timeouts

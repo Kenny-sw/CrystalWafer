@@ -74,6 +74,7 @@
     <Compile Include="ComputerVision\ComputerVisionController.cs" />
     <Compile Include="Controllers\DebugOverlayRenderer.cs" />
     <Compile Include="Controllers\ExportImportController.cs" />
+    <Compile Include="Controllers\MotionProfileManager.cs" />
     <Compile Include="Controllers\MouseController.cs" />
     <Compile Include="Controllers\SerialPortController.cs" />
     <Compile Include="Controllers\SimpleSerialController.cs" />
@@ -83,6 +84,7 @@
     <Compile Include="CultureSettings.cs" />
     <Compile Include="Data\Crystal.cs" />
     <Compile Include="Data\CrystalPlacementStatus.cs" />
+    <Compile Include="Data\MotionProfile.cs" />
     <Compile Include="Data\WaferMapParameters.cs" />
     <Compile Include="Data\WaferInfo.cs" />
     <Compile Include="Form1.Camera.cs">
@@ -107,6 +109,9 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\LogViewerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\MotionProfileEditorForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Logic\CommandHistory.cs" />

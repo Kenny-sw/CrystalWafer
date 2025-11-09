@@ -58,6 +58,9 @@ namespace CrystalTable
             this.debugModeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.resetCalibrationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.motionProfilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.quickSelectProfileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.debugOverlaysToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.inspectorCoordinatesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.inspectorCalibrationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -394,6 +397,9 @@ namespace CrystalTable
             this.debugModeToolStripMenuItem,
             this.resetCalibrationToolStripMenuItem,
             this.toolStripSeparator1,
+            this.motionProfilesToolStripMenuItem,
+            this.quickSelectProfileToolStripMenuItem,
+            this.toolStripSeparator5,
             this.debugOverlaysToolStripMenuItem});
             this.debugToolStripMenuItem.Name = "debugToolStripMenuItem";
             this.debugToolStripMenuItem.Size = new System.Drawing.Size(81, 24);
@@ -418,6 +424,25 @@ namespace CrystalTable
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
             this.toolStripSeparator1.Size = new System.Drawing.Size(249, 6);
+            // 
+            // motionProfilesToolStripMenuItem
+            // 
+            this.motionProfilesToolStripMenuItem.Name = "motionProfilesToolStripMenuItem";
+            this.motionProfilesToolStripMenuItem.Size = new System.Drawing.Size(252, 26);
+            this.motionProfilesToolStripMenuItem.Text = "Профили движения...";
+            this.motionProfilesToolStripMenuItem.Click += new System.EventHandler(this.motionProfilesToolStripMenuItem_Click);
+            // 
+            // quickSelectProfileToolStripMenuItem
+            // 
+            this.quickSelectProfileToolStripMenuItem.Name = "quickSelectProfileToolStripMenuItem";
+            this.quickSelectProfileToolStripMenuItem.Size = new System.Drawing.Size(252, 26);
+            this.quickSelectProfileToolStripMenuItem.Text = "Быстрый выбор профиля...";
+            this.quickSelectProfileToolStripMenuItem.Click += new System.EventHandler(this.quickSelectProfileToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator5
+            // 
+            this.toolStripSeparator5.Name = "toolStripSeparator5";
+            this.toolStripSeparator5.Size = new System.Drawing.Size(249, 6);
             // 
             // debugOverlaysToolStripMenuItem
             // 
@@ -932,6 +957,9 @@ namespace CrystalTable
         private System.Windows.Forms.ToolStripMenuItem debugModeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem resetCalibrationToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripMenuItem motionProfilesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem quickSelectProfileToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
         private System.Windows.Forms.ToolStripMenuItem debugOverlaysToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem inspectorCoordinatesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem inspectorCalibrationToolStripMenuItem;

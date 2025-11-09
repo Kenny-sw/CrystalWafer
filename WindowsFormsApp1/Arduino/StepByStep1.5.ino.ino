@@ -17,11 +17,13 @@ const bool EDGE_ACTIVE_HIGH = true;
 // -------------------- Профиль движения (стартовые значения) --------------------
 // Реальные драйверы любят >=3–5 мкс импульс и десятки–сотни мкс между импульсами.
 const uint16_t STEP_PULSE_US = 5;   // ✅ ИСПРАВЛЕНО: увеличено до 5мкс для надежности
-uint16_t minDelay = 200;            // мкс, «крейсерская» пауза (скорость)
-uint16_t maxDelay = 800;            // мкс, начало/конец (медленнее)
-byte accelPercent  = 30;
-byte cruisePercent = 40;
-byte decelPercent  = 30;
+
+// ✅ НОВОЕ: Глобальные переменные профиля (изменяемые через команду cmdSetProfile)
+uint16_t minDelay = 200;     // мкс, «крейсерская» пауза (скорость)
+uint16_t maxDelay = 800;      // мкс, начало/конец (медленнее)
+byte accelPercent  = 30;// процент шагов на разгон
+byte cruisePercent = 40;    // процент шагов на крейсер
+byte decelPercent  = 30;    // процент шагов на торможение
 
 // -------------------- Команды протокола --------------------
 enum Commands : byte {
@@ -31,7 +33,8 @@ enum Commands : byte {
   cmdStepYdown  = 4,   // Y вниз
   cmdLock       = 5,   // Фиксация (HIGH на PIN_ENA = моторы включены, стол зафиксирован)
   cmdUnlock     = 6,   // Сброс (LOW на PIN_ENA = моторы выключены, стол расфиксирован)
-  cmdSetProfile = 7,   // (можно оставить закомментированным)
+  cmdSetProfile = 7, // ✅ НОВОЕ: Установка профиля движения
+  cmdGetProfile = 8,   // ✅ НОВОЕ: Запрос текущего профиля
   cmdSensorQ    = 11,  // опрос датчика (мгновенный ответ S:1/S:0)
   cmdEdgeTouchT = 12   // шаблон «ощупать край по Z» (пока заглушка)
 };
@@ -238,13 +241,29 @@ void loop() {
     return;
   }
 
+  // ✅ НОВОЕ: Обработка команды GetProfile (без полезной нагрузки)
+  if (cmd == cmdGetProfile) {
+    // Отправляем текущий профиль в формате: PROFILE:minDelay,maxDelay,accel,cruise,decel
+ Serial.print(F("PROFILE:"));
+    Serial.print(minDelay);
+    Serial.print(F(","));
+    Serial.print(maxDelay);
+    Serial.print(F(","));
+    Serial.print(accelPercent);
+    Serial.print(F(","));
+    Serial.print(cruisePercent);
+    Serial.print(F(","));
+    Serial.println(decelPercent);
+    return;
+  }
+
   // Команды с 4 байтами данных + 1 байтом XOR
   if (cmd==cmdStepXL || cmd==cmdStepXR || cmd==cmdStepYup || cmd==cmdStepYdown ||
       cmd==cmdSetProfile || cmd==cmdEdgeTouchT) {
 
     byte buf[5];
     if (!read5(buf)) { 
-      Serial.println(F("ERR:TIMEOUT")); 
+  Serial.println(F("ERR:TIMEOUT")); 
       return; 
     }
     
@@ -253,26 +272,57 @@ void loop() {
     byte rxCS = buf[4];
     byte calc = cmd ^ buf[0] ^ buf[1] ^ buf[2] ^ buf[3];  // XOR от cmd + 4 байта данных
     
-    if (rxCS != calc) { 
+  if (rxCS != calc) { 
       // Отладочный вывод для диагностики
       Serial.print(F("ERR:CS rx=0x"));
-      Serial.print(rxCS, HEX);
+   Serial.print(rxCS, HEX);
       Serial.print(F(" calc=0x"));
       Serial.println(calc, HEX);
       return; 
     }
 
-    if (cmd == cmdSetProfile) {
-      Serial.println(F("NA")); // сейчас не используем
+    // ✅ НОВОЕ: Обработка команды SetProfile
+  if (cmd == cmdSetProfile) {
+      // Формат данных: [minDelay:16bit][maxDelay:16bit] в uint32
+      uint32_t val = bytesToU32(buf);
+      
+      uint16_t newMinDelay = (uint16_t)(val & 0xFFFF);
+      uint16_t newMaxDelay = (uint16_t)((val >> 16) & 0xFFFF);
+      
+      // Валидация параметров
+      if (newMinDelay < 100 || newMinDelay > 5000) {
+      Serial.println(F("ERR:MIN_DELAY"));
+        return;
+      }
+      
+      if (newMaxDelay < 100 || newMaxDelay > 5000) {
+    Serial.println(F("ERR:MAX_DELAY"));
+     return;
+   }
+      
+      if (newMinDelay >= newMaxDelay) {
+        Serial.println(F("ERR:DELAY_ORDER"));
+        return;
+      }
+      
+      // Применяем новый профиль
+   minDelay = newMinDelay;
+  maxDelay = newMaxDelay;
+      
+      // Подтверждение
+    Serial.print(F("PSET "));
+ Serial.print(minDelay);
+      Serial.print(F(","));
+ Serial.println(maxDelay);
       return;
     }
-
-    uint32_t val = bytesToU32(buf);
 
     if (cmd == cmdEdgeTouchT) {
       Serial.println(F("NA")); // Not Available
-      return;
+   return;
     }
+
+    uint32_t val = bytesToU32(buf);
 
     // Обычное движение (требует фиксации)
     doMoveCmd(cmd, val);

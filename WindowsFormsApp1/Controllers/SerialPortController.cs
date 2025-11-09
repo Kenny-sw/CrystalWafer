@@ -383,6 +383,23 @@ namespace CrystalTable.Controllers
                         CompletePendingCommand(false, line);
                         continue;
                     }
+          
+                    // ✅ НОВОЕ: Обработка ответа "PSET" (профиль установлен)
+                    if (Protocol.Responses.IsProfileSet(line))
+                    {
+                        AppLogger.Info("Arduino подтвердил установку профиля");
+                        CompletePendingCommand(true, line);
+                        continue;
+                    }
+
+                    // ✅ НОВОЕ: Обработка ответа "PROFILE:..." (данные профиля)
+                    if (Protocol.Responses.IsProfileData(line))
+                    {
+                        AppLogger.Debug($"Получены данные профиля от Arduino: {line}");
+                          // TODO: Парсинг данных профиля и событие
+                        CompletePendingCommand(true, line);
+                        continue;
+                    }
 
                     AppLogger.Warning($"Unknown serial response: {line}");
                 }
