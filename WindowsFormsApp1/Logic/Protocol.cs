@@ -87,7 +87,7 @@ namespace CrystalTable.Logic
         {
             public const string Ok = "OK";
             public const string ErrorPrefix = "ERR";
-            public const string ProfileSet = "PSET";// ✅ НОВОЕ: Профиль установлен
+            public const string ProfileSet = "PSET"; // Профиль установлен (Arduino отправляет "PSET minDelay,maxDelay")
             public const string ProfileData = "PROFILE:";  // ✅ НОВОЕ: Данные профиля
 
             public static bool IsOk(string message) =>
@@ -97,9 +97,10 @@ namespace CrystalTable.Logic
                 !string.IsNullOrWhiteSpace(message) &&
                 message.StartsWith(ErrorPrefix, StringComparison.OrdinalIgnoreCase);
   
-            // ✅ НОВОЕ: Проверка ответа "PSET"
+            // ✅ ИСПРАВЛЕНО: Проверка ответа "PSET" (Arduino отправляет "PSET 200,800")
             public static bool IsProfileSet(string message) =>
-                string.Equals(message, ProfileSet, StringComparison.OrdinalIgnoreCase);
+                !string.IsNullOrWhiteSpace(message) &&
+                message.StartsWith(ProfileSet, StringComparison.OrdinalIgnoreCase);
 
             // ✅ НОВОЕ: Проверка ответа "PROFILE:..."
             public static bool IsProfileData(string message) =>

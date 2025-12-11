@@ -142,7 +142,10 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <None Include="Arduino\StepByStep1.5.ino.ino" />
+    <None Include="Arduino\FIRMWARE_REFACTORING_REPORT.md" />
+    <None Include="Arduino\README_CHOOSE_FIRMWARE.md" />
+    <None Include="Arduino\StepperDriver_DirectWiring.ino" />
+    <None Include="Arduino\StepperDriver_OptocouplerWiring.ino" />
     <None Include="ARDUINO_FULL_GUIDE.md" />
     <None Include="ARDUINO_MIGRATION_V2.md" />
     <None Include="CAMERA_CALIBRATION_GUIDE.md" />

@@ -46,8 +46,6 @@ namespace CrystalTable
         {
             InitializeComponent();
             debugModeToolStripMenuItem.Checked = debugModeWithoutComPort;
-            buttonStart.Text = "Старт";
-            buttonStart.Visible = true;
 
             // Устраняем мерцания при перерисовке
             try
@@ -77,10 +75,15 @@ debugOverlay = new DebugOverlayRenderer
 
         // RX/STATE > статус-бар
             serialPortController.UnsolicitedEventReceived += SerialPort_UnsolicitedEventReceived;
-   serialPortController.ConnectionStateChanged += SerialPort_ConnectionStateChanged;
+            serialPortController.ConnectionStateChanged += SerialPort_ConnectionStateChanged;
+            serialPortController.ProfileDataReceived += SerialPort_ProfileDataReceived; // ✅ Подписка на данные профиля
 
-     InitializeEventHandlers();
-    LoadDefaultConfiguration();
+            InitializeEventHandlers();
+            
+            // ✅ Автообновление списка COM-портов при запуске
+            serialPortController.UpdatePortList(comboBoxPorts);
+            
+            LoadDefaultConfiguration();
             LoadCameraCalibration();  // ← Загружаем сохраненную калибровку камеры
    UpdateUI();
         }
@@ -215,12 +218,11 @@ debugOverlay = new DebugOverlayRenderer
         /// </summary>
         private void UpdateLockButtonState()
         {
-            // Кнопка будет найдена в Designer
-            var lockButton = this.Controls.Find("buttonLockToggle", true).FirstOrDefault() as Button;
-            if (lockButton != null)
+            // Используем прямую ссылку на кнопку из Designer
+            if (buttonLockToggle != null)
             {
-                lockButton.Text = isLocked ? "🔒 Сброс" : "🔓 Фиксация";
-                lockButton.BackColor = isLocked ? Color.FromArgb(255, 200, 200) : Color.FromArgb(200, 255, 200);
+                buttonLockToggle.Text = isLocked ? "🔒 Сброс" : "🔓 Фиксация";
+                buttonLockToggle.BackColor = isLocked ? Color.FromArgb(255, 200, 200) : Color.FromArgb(200, 255, 200);
             }
         }
 
@@ -566,6 +568,7 @@ debugOverlay = new DebugOverlayRenderer
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
             serialPortController?.Dispose();
+            debugOverlay?.Dispose();  // ✅ Освобождение ресурсов оверлеев
             DisposeCameraResources();  // ← Освобождение ресурсов камеры
         }
 
@@ -646,6 +649,35 @@ debugOverlay = new DebugOverlayRenderer
                 Text = msg;
 
             UpdateSensorStatusLabel(isOpen ? "Датчик: ?" : "Датчик: -");
+        }
+
+        /// <summary>
+        /// ✅ НОВОЕ: Обработчик получения данных профиля от Arduino
+        /// </summary>
+        private void SerialPort_ProfileDataReceived(string profileData)
+        {
+            if (string.IsNullOrWhiteSpace(profileData))
+                return;
+
+            if (IsHandleCreated && InvokeRequired)
+            {
+                BeginInvoke(new Action<string>(SerialPort_ProfileDataReceived), profileData);
+                return;
+            }
+
+            try
+            {
+                var profile = MotionProfileManager.ParseProfileFromArduino(profileData);
+                if (profile != null)
+                {
+                    AppLogger.Info($"Получен профиль от Arduino: minDelay={profile.MinDelayUs}, maxDelay={profile.MaxDelayUs}");
+                    // Можно показать диалог или обновить UI
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error("Ошибка обработки данных профиля", ex);
+            }
         }
 
         private void UpdateSensorStatusLabel(string text)

@@ -173,7 +173,7 @@ namespace CrystalTable
             this.startButton.Name = "startButton";
             this.startButton.Size = new System.Drawing.Size(85, 28);
             this.startButton.TabIndex = 1;
-            this.startButton.Text = "Пуск";
+            this.startButton.Text = "Старт";
             this.startButton.UseVisualStyleBackColor = true;
             this.startButton.Click += new System.EventHandler(this.startButton_Click);
             // 
@@ -635,42 +635,49 @@ namespace CrystalTable
             this.statusLabel.Name = "statusLabel";
             this.statusLabel.Size = new System.Drawing.Size(57, 20);
             this.statusLabel.Text = "Готово";
+            this.statusLabel.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
             // 
             // totalCrystalsStatusLabel
             // 
             this.totalCrystalsStatusLabel.Name = "totalCrystalsStatusLabel";
-            this.totalCrystalsStatusLabel.Size = new System.Drawing.Size(238, 20);
-            this.totalCrystalsStatusLabel.Text = "Общее количество кристаллов: 0";
+            this.totalCrystalsStatusLabel.Size = new System.Drawing.Size(100, 20);
+            this.totalCrystalsStatusLabel.Text = "Кристаллов: 0";
+            this.totalCrystalsStatusLabel.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
             // 
             // selectedCrystalStatusLabel
             // 
             this.selectedCrystalStatusLabel.Name = "selectedCrystalStatusLabel";
-            this.selectedCrystalStatusLabel.Size = new System.Drawing.Size(174, 20);
-            this.selectedCrystalStatusLabel.Text = "Кристаллы не выбраны";
+            this.selectedCrystalStatusLabel.Size = new System.Drawing.Size(100, 20);
+            this.selectedCrystalStatusLabel.Text = "Выбрано: 0";
+            this.selectedCrystalStatusLabel.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
             // 
             // fillPercentageLabel
             // 
             this.fillPercentageLabel.Name = "fillPercentageLabel";
-            this.fillPercentageLabel.Size = new System.Drawing.Size(121, 20);
-            this.fillPercentageLabel.Text = "Заполнение: 0%";
+            this.fillPercentageLabel.Size = new System.Drawing.Size(80, 20);
+            this.fillPercentageLabel.Text = "Запол.: 0%";
+            this.fillPercentageLabel.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
             // 
             // zoomLabel
             // 
             this.zoomLabel.Name = "zoomLabel";
-            this.zoomLabel.Size = new System.Drawing.Size(105, 20);
-            this.zoomLabel.Text = "Масштаб: 1.0x";
+            this.zoomLabel.Size = new System.Drawing.Size(70, 20);
+            this.zoomLabel.Text = "×1.0";
+            this.zoomLabel.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
             // 
             // calibrationStatusLabel
             // 
             this.calibrationStatusLabel.Name = "calibrationStatusLabel";
-            this.calibrationStatusLabel.Size = new System.Drawing.Size(123, 20);
-            this.calibrationStatusLabel.Text = "Калибровка: нет";
+            this.calibrationStatusLabel.Size = new System.Drawing.Size(90, 20);
+            this.calibrationStatusLabel.Text = "Калибр.: нет";
+            this.calibrationStatusLabel.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
             // 
             // coordinatesLabel
             // 
             this.coordinatesLabel.Name = "coordinatesLabel";
-            this.coordinatesLabel.Size = new System.Drawing.Size(63, 20);
-            this.coordinatesLabel.Text = "X: 0, Y: 0";
+            this.coordinatesLabel.Size = new System.Drawing.Size(100, 20);
+            this.coordinatesLabel.Text = "X:0 Y:0";
+            this.coordinatesLabel.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
             // 
             // sensorStatusLabel
             // 

@@ -1,4 +1,4 @@
-﻿using CrystalTable.Data;
+using CrystalTable.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,12 +10,13 @@ namespace CrystalTable.Logic
     internal class CrystalManager
     {
         // Коллекция для хранения всех кристаллов на пластине
-        private List<Crystal> crystals = new List<Crystal>();
+        private readonly List<Crystal> crystals = new List<Crystal>();
 
-        public List<Crystal> Crystals => crystals;   //вместо полного определения get { return crystals; } записывается => crystals;
+        public List<Crystal> Crystals => crystals;
 
-
-        public static CrystalManager Instance = new CrystalManager();
+        // ✅ ИСПРАВЛЕНО: readonly поле для thread-safe singleton
+        private static readonly CrystalManager _instance = new CrystalManager();
+        public static CrystalManager Instance => _instance;
 
         private CrystalManager()
         {            

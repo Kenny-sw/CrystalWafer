@@ -10,12 +10,14 @@ using CrystalTable.Logic;
 namespace CrystalTable.Controllers
 {
     /// <summary>
- /// Менеджер профилей движения: загрузка, сохранение, применение
+    /// Менеджер профилей движения: загрузка, сохранение, применение
     /// </summary>
     public class MotionProfileManager
     {
-        private static MotionProfileManager _instance;
-        public static MotionProfileManager Instance => _instance ??= new MotionProfileManager();
+        // ✅ ИСПРАВЛЕНО: Thread-safe lazy singleton
+        private static readonly Lazy<MotionProfileManager> _lazy = 
+            new Lazy<MotionProfileManager>(() => new MotionProfileManager());
+        public static MotionProfileManager Instance => _lazy.Value;
 
         private readonly string _profilesDirectory;
         private readonly string _profilesFilePath;
@@ -387,43 +389,103 @@ Protocol.Commands.SetProfile,
   }
         }
 
-   // ===== Получение профиля от Arduino =====
+    // ===== Получение профиля от Arduino =====
+
+        /// <summary>
+        /// Парсит строку ответа "PROFILE:minDelay,maxDelay,accel,cruise,decel" от Arduino
+        /// </summary>
+        public static MotionProfile ParseProfileFromArduino(string response)
+        {
+            if (string.IsNullOrWhiteSpace(response))
+                return null;
+
+            // Формат: "PROFILE:200,800,30,40,30"
+            const string prefix = "PROFILE:";
+            if (!response.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                return null;
+
+            try
+            {
+                string data = response.Substring(prefix.Length);
+                string[] parts = data.Split(',');
+
+                if (parts.Length < 2)
+                {
+                    AppLogger.Warning($"Недостаточно данных в ответе профиля: {response}");
+                    return null;
+                }
+
+                var profile = new MotionProfile
+                {
+                    Name = "Arduino Profile",
+                    Description = "Профиль, полученный от Arduino"
+                };
+
+                // Парсим minDelay и maxDelay (обязательные)
+                if (ushort.TryParse(parts[0].Trim(), out ushort minDelay))
+                    profile.MinDelayUs = minDelay;
+                else
+                    return null;
+
+                if (ushort.TryParse(parts[1].Trim(), out ushort maxDelay))
+                    profile.MaxDelayUs = maxDelay;
+                else
+                    return null;
+
+                // Парсим проценты (опциональные, если есть)
+                if (parts.Length >= 5)
+                {
+                    if (byte.TryParse(parts[2].Trim(), out byte accel))
+                        profile.AccelPercent = accel;
+                    if (byte.TryParse(parts[3].Trim(), out byte cruise))
+                        profile.CruisePercent = cruise;
+                    if (byte.TryParse(parts[4].Trim(), out byte decel))
+                        profile.DecelPercent = decel;
+                }
+
+                AppLogger.Info($"Профиль от Arduino: minDelay={profile.MinDelayUs}, maxDelay={profile.MaxDelayUs}");
+                return profile;
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error($"Ошибка парсинга профиля от Arduino: {response}", ex);
+                return null;
+            }
+        }
 
         public async System.Threading.Tasks.Task<MotionProfile> GetProfileFromArduino(
-    SerialPortController serialController)
+            SerialPortController serialController)
         {
-        if (serialController == null)
-     {
-    AppLogger.Warning("SerialPortController == null");
-  return null;
-  }
+            if (serialController == null)
+            {
+                AppLogger.Warning("SerialPortController == null");
+                return null;
+            }
 
-   try
-     {
-      AppLogger.Debug("Запрос текущего профиля от Arduino...");
+            try
+            {
+                AppLogger.Debug("Запрос текущего профиля от Arduino...");
       
-    // Отправляем команду GetProfile
-    bool success = await serialController.SendCommandAsync(
-         Protocol.Commands.GetProfile, 
-   0);
+                // Отправляем команду GetProfile
+                bool success = await serialController.SendCommandAsync(
+                    Protocol.Commands.GetProfile, 
+                    0);
 
-      if (!success)
-     {
-       AppLogger.Warning("Не удалось отправить команду GetProfile");
-     return null;
-     }
+                if (!success)
+                {
+                    AppLogger.Warning("Не удалось отправить команду GetProfile");
+                    return null;
+                }
 
-             // Ожидаем ответ (будет обработан в SerialPortController)
-        // TODO: Парсинг ответа "PROFILE:minDelay,maxDelay,accel,cruise,decel"
-    // Пока возвращаем null
-    
-      return null;
- }
-         catch (Exception ex)
-         {
-   AppLogger.Error("Ошибка получения профиля от Arduino", ex);
-     return null;
-    }
+                // Ответ будет обработан через событие ProfileDataReceived
+                // Возвращаем null - профиль будет доступен через событие
+                return null;
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error("Ошибка получения профиля от Arduino", ex);
+                return null;
+            }
         }
     }
 }

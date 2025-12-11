@@ -10,15 +10,17 @@ namespace CrystalTable.Controllers
     /// <summary>
     /// Рендерер отладочных оверлеев для визуализации координат и диагностики
     /// </summary>
-    public class DebugOverlayRenderer
+    public class DebugOverlayRenderer : IDisposable
     {
- // ===== НАСТРОЙКИ ВКЛЮЧЕНИЯ/ВЫКЛЮЧЕНИЯ =====
+        // ===== НАСТРОЙКИ ВКЛЮЧЕНИЯ/ВЫКЛЮЧЕНИЯ =====
         public bool ShowPositionDiagnostics { get; set; }
         public bool ShowCalibrationPoints { get; set; }
 
         // ===== НАСТРОЙКИ ВИЗУАЛИЗАЦИИ =====
-    private readonly Font inspectorFont = new Font("Consolas", 9f, FontStyle.Regular);
+        private readonly Font inspectorFont = new Font("Consolas", 9f, FontStyle.Regular);
         private readonly Font inspectorBoldFont = new Font("Consolas", 9f, FontStyle.Bold);
+        
+        private bool _disposed = false;
      
         private readonly Color overlayBackColor = Color.FromArgb(230, 40, 40, 40);
         private readonly Color overlayTextColor = Color.White;
@@ -241,11 +243,29 @@ string[] lines = new[]
         /// Освобождение ресурсов
         /// </summary>
         public void Dispose()
-      {
-  inspectorFont?.Dispose();
-         inspectorBoldFont?.Dispose();
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
-  }
+        
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    inspectorFont?.Dispose();
+                    inspectorBoldFont?.Dispose();
+                }
+                _disposed = true;
+            }
+        }
+        
+        ~DebugOverlayRenderer()
+        {
+            Dispose(false);
+        }
+    }
 
     /// <summary>
     /// Вспомогательные методы расширения для Graphics

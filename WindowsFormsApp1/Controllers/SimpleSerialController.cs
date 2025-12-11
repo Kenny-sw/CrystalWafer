@@ -22,6 +22,9 @@ namespace CrystalTable.Controllers
 
         public void Connect(string portName)
         {
+            // ✅ ИСПРАВЛЕНО: Thread.Sleep вынесен за пределы lock
+            bool needStartupDelay = false;
+            
             lock (_lock)
             {
                 if (_port.IsOpen)
@@ -55,10 +58,13 @@ namespace CrystalTable.Controllers
                     _port.DiscardInBuffer();
                 }
 
-                // Даем Arduino время на старт
+                needStartupDelay = true;
+            }
+            
+            // ✅ Задержка вне lock
+            if (needStartupDelay)
+            {
                 Thread.Sleep(100);
-
-                // Читаем приветствие
                 ReadStartupMessages();
             }
         }
@@ -153,7 +159,21 @@ namespace CrystalTable.Controllers
                             return true;
                         }
 
-                        if (line.StartsWith("ERR:", StringComparison.OrdinalIgnoreCase))
+                        // ✅ ИСПРАВЛЕНО: Обработка PSET (профиль установлен)
+                        if (line.StartsWith("PSET", StringComparison.OrdinalIgnoreCase))
+                        {
+                            AppLogger.Info($"[SIMPLE] Профиль установлен: {line}");
+                            return true;
+                        }
+
+                        // ✅ ИСПРАВЛЕНО: Обработка PROFILE:... (данные профиля)
+                        if (line.StartsWith("PROFILE:", StringComparison.OrdinalIgnoreCase))
+                        {
+                            AppLogger.Info($"[SIMPLE] Данные профиля: {line}");
+                            return true;
+                        }
+
+                        if (line.StartsWith("ERR", StringComparison.OrdinalIgnoreCase))
                         {
                             AppLogger.Warning($"[SIMPLE] Arduino вернул ошибку: {line}");
                             return false;

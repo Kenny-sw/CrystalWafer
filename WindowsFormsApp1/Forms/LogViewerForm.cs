@@ -14,7 +14,10 @@ namespace CrystalTable.Forms
         private Button btnCopy;
         private Button btnClose;
         private CheckBox chkAutoScroll;
+        private ComboBox cmbLogLevel;
         private Label lblStatus;
+
+        private AppLogLevel filterLevel = AppLogLevel.Trace;
 
         public LogViewerForm()
         {
@@ -94,6 +97,29 @@ namespace CrystalTable.Forms
                 Width = 120
             };
 
+            // Добавляем фильтр по уровню логирования
+            var lblFilter = new Label
+            {
+                Text = "Уровень:",
+                Location = new Point(470, 10),
+                Width = 60,
+                TextAlign = ContentAlignment.MiddleLeft
+            };
+
+            cmbLogLevel = new ComboBox
+            {
+                Location = new Point(530, 7),
+                Width = 100,
+                DropDownStyle = ComboBoxStyle.DropDownList
+            };
+            cmbLogLevel.Items.AddRange(new object[] { "Trace", "Debug", "Info", "Warning", "Error" });
+            cmbLogLevel.SelectedIndex = 0;
+            cmbLogLevel.SelectedIndexChanged += (s, e) => 
+            {
+                filterLevel = (AppLogLevel)cmbLogLevel.SelectedIndex;
+                LoadLogs();
+            };
+
             btnClose = new Button
             {
                 Text = "Закрыть",
@@ -115,6 +141,8 @@ namespace CrystalTable.Forms
             buttonPanel.Controls.Add(btnClear);
             buttonPanel.Controls.Add(btnCopy);
             buttonPanel.Controls.Add(chkAutoScroll);
+            buttonPanel.Controls.Add(lblFilter);
+            buttonPanel.Controls.Add(cmbLogLevel);
             buttonPanel.Controls.Add(btnClose);
 
             // Вычисляем позицию кнопки Close
@@ -178,6 +206,11 @@ namespace CrystalTable.Forms
             try
             {
                 var entry = e.Entry;
+                
+                // Фильтрация по уровню
+                if (entry.Level < filterLevel)
+                    return;
+                
                 var timestamp = entry.Timestamp.ToString("HH:mm:ss.fff");
                 var line = $"{timestamp} [{entry.Level}] {entry.Message}";
 

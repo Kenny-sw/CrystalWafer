@@ -24,6 +24,11 @@ namespace CrystalTable.Controllers
 
         public event Action<string> UnsolicitedEventReceived;
         public event Action<bool, string> ConnectionStateChanged;
+        public event Action<string> ProfileDataReceived; // ✅ НОВОЕ: Событие получения данных профиля
+        
+        // ✅ НОВОЕ: Событие готовности Arduino
+        private TaskCompletionSource<bool> _readyTcs;
+        private readonly object _readyLock = new object();
 
         public SerialPortController(SerialPort serialPort)
         {
@@ -78,10 +83,48 @@ namespace CrystalTable.Controllers
                     _port.DiscardOutBuffer();
                 }
                 
-                // ✅ Даем Arduino время на стабилизацию (без перезагрузки, т.к. DTR был false при открытии)
-                System.Threading.Thread.Sleep(100);
-
+                // ✅ ИСПРАВЛЕНО: Ожидаем готовности Arduino после reset'а
+                // Arduino перезагружается при открытии порта (из-за DTR), bootloader работает ~1-2 секунды
+                // После загрузки Arduino отправит "READY"
+                
+                // Создаём TaskCompletionSource для ожидания READY
+                lock (_readyLock)
+                {
+                    _readyTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                }
+                
                 StartListener();
+                
+                // ✅ НОВОЕ: Ожидаем сообщение READY от Arduino (до 3 секунд)
+                AppLogger.Info("Ожидание готовности Arduino (READY)...");
+                bool isReady = false;
+                try
+                {
+                    TaskCompletionSource<bool> readyTcs;
+                    lock (_readyLock)
+                    {
+                        readyTcs = _readyTcs;
+                    }
+                    
+                    if (readyTcs != null)
+                    {
+                        var completedTask = Task.WhenAny(readyTcs.Task, Task.Delay(3000)).GetAwaiter().GetResult();
+                        isReady = completedTask == readyTcs.Task && readyTcs.Task.Result;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    AppLogger.Warning($"Ошибка при ожидании READY: {ex.Message}");
+                }
+                
+                if (!isReady)
+                {
+                    AppLogger.Warning("Arduino не отправил READY в течение 3 секунд. Попробуйте переподключиться.");
+                }
+                else
+                {
+                    AppLogger.Info("Arduino готов к работе!");
+                }
 
                 if (btnConnect != null)
                 {
@@ -308,6 +351,9 @@ namespace CrystalTable.Controllers
                 var encoding = _port.Encoding ?? Encoding.ASCII;
                 reader = new StreamReader(_port.BaseStream, encoding, false, 1024, leaveOpen: true);
                 
+                int nullLineCount = 0;
+                const int maxNullLinesBeforeExit = 5; // Допускаем несколько null-строк (bootloader)
+                
                 while (!token.IsCancellationRequested && _port.IsOpen)
                 {
                     string line;
@@ -345,10 +391,30 @@ namespace CrystalTable.Controllers
 
                     if (line == null)
                     {
-                        // ✅ Конец потока - порт закрыт
-                        AppLogger.Debug("Listener: end of stream");
-                        break;
+                        // ✅ ИСПРАВЛЕНО: Не завершаемся сразу при null - Arduino может быть в bootloader
+                        nullLineCount++;
+                        if (nullLineCount >= maxNullLinesBeforeExit)
+                        {
+                            AppLogger.Debug($"Listener: слишком много null-строк ({nullLineCount}), завершаемся");
+                            break;
+                        }
+                        
+                        // Ждём немного и пробуем снова (Arduino bootloader занимает ~1-2 сек)
+                        AppLogger.Debug($"Listener: null line #{nullLineCount}, ждём...");
+                        await Task.Delay(300, token).ConfigureAwait(false);
+                        
+                        // Пересоздаём reader если поток стал доступен
+                        if (_port.IsOpen && _port.BytesToRead > 0)
+                        {
+                            AppLogger.Debug("Listener: данные появились, пересоздаём reader");
+                            reader?.Dispose();
+                            reader = new StreamReader(_port.BaseStream, encoding, false, 1024, leaveOpen: true);
+                        }
+                        continue;
                     }
+                    
+                    // Сброс счётчика при успешном чтении
+                    nullLineCount = 0;
 
                     line = line.Trim();
                     if (line.Length == 0)
@@ -357,6 +423,18 @@ namespace CrystalTable.Controllers
                     }
 
                     AppLogger.Trace($"RX raw: {line}");
+                    
+                    // ✅ НОВОЕ: Обработка сообщения READY от Arduino
+                    if (line.Equals("READY", StringComparison.OrdinalIgnoreCase))
+                    {
+                        AppLogger.Info("Arduino: READY");
+                        lock (_readyLock)
+                        {
+                            _readyTcs?.TrySetResult(true);
+                        }
+                        UnsolicitedEventReceived?.Invoke(line);
+                        continue;
+                    }
 
                     if (Protocol.Events.TryParseSensorEvent(line, out bool isSensorOn))
                     {
@@ -396,7 +474,8 @@ namespace CrystalTable.Controllers
                     if (Protocol.Responses.IsProfileData(line))
                     {
                         AppLogger.Debug($"Получены данные профиля от Arduino: {line}");
-                          // TODO: Парсинг данных профиля и событие
+                        // Уведомляем подписчиков о получении данных профиля
+                        ProfileDataReceived?.Invoke(line);
                         CompletePendingCommand(true, line);
                         continue;
                     }

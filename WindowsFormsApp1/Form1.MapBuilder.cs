@@ -47,7 +47,7 @@ namespace CrystalTable
             mapBuilderPanel = new Panel
             {
                 Dock = DockStyle.Top,
-                Height = 400,  // ← УМЕНЬШЕНО с 380 до 320 (удалены кнопки сдвига)
+                Height = 350,  // ← Уменьшено для компактности
                 Padding = new Padding(10),
                 BackColor = Color.FromArgb(246, 250, 246),
                 AutoScroll = true
@@ -95,6 +95,8 @@ namespace CrystalTable
             loadDataComboBox.SelectedIndexChanged += loadDataComboBox_SelectedIndexChanged;
 
             // ✅ Кнопки управления пресетами
+            var toolTip = new ToolTip();
+            
             mapSavePresetButton = new Button
             {
                 Text = "💾",
@@ -104,6 +106,7 @@ namespace CrystalTable
                 FlatStyle = FlatStyle.System
             };
             mapSavePresetButton.Click += MapSavePreset_Click;
+            toolTip.SetToolTip(mapSavePresetButton, "Сохранить текущие параметры как пресет");
 
             mapEditPresetButton = new Button
             {
@@ -114,6 +117,7 @@ namespace CrystalTable
                 FlatStyle = FlatStyle.System
             };
             mapEditPresetButton.Click += MapEditPreset_Click;
+            toolTip.SetToolTip(mapEditPresetButton, "Редактировать выбранный пресет");
 
             mapDeletePresetButton = new Button
             {
@@ -124,6 +128,7 @@ namespace CrystalTable
                 FlatStyle = FlatStyle.System
             };
             mapDeletePresetButton.Click += MapDeletePreset_Click;
+            toolTip.SetToolTip(mapDeletePresetButton, "Удалить выбранный пресет");
 
             checkBoxFillWafer = new CheckBox
             {

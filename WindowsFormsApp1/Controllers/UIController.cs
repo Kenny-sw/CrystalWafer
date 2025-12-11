@@ -1,4 +1,4 @@
-﻿using CrystalTable.Logic;
+using CrystalTable.Logic;
 using CrystalTable.Controllers;
 using CrystalTable.Data;
 using System;
@@ -77,14 +77,14 @@ namespace CrystalTable.Controllers
             if (form == null) return;
 
             if (form.StatusLabel != null)
-                form.StatusLabel.Text = form.DebugModeWithoutComPort ? "Debug mode" : "Ready";
+                form.StatusLabel.Text = form.DebugModeWithoutComPort ? "Debug" : "Готово";
 
             if (form.ZoomLabel != null && zoom != null)
-                form.ZoomLabel.Text = $"Zoom: {zoom.ZoomFactor:F1}x";
+                form.ZoomLabel.Text = $"×{zoom.ZoomFactor:F1}";
 
             int count = CrystalManager.Instance.Crystals.Count;
             if (form.TotalCrystalsStatusLabel != null)
-                form.TotalCrystalsStatusLabel.Text = $"Crystals: {count}";
+                form.TotalCrystalsStatusLabel.Text = $"Кристаллов: {count}";
 
             if (form.FillPercentageLabel != null && wafer != null)
             {
@@ -92,24 +92,23 @@ namespace CrystalTable.Controllers
                 float ch = wafer.CrystalHeightRaw / 1000f;
                 float waferArea = (float)(Math.PI * Math.Pow(wafer.WaferDiameter / 2f, 2));
                 float fill = waferArea > 0 ? Math.Min(100f, Math.Max(0f, (count * cw * ch) / waferArea * 100f)) : 0f;
-                form.FillPercentageLabel.Text = $"Fill: {fill:F1}%";
+                form.FillPercentageLabel.Text = $"Запол.: {fill:F0}%";
             }
 
             var pointer = form.GetPointerMm();
             if (form.CoordinatesLabel != null)
-                form.CoordinatesLabel.Text = $"X: {pointer.X:F3} mm, Y: {pointer.Y:F3} mm";
+                form.CoordinatesLabel.Text = $"X:{pointer.X:F2} Y:{pointer.Y:F2}";
 
             if (form.CalibrationStatusLabel != null && wafer != null)
             {
                 if (wafer.IsCalibrated)
                 {
-                    form.CalibrationStatusLabel.Text =
-                        $"Calibration: #{wafer.CalibrationCrystalIndex} ({wafer.CalibrationOffsetX:+0.00;-0.00;0} mm, {wafer.CalibrationOffsetY:+0.00;-0.00;0} mm)";
+                    form.CalibrationStatusLabel.Text = $"Калибр.: #{wafer.CalibrationCrystalIndex}";
                     form.CalibrationStatusLabel.ForeColor = Color.DarkGreen;
                 }
                 else
                 {
-                    form.CalibrationStatusLabel.Text = "Calibration: not set";
+                    form.CalibrationStatusLabel.Text = "Калибр.: нет";
                     form.CalibrationStatusLabel.ForeColor = SystemColors.ControlText;
                 }
             }
@@ -121,19 +120,16 @@ namespace CrystalTable.Controllers
 
             if (selected == null || selected.Count == 0)
             {
-                form.SelectedCrystalStatusLabel.Text = "Кристаллы не выбраны";
+                form.SelectedCrystalStatusLabel.Text = "Выбрано: 0";
             }
             else if (selected.Count == 1)
             {
                 int idx = selected.First();
-                form.SelectedCrystalStatusLabel.Text = $"Выбран кристалл: {idx + 1}";
+                form.SelectedCrystalStatusLabel.Text = $"Выбран: #{idx + 1}";
             }
             else
             {
-                var head = selected.OrderBy(i => i).Take(5).Select(i => (i + 1).ToString());
-                string headStr = string.Join(", ", head);
-                string suffix = selected.Count > 5 ? "…" : "";
-                form.SelectedCrystalStatusLabel.Text = $"Выбрано: {selected.Count} ({headStr}{suffix})";
+                form.SelectedCrystalStatusLabel.Text = $"Выбрано: {selected.Count}";
             }
         }
 

@@ -161,11 +161,11 @@ errors.Add("Минимальная пауза должна быть ≥ 100 мк
  if (DecelPercent < 10)
            errors.Add("Торможение должно быть ≥ 10%");
    
-         if (Type == ProfileType.Triangle && CruisePercent != 0)
+            if (Type == ProfileType.Triangle && CruisePercent != 0)
        errors.Add("Треугольный профиль: крейсерская фаза должна быть 0%");
   
-            if (Type == ProfileType.Trapezoid && CruisePercent == 0)
-       errors.Add("Трапециевидный профиль: крейсерская фаза должна быть > 0%");
+            // ✅ ИСПРАВЛЕНО: Trapezoid может работать и без крейсерской фазы (будет похож на Triangle)
+            // Убрана жёсткая проверка, оставлено предупреждение в UI
 
 // 3. Тип профиля
          if (Type == ProfileType.Auto && AutoThreshold == 0)

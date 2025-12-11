@@ -251,9 +251,10 @@ cruiseInput = CreateNumericInput(0, 80, 40);
    AddCompactControl(layout, 1, col, "Торм %:", decelInput); // ✅ Укорочено "Тормож" → "Торм"
      col += 2;
 
-       // ✅ Auto threshold (скрыт, но инициализирован)
+       // ✅ ИСПРАВЛЕНО: Auto threshold добавлен в интерфейс (для типа Auto)
    autoThresholdInput = CreateNumericInput(1, 1000, 20);
- autoThresholdInput.Visible = false;
+   autoThresholdInput.ValueChanged += (s, e) => UpdateGraph();
+   // Будет отображаться/скрываться в зависимости от типа профиля
 
  panel.Controls.Add(layout);
 
@@ -311,10 +312,11 @@ cruiseInput = CreateNumericInput(0, 80, 40);
  buttonsPanel.Controls.Add(deleteButton);
        buttonsPanel.Controls.Add(resetButton);
 
-      // ✅ ИСПРАВЛЕНО: Правильный порядок - сначала заголовок, потом список, потом кнопки
- panel.Controls.Add(titleLabel);
-            panel.Controls.Add(profilesList);
-  panel.Controls.Add(buttonsPanel);
+      // ✅ ИСПРАВЛЕНО: Правильный порядок для Dock - сначала Bottom, потом Fill, потом Top
+      // При Dock порядок Controls.Add обратный: последний Top будет сверху
+      panel.Controls.Add(buttonsPanel);   // Bottom - добавляется первым
+      panel.Controls.Add(profilesList);   // Fill - занимает оставшееся место
+      panel.Controls.Add(titleLabel);     // Top - добавляется последним, будет сверху
 
        return panel;
         }
@@ -787,6 +789,9 @@ if (currentProfile.Type == ProfileType.Triangle)
 cruiseInput.Enabled = true;
         }
 
+        // ✅ ДОБАВЛЕНО: Показываем AutoThreshold только для типа Auto
+        // (поле всегда существует, но функционал активен только для Auto)
+
      UpdateGraph();
         UpdateDetailedInfo(); // ✅ Обновляем информацию
  }
@@ -994,7 +999,7 @@ bool isValid = hasProfile && currentProfile.IsValid();
 
    private enum Axis { X, Y }
 
-  private async void TestProfile(Axis axis)
+   private async void TestProfile(Axis axis)
         {
             if (currentProfile == null || !currentProfile.IsValid()) return;
 
@@ -1005,8 +1010,18 @@ bool isValid = hasProfile && currentProfile.IsValid();
 
       try
      {
-            // Временно применяем профиль
-        await manager.ApplyProfileToArduino(mainForm.SerialPortController, currentProfile);
+            // Сначала применяем профиль и ЖДЁМ подтверждения
+            bool profileApplied = await manager.ApplyProfileToArduino(mainForm.SerialPortController, currentProfile);
+            
+            if (!profileApplied)
+            {
+                testResultLabel.Text = $"❌ Не удалось применить профиль";
+                testResultLabel.ForeColor = Color.Red;
+                return;
+            }
+            
+            // Небольшая задержка для гарантии применения профиля на Arduino
+            await System.Threading.Tasks.Task.Delay(100);
 
     // Запускаем таймер
                 var stopwatch = System.Diagnostics.Stopwatch.StartNew();

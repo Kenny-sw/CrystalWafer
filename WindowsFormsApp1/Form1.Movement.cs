@@ -96,7 +96,45 @@ namespace CrystalTable
 
         private async void buttonStart_Click(object sender, EventArgs e)
         {
-            await ExecuteLoadingSequenceAsync();
+            // Кнопка "Загрузка" - только построение карты кристаллов без перемещения
+            await BuildCrystalMapAsync();
+        }
+
+        /// <summary>
+        /// Построение карты кристаллов без автоматического перемещения
+        /// </summary>
+        private async System.Threading.Tasks.Task BuildCrystalMapAsync()
+        {
+            if (!IsInputValid())
+            {
+                MessageBox.Show("Проверьте параметры пластины перед загрузкой.", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            buttonStart.Enabled = false;
+            
+            try
+            {
+                waferController.BuildCrystalsCached();
+                UpdateUI();
+                
+                var count = CrystalManager.Instance.Crystals.Count;
+                if (count > 0)
+                {
+                    AppLogger.Info($"Карта кристаллов загружена: {count} кристаллов");
+                    statusLabel.Text = $"Загружено {count} кристаллов";
+                }
+                else
+                {
+                    MessageBox.Show("Карта кристаллов пустая. Проверьте параметры.", "Предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+            finally
+            {
+                buttonStart.Enabled = true;
+            }
+            
+            await System.Threading.Tasks.Task.CompletedTask; // async совместимость
         }
 
         private async Task ExecuteLoadingSequenceAsync()
