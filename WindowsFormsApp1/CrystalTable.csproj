@@ -76,6 +76,7 @@
     <Compile Include="Controllers\ExportImportController.cs" />
     <Compile Include="Controllers\MotionProfileManager.cs" />
     <Compile Include="Controllers\MouseController.cs" />
+    <Compile Include="Controllers\ScanController.cs" />
     <Compile Include="Controllers\SerialPortController.cs" />
     <Compile Include="Controllers\SimpleSerialController.cs" />
     <Compile Include="Controllers\UIController.cs" />

@@ -272,9 +272,9 @@ namespace CrystalTable
         }
 
         /// <summary>
-        /// ✅ Переместить указатель в заданные ВИРТУАЛЬНЫЕ координаты
+        /// ✅ Переместить указатель в заданные ВИРТУАЛЬНЫЕ координаты (публичный для ScanController)
         /// </summary>
-        private async Task<bool> MovePointerToAsync(float targetXmm, float targetYmm)
+        public async Task<bool> MovePointerToAsync(float targetXmm, float targetYmm)
         {
             // ✅ Проверка в виртуальных координатах
             if (!CanMoveTo(targetXmm, targetYmm))
