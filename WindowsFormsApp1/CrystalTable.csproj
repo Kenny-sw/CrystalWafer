@@ -81,6 +81,9 @@
     <Compile Include="Controllers\UIController.cs" />
     <Compile Include="Controllers\WaferController.cs" />
     <Compile Include="Controllers\\ZoomPanController.cs" />
+    <Compile Include="Controls\MiniMapControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="CultureSettings.cs" />
     <Compile Include="Data\BinCategory.cs" />
     <Compile Include="Data\Crystal.cs" />

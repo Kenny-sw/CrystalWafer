@@ -5,6 +5,7 @@ using System.Drawing.Imaging;
 using System.Windows.Forms;
 using CrystalTable.Data;
 using CrystalTable.Controllers;
+using CrystalTable.Controls;
 
 namespace CrystalTable
 {
@@ -31,6 +32,9 @@ namespace CrystalTable
         private Button mapSavePresetButton;
         private Button mapEditPresetButton;
         private Button mapDeletePresetButton;
+        
+        // ✅ Миникарта
+        private MiniMapControl miniMapControl;
         
         private ToolStripButton toolStripSavePngButton;
         private bool mapInputsSyncLock;
@@ -218,6 +222,48 @@ namespace CrystalTable
 
             // ✅ ИЗМЕНЕНО: Добавляем в tabPageMap
             tabPageMap.Controls.Add(mapBuilderPanel);
+
+            // ✅ ДОБАВЛЕНО: Миникарта
+            CreateMiniMap();
+        }
+
+        /// <summary>
+        /// Создание миникарты
+        /// </summary>
+        private void CreateMiniMap()
+        {
+            // Панель для миникарты с заголовком
+            var miniMapPanel = new Panel
+            {
+                Dock = DockStyle.Bottom,
+                Height = 200,
+                Padding = new Padding(5),
+                BackColor = Color.Transparent
+            };
+
+            var miniMapTitle = new Label
+            {
+                Text = "🗺️ Обзор карты",
+                Font = new Font("Segoe UI", 9f, FontStyle.Bold),
+                ForeColor = Color.FromArgb(51, 51, 51),
+                Dock = DockStyle.Top,
+                Height = 22
+            };
+
+            miniMapControl = new MiniMapControl
+            {
+                Dock = DockStyle.Fill,
+                WaferDiameter = 150f,
+                ShowBinColors = true,
+                ShowPointer = true,
+                ShowViewport = true
+            };
+            miniMapControl.NavigationRequested += MiniMap_NavigationRequested;
+
+            miniMapPanel.Controls.Add(miniMapControl);
+            miniMapPanel.Controls.Add(miniMapTitle);
+
+            tabPageMap.Controls.Add(miniMapPanel);
         }
 
         private void CreateMapBuilderToolbarButtons()
@@ -805,6 +851,47 @@ namespace CrystalTable
 
         // Обработчики loadDataComboBox_SelectedIndexChanged и checkBoxFillWafer_CheckedChanged
         // находятся в Form1.cs и Form1.LoadData.cs
+
+        /// <summary>
+        /// Обработчик навигации по миникарте
+        /// </summary>
+        private void MiniMap_NavigationRequested(object sender, MiniMapClickEventArgs e)
+        {
+            // Центрировать вид на указанные координаты (мм)
+            zoomPanController.CenterOnPoint(e.X, e.Y);
+            UpdateUI();
+        }
+
+        /// <summary>
+        /// Обновить миникарту
+        /// </summary>
+        private void UpdateMiniMap()
+        {
+            if (miniMapControl == null)
+                return;
+
+            // Обновить диаметр
+            miniMapControl.WaferDiameter = waferController.WaferDiameter;
+
+            // Обновить позицию указателя
+            var pointerMm = GetPointerMm();
+            miniMapControl.SetPointerPosition(pointerMm.X, pointerMm.Y);
+
+            // Обновить область просмотра
+            var viewBounds = zoomPanController.GetViewBoundsInMm(pictureBox1.Width, pictureBox1.Height);
+            miniMapControl.SetViewport(
+                viewBounds.X + viewBounds.Width / 2,
+                viewBounds.Y + viewBounds.Height / 2,
+                viewBounds.Width,
+                viewBounds.Height);
+
+            // Принудительное обновление при изменении кристаллов
+            if (CrystalManager.Instance.Crystals.Count != miniMapControl.Tag as int?)
+            {
+                miniMapControl.InvalidateCache();
+                miniMapControl.Tag = CrystalManager.Instance.Crystals.Count;
+            }
+        }
     }
 }
 

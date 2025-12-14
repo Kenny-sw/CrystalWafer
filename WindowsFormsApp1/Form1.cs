@@ -223,6 +223,7 @@ debugOverlay = new DebugOverlayRenderer
             uiController.UpdateSelectionLabel(mouseController.SelectedCrystals);
             uiController.UpdateToolbarState(commandHistory);
             SyncMapBuilderUi();
+            UpdateMiniMap();  // ✅ Обновление миникарты
         }
 
         // ===== PictureBox =====

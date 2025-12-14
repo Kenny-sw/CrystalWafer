@@ -102,5 +102,52 @@ namespace CrystalTable.Controllers
                 point.Y * ZoomFactor + PanOffset.Y
             );
         }
+
+        /// <summary>
+        /// Получить границы видимой области в координатах мм (относительно центра пластины)
+        /// </summary>
+        public RectangleF GetViewBoundsInMm(int viewWidth, int viewHeight)
+        {
+            float scaleFactor = form.WaferController?.ScaleFactor ?? 1f;
+            if (scaleFactor <= 0) scaleFactor = 1f;
+
+            // Центр экрана в пикселях
+            float centerX = viewWidth / 2f;
+            float centerY = viewHeight / 2f;
+
+            // Углы видимой области в мировых координатах
+            var topLeft = TransformPoint(new PointF(0, 0));
+            var bottomRight = TransformPoint(new PointF(viewWidth, viewHeight));
+
+            // Преобразуем в мм относительно центра
+            float leftMm = (topLeft.X - centerX) / scaleFactor;
+            float topMm = (topLeft.Y - centerY) / scaleFactor;
+            float rightMm = (bottomRight.X - centerX) / scaleFactor;
+            float bottomMm = (bottomRight.Y - centerY) / scaleFactor;
+
+            return new RectangleF(leftMm, topMm, rightMm - leftMm, bottomMm - topMm);
+        }
+
+        /// <summary>
+        /// Центрировать вид на указанной точке (в координатах мм относительно центра пластины)
+        /// </summary>
+        public void CenterOnPoint(float xMm, float yMm)
+        {
+            float scaleFactor = form.WaferController?.ScaleFactor ?? 1f;
+            if (scaleFactor <= 0) scaleFactor = 1f;
+
+            float centerX = form.PictureBox.Width / 2f;
+            float centerY = form.PictureBox.Height / 2f;
+
+            // Позиция точки в пикселях
+            float pixelX = xMm * scaleFactor + centerX;
+            float pixelY = yMm * scaleFactor + centerY;
+
+            // Смещаем так, чтобы эта точка была в центре экрана
+            PanOffset = new PointF(
+                centerX - pixelX * ZoomFactor,
+                centerY - pixelY * ZoomFactor
+            );
+        }
     }
 }
