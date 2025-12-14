@@ -70,9 +70,17 @@ namespace CrystalTable
                 Padding = new Padding(8)
             };
 
-            // Вставляем после вкладки "Карта"
-            int insertIndex = rightTabControl.TabPages.IndexOf(tabPageMap) + 1;
-            rightTabControl.TabPages.Insert(insertIndex, tabPageScan);
+            // Вставляем после вкладки "Карта" или в конец
+            if (tabPageMap != null && rightTabControl.TabPages.Contains(tabPageMap))
+            {
+                int insertIndex = rightTabControl.TabPages.IndexOf(tabPageMap) + 1;
+                rightTabControl.TabPages.Insert(insertIndex, tabPageScan);
+            }
+            else
+            {
+                // Если tabPageMap не найден - добавляем в конец
+                rightTabControl.TabPages.Add(tabPageScan);
+            }
 
             // Создаём панель на этой вкладке
             CreateScanPanel();
