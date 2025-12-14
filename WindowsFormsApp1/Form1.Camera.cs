@@ -40,6 +40,9 @@ namespace CrystalTable
             // Создаем кнопки в тулбаре
             CreateCameraToolbarButtons();
 
+            // Создаем панель управления камерой
+            CreateCameraControlPanel();
+
             // Настройка превью камеры
             cameraPictureBox.Visible = false;
             cameraPictureBox.SizeMode = PictureBoxSizeMode.Zoom;
@@ -52,6 +55,150 @@ namespace CrystalTable
             // Подсказка
             var toolTip = new ToolTip();
             toolTip.SetToolTip(cameraPictureBox, "Двойной клик для изменения размера\nESC для возврата");
+        }
+
+        /// <summary>
+        /// Создание панели управления камерой в tabPageCamera
+        /// </summary>
+        private void CreateCameraControlPanel()
+        {
+            var cameraPanel = new Panel
+            {
+                Dock = DockStyle.Fill,
+                Padding = new Padding(8),
+                BackColor = Color.Transparent,
+                AutoScroll = true
+            };
+
+            // Заголовок
+            var titleLabel = new Label
+            {
+                Text = "Управление камерой",
+                Font = new Font("Segoe UI", 9f),
+                ForeColor = Color.FromArgb(64, 64, 64),
+                Dock = DockStyle.Top,
+                Height = 26
+            };
+
+            // Превью камеры
+            var previewGroup = new GroupBox
+            {
+                Text = "Превью",
+                Dock = DockStyle.Top,
+                Height = 180,
+                Font = new Font("Segoe UI", 9f),
+                ForeColor = Color.FromArgb(64, 64, 64),
+                Padding = new Padding(8)
+            };
+
+            var cameraPictureBoxInTab = new PictureBox
+            {
+                Name = "cameraPictureBoxInTab",
+                Dock = DockStyle.Fill,
+                SizeMode = PictureBoxSizeMode.Zoom,
+                BackColor = Color.FromArgb(40, 40, 40),
+                BorderStyle = BorderStyle.FixedSingle
+            };
+            previewGroup.Controls.Add(cameraPictureBoxInTab);
+
+            // Группа кнопок управления
+            var controlGroup = new GroupBox
+            {
+                Text = "Управление",
+                Dock = DockStyle.Top,
+                Height = 180,
+                Font = new Font("Segoe UI", 9f),
+                ForeColor = Color.FromArgb(64, 64, 64),
+                Padding = new Padding(8)
+            };
+
+            // TableLayoutPanel для кнопок - занимает всю ширину
+            var buttonTable = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 4,
+                Padding = new Padding(0)
+            };
+            buttonTable.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            buttonTable.RowStyles.Add(new RowStyle(SizeType.Percent, 25F));
+            buttonTable.RowStyles.Add(new RowStyle(SizeType.Percent, 25F));
+            buttonTable.RowStyles.Add(new RowStyle(SizeType.Percent, 25F));
+            buttonTable.RowStyles.Add(new RowStyle(SizeType.Percent, 25F));
+
+            var btnToggleTab = CreateCameraButtonNeutral("Включить камеру");
+            btnToggleTab.Dock = DockStyle.Fill;
+            btnToggleTab.Click += (s, e) => BtnCameraToggle_Click(s, e);
+
+            var btnSettingsTab = CreateCameraButtonNeutral("Настройки");
+            btnSettingsTab.Dock = DockStyle.Fill;
+            btnSettingsTab.Click += (s, e) => BtnCameraSettings_Click(s, e);
+            btnSettingsTab.Enabled = false;
+
+            var btnCalibrateTab = CreateCameraButtonNeutral("Калибровка");
+            btnCalibrateTab.Dock = DockStyle.Fill;
+            btnCalibrateTab.Click += (s, e) => BtnCameraCalibrate_Click(s, e);
+            btnCalibrateTab.Enabled = false;
+
+            var btnSnapshotTab = CreateCameraButtonNeutral("Сохранить снимок");
+            btnSnapshotTab.Dock = DockStyle.Fill;
+            btnSnapshotTab.Click += (s, e) => BtnCameraSnapshot_Click(s, e);
+            btnSnapshotTab.Enabled = false;
+
+            buttonTable.Controls.Add(btnToggleTab, 0, 0);
+            buttonTable.Controls.Add(btnSettingsTab, 0, 1);
+            buttonTable.Controls.Add(btnCalibrateTab, 0, 2);
+            buttonTable.Controls.Add(btnSnapshotTab, 0, 3);
+
+            controlGroup.Controls.Add(buttonTable);
+
+            // Группа статуса
+            var statusGroup = new GroupBox
+            {
+                Text = "Статус",
+                Dock = DockStyle.Top,
+                Height = 70,
+                Font = new Font("Segoe UI", 9f),
+                ForeColor = Color.FromArgb(64, 64, 64),
+                Padding = new Padding(8)
+            };
+
+            var statusLabel = new Label
+            {
+                Name = "cameraStatusLabel",
+                Text = "Камера: не подключена",
+                Dock = DockStyle.Fill,
+                Font = new Font("Segoe UI", 9f),
+                ForeColor = Color.FromArgb(100, 100, 100)
+            };
+            statusGroup.Controls.Add(statusLabel);
+
+            // Собираем панель (порядок важен - снизу вверх)
+            cameraPanel.Controls.Add(statusGroup);
+            cameraPanel.Controls.Add(controlGroup);
+            cameraPanel.Controls.Add(previewGroup);
+            cameraPanel.Controls.Add(titleLabel);
+
+            // Добавляем в tabPageCamera
+            tabPageCamera.Controls.Add(cameraPanel);
+        }
+
+        /// <summary>
+        /// Вспомогательный метод для создания нейтральных кнопок камеры
+        /// </summary>
+        private Button CreateCameraButtonNeutral(string text)
+        {
+            return new Button
+            {
+                Text = text,
+                Height = 32,
+                BackColor = Color.FromArgb(245, 245, 245),
+                ForeColor = Color.FromArgb(64, 64, 64),
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 9f),
+                Cursor = Cursors.Hand,
+                Margin = new Padding(0, 2, 0, 2)
+            };
         }
 
         // Текущий режим отображения камеры

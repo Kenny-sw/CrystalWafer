@@ -221,8 +221,16 @@ debugOverlay = new DebugOverlayRenderer
             // Используем прямую ссылку на кнопку из Designer
             if (buttonLockToggle != null)
             {
-                buttonLockToggle.Text = isLocked ? "🔒 Сброс" : "🔓 Фиксация";
-                buttonLockToggle.BackColor = isLocked ? Color.FromArgb(255, 200, 200) : Color.FromArgb(200, 255, 200);
+                if (isLocked)
+                {
+                    buttonLockToggle.Text = "СБРОС";
+                    buttonLockToggle.BackColor = Color.FromArgb(231, 76, 60); // Красный
+                }
+                else
+                {
+                    buttonLockToggle.Text = "ФИКСАЦИЯ";
+                    buttonLockToggle.BackColor = Color.FromArgb(46, 204, 113); // Зеленый
+                }
             }
         }
 

@@ -39,58 +39,62 @@ namespace CrystalTable
         private void InitializeComponent()
  {
          // Настройки формы
-        this.Text = "Статистика пластины";
-    this.Size = new Size(600, 500);
+        this.Text = "📊 Статистика пластины";
+    this.Size = new Size(700, 550);
       this.StartPosition = FormStartPosition.CenterParent;
-   this.FormBorderStyle = FormBorderStyle.FixedDialog;
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
+   this.FormBorderStyle = FormBorderStyle.Sizable;
+            this.MaximizeBox = true;
+            this.MinimizeBox = true;
+            this.MinimumSize = new Size(500, 400);
+            this.Font = new Font("Segoe UI", 9f);
+            this.BackColor = Color.FromArgb(248, 249, 250);
 
             // Создаем TabControl для разных видов статистики
             TabControl tabControl = new TabControl();
      tabControl.Dock = DockStyle.Fill;
+            tabControl.Font = new Font("Segoe UI", 9.5f);
 
             // Вкладка общей статистики
-     TabPage generalTab = new TabPage("Общая статистика");
+     TabPage generalTab = new TabPage("📋 Общая статистика");
+            generalTab.BackColor = Color.White;
             generalTab.Controls.Add(CreateGeneralStatisticsPanel());
           tabControl.TabPages.Add(generalTab);
 
             // Вкладка распределения
-            TabPage distributionTab = new TabPage("Распределение");
+            TabPage distributionTab = new TabPage("📈 Распределение");
+       distributionTab.BackColor = Color.White;
        distributionTab.Controls.Add(CreateDistributionPanel());
        tabControl.TabPages.Add(distributionTab);
 
        // Вкладка выделенных кристаллов
             if (selectedCrystals != null && selectedCrystals.Count > 0)
             {
-        TabPage selectionTab = new TabPage("Выделенные кристаллы");
+        TabPage selectionTab = new TabPage("✓ Выделенные");
+            selectionTab.BackColor = Color.White;
      selectionTab.Controls.Add(CreateSelectionPanel());
             tabControl.TabPages.Add(selectionTab);
    }
 
             // Панель с кнопками
             Panel buttonPanel = new Panel();
-   buttonPanel.Height = 50;
+   buttonPanel.Height = 55;
    buttonPanel.Dock = DockStyle.Bottom;
+            buttonPanel.BackColor = Color.FromArgb(248, 249, 250);
+            buttonPanel.Padding = new Padding(10);
 
-      Button btnExport = new Button();
-            btnExport.Text = "Экспорт в файл";
-     btnExport.Size = new Size(120, 30);
-            btnExport.Location = new Point(10, 10);
+      Button btnExport = CreateStyledButton("💾 Экспорт", Color.FromArgb(52, 152, 219));
+     btnExport.Location = new Point(15, 12);
      btnExport.Click += BtnExport_Click;
             buttonPanel.Controls.Add(btnExport);
 
-          Button btnCopy = new Button();
- btnCopy.Text = "Копировать";
- btnCopy.Size = new Size(120, 30);
-         btnCopy.Location = new Point(140, 10);
+          Button btnCopy = CreateStyledButton("📋 Копировать", Color.FromArgb(155, 89, 182));
+ btnCopy.Location = new Point(140, 12);
          btnCopy.Click += BtnCopy_Click;
    buttonPanel.Controls.Add(btnCopy);
 
-       Button btnClose = new Button();
-btnClose.Text = "Закрыть";
-            btnClose.Size = new Size(120, 30);
-     btnClose.Location = new Point(460, 10);
+       Button btnClose = CreateStyledButton("✕ Закрыть", Color.FromArgb(149, 165, 166));
+            btnClose.Location = new Point(buttonPanel.Width - 130, 12);
+            btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             btnClose.Click += (s, e) => this.Close();
     buttonPanel.Controls.Add(btnClose);
 
@@ -99,7 +103,24 @@ btnClose.Text = "Закрыть";
  this.Controls.Add(buttonPanel);
         }
 
-   /// <summary>
+        /// <summary>
+        /// Создание стилизованной кнопки
+        /// </summary>
+        private Button CreateStyledButton(string text, Color backColor)
+        {
+            return new Button
+            {
+                Text = text,
+                Size = new Size(115, 32),
+                BackColor = backColor,
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 9f),
+                Cursor = Cursors.Hand
+            };
+        }
+
+        /// <summary>
         /// Создает панель общей статистики
   /// </summary>
         private Panel CreateGeneralStatisticsPanel()
@@ -107,16 +128,19 @@ btnClose.Text = "Закрыть";
             Panel panel = new Panel();
 panel.Dock = DockStyle.Fill;
        panel.AutoScroll = true;
+            panel.Padding = new Padding(10);
 
        ListView listView = new ListView();
             listView.View = View.Details;
             listView.FullRowSelect = true;
             listView.GridLines = true;
             listView.Dock = DockStyle.Fill;
+            listView.Font = new Font("Segoe UI", 9.5f);
+            listView.BackColor = Color.White;
 
      // Колонки
-            listView.Columns.Add("Параметр", 250);
-            listView.Columns.Add("Значение", 300);
+            listView.Columns.Add("Параметр", 280);
+            listView.Columns.Add("Значение", 280);
 
        // Добавляем статистику
        foreach (var kvp in statistics)
@@ -133,7 +157,7 @@ panel.Dock = DockStyle.Fill;
    kvp.Key.Contains("времени сканирования"))
      {
     item.Font = new Font(listView.Font, FontStyle.Bold);
-             item.BackColor = Color.LightYellow;
+             item.BackColor = Color.FromArgb(255, 249, 219);
       }
 
            item.SubItems.Add(value);

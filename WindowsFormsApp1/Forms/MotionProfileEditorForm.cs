@@ -64,10 +64,10 @@ namespace CrystalTable.Forms
             // ===== ОСНОВНЫЕ НАСТРОЙКИ ФОРМЫ =====
          
     this.Text = "⚙️ Редактор профилей движения";
- this.Size = new Size(1300, 750); // ✅ Увеличена ширина для 3 колонок
+ this.Size = new Size(1400, 800); // ✅ Увеличена ширина и высота
             this.StartPosition = FormStartPosition.CenterParent;
             this.FormBorderStyle = FormBorderStyle.Sizable;
-  this.MinimumSize = new Size(1100, 650);
+  this.MinimumSize = new Size(1200, 700);
             this.MaximizeBox = true;
             this.MinimizeBox = false;
             this.BackColor = Color.FromArgb(240, 240, 245);
@@ -129,8 +129,8 @@ namespace CrystalTable.Forms
      verticalLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 160));
         // Строка 2: График (остаток места - СЖАТ)
         verticalLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        // Строка 3: Кнопки действий (70px - УМЕНЬШЕНА)
-     verticalLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 70));
+        // Строка 3: Кнопки действий (90px - УВЕЛИЧЕНА)
+     verticalLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 90));
 
  // Параметры
       verticalLayout.Controls.Add(CreateParametersPanel(), 0, 0);
@@ -180,11 +180,11 @@ Padding = new Padding(3), // ✅ Уменьшен отступ с 6 до 3
  Padding = new Padding(2, 28, 2, 2) // ✅ Минимальные отступы, сдвиг вверх
        };
 
-  // ✅ Колонки: Label очень узкие (60px), Control компактные (70px)
+  // ✅ Колонки: Label (70px), Control (80px) - увеличено
     for (int i = 0; i < 4; i++)
      {
-layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 60)); // ✅ 70→60px (-10px)
-      layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 70)); // ✅ 80→70px (-10px)
+layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 70)); // ✅ 60→70px
+      layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 80)); // ✅ 70→80px
       }
 
    int col = 0;
@@ -335,7 +335,7 @@ cruiseInput = CreateNumericInput(0, 80, 40);
    FlowLayoutPanel buttonsPanel = new FlowLayoutPanel
             {
   Dock = DockStyle.Bottom,
-   Height = 120,
+   Height = 140,
      FlowDirection = FlowDirection.TopDown,
          WrapContents = false,
            Padding = new Padding(5)
@@ -484,13 +484,13 @@ panel.Controls.Add(statsLabel);
             }
 
             // === ПАРАМЕТРЫ СКОРОСТИ ===
-       AddInfoGroupTitle(infoLayout, row++, "⚡ Параметры скорости");
+       AddInfoGroupTitle(infoLayout, row++, "⚡ Скорость");
      AddInfoRow2Col(infoLayout, row++, "Min delay:", $"{currentProfile.MinDelayUs} мкс");
             AddInfoRow2Col(infoLayout, row++, "Max delay:", $"{currentProfile.MaxDelayUs} мкс");
-    AddInfoRow2Col(infoLayout, row++, "Max скорость:", $"{currentProfile.MaxSpeedStepsPerSec:F0} шаг/с");
-      AddInfoRow2Col(infoLayout, row++, "Min скорость:", $"{currentProfile.MinSpeedStepsPerSec:F0} шаг/с");
+    AddInfoRow2Col(infoLayout, row++, "Max скорость:", $"{currentProfile.MaxSpeedStepsPerSec:F0} ш/с");
+      AddInfoRow2Col(infoLayout, row++, "Min скорость:", $"{currentProfile.MinSpeedStepsPerSec:F0} ш/с");
             AddInfoRow2Col(infoLayout, row++, "Диапазон:", $"×{(currentProfile.MaxSpeedStepsPerSec / Math.Max(currentProfile.MinSpeedStepsPerSec, 1)):F1}");
-        AddInfoRow2Col(infoLayout, row++, "Ускорение:", $"{currentProfile.MaxAccelerationStepsPerSec2:F0} шаг/с²");
+        AddInfoRow2Col(infoLayout, row++, "Ускорение:", $"{currentProfile.MaxAccelerationStepsPerSec2:F0} ш/с²");
 
             // === РАСПРЕДЕЛЕНИЕ ФАЗ ===
           AddInfoGroupTitle(infoLayout, row++, "📊 Распределение фаз");
@@ -498,34 +498,34 @@ panel.Controls.Add(statsLabel);
             AddInfoRow2Col(infoLayout, row++, "CRUISE:", $"{currentProfile.CruisePercent}%");
             AddInfoRow2Col(infoLayout, row++, "DECEL:", $"{currentProfile.DecelPercent}%");
        AddInfoRow2Col(infoLayout, row++, "Сумма:", $"{currentProfile.AccelPercent + currentProfile.CruisePercent + currentProfile.DecelPercent}%");
-          AddInfoRow2Col(infoLayout, row++, "Auto порог:", $"{currentProfile.AutoThreshold} шаг.");
+            AddInfoRow2Col(infoLayout, row++, "Auto порог:", $"{currentProfile.AutoThreshold}");
 
         // === СТАТИСТИКА ДЛЯ 100 ШАГОВ ===
-    AddInfoGroupTitle(infoLayout, row++, "📏 Для 100 шагов");
-            AddInfoRow2Col(infoLayout, row++, "Время:", $"{stats100.TotalTimeSec:F3} сек");
-        AddInfoRow2Col(infoLayout, row++, "Макс. скор.:", $"{stats100.MaxSpeedStepsPerSec:F0} ш/с");
-         AddInfoRow2Col(infoLayout, row++, "ACCEL:", $"{stats100.AccelSteps} шаг");
-            AddInfoRow2Col(infoLayout, row++, "RUN:", $"{stats100.CruiseSteps} шаг");
-            AddInfoRow2Col(infoLayout, row++, "DECEL:", $"{stats100.DecelSteps} шаг");
-       AddInfoRow2Col(infoLayout, row++, "Всего:", $"{stats100.TotalSteps} шаг");
+    AddInfoGroupTitle(infoLayout, row++, "📏 N=100");
+            AddInfoRow2Col(infoLayout, row++, "Время:", $"{stats100.TotalTimeSec:F3} с");
+        AddInfoRow2Col(infoLayout, row++, "Макс.скор.:", $"{stats100.MaxSpeedStepsPerSec:F0} ш/с");
+         AddInfoRow2Col(infoLayout, row++, "ACCEL:", $"{stats100.AccelSteps}");
+            AddInfoRow2Col(infoLayout, row++, "RUN:", $"{stats100.CruiseSteps}");
+            AddInfoRow2Col(infoLayout, row++, "DECEL:", $"{stats100.DecelSteps}");
+       AddInfoRow2Col(infoLayout, row++, "Всего:", $"{stats100.TotalSteps}");
 
   // === СТАТИСТИКА ДЛЯ 1000 ШАГОВ ===
-    AddInfoGroupTitle(infoLayout, row++, "📐 Для 1000 шагов");
-            AddInfoRow2Col(infoLayout, row++, "Время:", $"{stats1000.TotalTimeSec:F3} сек");
-            AddInfoRow2Col(infoLayout, row++, "Макс. скор.:", $"{stats1000.MaxSpeedStepsPerSec:F0} ш/с");
-     AddInfoRow2Col(infoLayout, row++, "ACCEL:", $"{stats1000.AccelSteps} шаг");
-            AddInfoRow2Col(infoLayout, row++, "RUN:", $"{stats1000.CruiseSteps} шаг");
-  AddInfoRow2Col(infoLayout, row++, "DECEL:", $"{stats1000.DecelSteps} шаг");
-AddInfoRow2Col(infoLayout, row++, "Всего:", $"{stats1000.TotalSteps} шаг");
+    AddInfoGroupTitle(infoLayout, row++, "📐 N=1000");
+            AddInfoRow2Col(infoLayout, row++, "Время:", $"{stats1000.TotalTimeSec:F3} с");
+            AddInfoRow2Col(infoLayout, row++, "Макс.скор.:", $"{stats1000.MaxSpeedStepsPerSec:F0} ш/с");
+     AddInfoRow2Col(infoLayout, row++, "ACCEL:", $"{stats1000.AccelSteps}");
+            AddInfoRow2Col(infoLayout, row++, "RUN:", $"{stats1000.CruiseSteps}");
+  AddInfoRow2Col(infoLayout, row++, "DECEL:", $"{stats1000.DecelSteps}");
+AddInfoRow2Col(infoLayout, row++, "Всего:", $"{stats1000.TotalSteps}");
 
             // === СТАТИСТИКА ДЛЯ 10000 ШАГОВ ===
-     AddInfoGroupTitle(infoLayout, row++, "📊 Для 10000 шагов");
-   AddInfoRow2Col(infoLayout, row++, "Время:", $"{stats10000.TotalTimeSec:F3} сек");
-            AddInfoRow2Col(infoLayout, row++, "Макс. скор.:", $"{stats10000.MaxSpeedStepsPerSec:F0} ш/с");
-            AddInfoRow2Col(infoLayout, row++, "ACCEL:", $"{stats10000.AccelSteps} шаг");
-     AddInfoRow2Col(infoLayout, row++, "RUN:", $"{stats10000.CruiseSteps} шаг");
-  AddInfoRow2Col(infoLayout, row++, "DECEL:", $"{stats10000.DecelSteps} шаг");
-            AddInfoRow2Col(infoLayout, row++, "Всего:", $"{stats10000.TotalSteps} шаг");
+     AddInfoGroupTitle(infoLayout, row++, "📊 N=10000");
+   AddInfoRow2Col(infoLayout, row++, "Время:", $"{stats10000.TotalTimeSec:F3} с");
+            AddInfoRow2Col(infoLayout, row++, "Макс.скор.:", $"{stats10000.MaxSpeedStepsPerSec:F0} ш/с");
+            AddInfoRow2Col(infoLayout, row++, "ACCEL:", $"{stats10000.AccelSteps}");
+     AddInfoRow2Col(infoLayout, row++, "RUN:", $"{stats10000.CruiseSteps}");
+  AddInfoRow2Col(infoLayout, row++, "DECEL:", $"{stats10000.DecelSteps}");
+            AddInfoRow2Col(infoLayout, row++, "Всего:", $"{stats10000.TotalSteps}");
 
             // === СРАВНИТЕЛЬНАЯ ОЦЕНКА ===
             AddInfoGroupTitle(infoLayout, row++, "⚖️ Сравнительная оценка");
@@ -543,12 +543,12 @@ layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
           Label label = new Label
     {
   Text = title,
-    Font = new Font("Segoe UI", 8.5f, FontStyle.Bold), // ✅ Уменьшен шрифт с 9f до 8.5f
+    Font = new Font("Segoe UI", 9f, FontStyle.Bold), // ✅ Увеличен шрифт с 8.5f до 9f
     ForeColor = Color.FromArgb(50, 50, 150),
     AutoSize = true,
-    Margin = new Padding(3, 8, 3, 2), // ✅ Уменьшены отступы
+    Margin = new Padding(3, 10, 3, 4), // ✅ Увеличены отступы
     BackColor = Color.FromArgb(240, 240, 255),
-     Padding = new Padding(4, 2, 4, 2) // ✅ Уменьшен padding
+     Padding = new Padding(6, 3, 6, 3) // ✅ Увеличен padding
      };
     layout.SetColumnSpan(label, 2);
       layout.Controls.Add(label, 0, row);
@@ -562,16 +562,16 @@ layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
          {
          Text = label,
    AutoSize = true,
-  Margin = new Padding(3, 2, 2, 2), // ✅ Уменьшены отступы с 5,3,2,3 до 3,2,2,2
-     Font = new Font("Segoe UI", 8f), // ✅ Уменьшен шрифт с 8.5f до 8f
+  Margin = new Padding(3, 2, 2, 2),
+     Font = new Font("Segoe UI", 8.5f),
     ForeColor = Color.Gray
      };
     Label valControl = new Label
        {
           Text = value,
    AutoSize = true,
-      Margin = new Padding(2, 2, 3, 2), // ✅ Уменьшены отступы
-    Font = new Font("Segoe UI", 8f, FontStyle.Bold) // ✅ Уменьшен шрифт
+      Margin = new Padding(2, 2, 3, 2),
+    Font = new Font("Segoe UI", 8.5f) // ✅ Убран Bold
      };
   layout.Controls.Add(lblControl, 0, row);
    layout.Controls.Add(valControl, 1, row);
@@ -665,16 +665,16 @@ FlowDirection = FlowDirection.LeftToRight,
      Padding = new Padding(3)
       };
 
-       applyButton = CreateButton("💾 Применить и отправить в Arduino", (s, e) => ApplyProfile(), 260);
- testXButton = CreateButton("🎯 Тест X", (s, e) => TestProfile(Axis.X), 100);
-     testYButton = CreateButton("🎯 Тест Y", (s, e) => TestProfile(Axis.Y), 100);
- exportButton = CreateButton("📤 Экспорт", (s, e) => ExportProfile(), 100);
-    importButton = CreateButton("📂 Импорт", (s, e) => ImportProfile(), 100);
-       closeButton = CreateButton("❌ Закрыть", (s, e) => this.Close(), 100);
+       applyButton = CreateButton("💾 Применить", (s, e) => ApplyProfile(), 120);
+ testXButton = CreateButton("🎯 X", (s, e) => TestProfile(Axis.X), 60);
+     testYButton = CreateButton("🎯 Y", (s, e) => TestProfile(Axis.Y), 60);
+ exportButton = CreateButton("📤 Экспорт", (s, e) => ExportProfile(), 90);
+    importButton = CreateButton("📂 Импорт", (s, e) => ImportProfile(), 90);
+       closeButton = CreateButton("❌ Закрыть", (s, e) => this.Close(), 90);
 
        applyButton.BackColor = Color.FromArgb(76, 175, 80);
     applyButton.ForeColor = Color.White;
-applyButton.Font = new Font("Segoe UI", 9f, FontStyle.Bold);
+applyButton.Font = new Font("Segoe UI", 9f); // ✅ Убран Bold — не помещался текст
 
     // Результат теста
       testResultLabel = new Label

@@ -77,14 +77,21 @@ namespace CrystalTable.Controllers
             if (form == null) return;
 
             if (form.StatusLabel != null)
-                form.StatusLabel.Text = form.DebugModeWithoutComPort ? "Debug" : "Готово";
+            {
+                form.StatusLabel.Text = form.DebugModeWithoutComPort ? "🔧 Debug" : "✓ Готово";
+                form.StatusLabel.ForeColor = form.DebugModeWithoutComPort ? Color.OrangeRed : Color.ForestGreen;
+            }
 
             if (form.ZoomLabel != null && zoom != null)
-                form.ZoomLabel.Text = $"×{zoom.ZoomFactor:F1}";
+            {
+                form.ZoomLabel.Text = $"🔍 ×{zoom.ZoomFactor:F1}";
+            }
 
             int count = CrystalManager.Instance.Crystals.Count;
             if (form.TotalCrystalsStatusLabel != null)
-                form.TotalCrystalsStatusLabel.Text = $"Кристаллов: {count}";
+            {
+                form.TotalCrystalsStatusLabel.Text = $"💎 {count}";
+            }
 
             if (form.FillPercentageLabel != null && wafer != null)
             {
@@ -92,24 +99,34 @@ namespace CrystalTable.Controllers
                 float ch = wafer.CrystalHeightRaw / 1000f;
                 float waferArea = (float)(Math.PI * Math.Pow(wafer.WaferDiameter / 2f, 2));
                 float fill = waferArea > 0 ? Math.Min(100f, Math.Max(0f, (count * cw * ch) / waferArea * 100f)) : 0f;
-                form.FillPercentageLabel.Text = $"Запол.: {fill:F0}%";
+                form.FillPercentageLabel.Text = $"📊 {fill:F0}%";
+                
+                // Цветовая индикация заполнения
+                if (fill > 75)
+                    form.FillPercentageLabel.ForeColor = Color.ForestGreen;
+                else if (fill > 40)
+                    form.FillPercentageLabel.ForeColor = Color.DarkOrange;
+                else
+                    form.FillPercentageLabel.ForeColor = Color.Crimson;
             }
 
             var pointer = form.GetPointerMm();
             if (form.CoordinatesLabel != null)
-                form.CoordinatesLabel.Text = $"X:{pointer.X:F2} Y:{pointer.Y:F2}";
+            {
+                form.CoordinatesLabel.Text = $"📍 ({pointer.X:F2}, {pointer.Y:F2})";
+            }
 
             if (form.CalibrationStatusLabel != null && wafer != null)
             {
                 if (wafer.IsCalibrated)
                 {
-                    form.CalibrationStatusLabel.Text = $"Калибр.: #{wafer.CalibrationCrystalIndex}";
+                    form.CalibrationStatusLabel.Text = $"⚙️ #{wafer.CalibrationCrystalIndex}";
                     form.CalibrationStatusLabel.ForeColor = Color.DarkGreen;
                 }
                 else
                 {
-                    form.CalibrationStatusLabel.Text = "Калибр.: нет";
-                    form.CalibrationStatusLabel.ForeColor = SystemColors.ControlText;
+                    form.CalibrationStatusLabel.Text = "⚙️ —";
+                    form.CalibrationStatusLabel.ForeColor = Color.Gray;
                 }
             }
         }
@@ -120,16 +137,19 @@ namespace CrystalTable.Controllers
 
             if (selected == null || selected.Count == 0)
             {
-                form.SelectedCrystalStatusLabel.Text = "Выбрано: 0";
+                form.SelectedCrystalStatusLabel.Text = "✓ 0";
+                form.SelectedCrystalStatusLabel.ForeColor = Color.Gray;
             }
             else if (selected.Count == 1)
             {
                 int idx = selected.First();
-                form.SelectedCrystalStatusLabel.Text = $"Выбран: #{idx + 1}";
+                form.SelectedCrystalStatusLabel.Text = $"✓ #{idx + 1}";
+                form.SelectedCrystalStatusLabel.ForeColor = Color.RoyalBlue;
             }
             else
             {
-                form.SelectedCrystalStatusLabel.Text = $"Выбрано: {selected.Count}";
+                form.SelectedCrystalStatusLabel.Text = $"✓ {selected.Count}";
+                form.SelectedCrystalStatusLabel.ForeColor = Color.RoyalBlue;
             }
         }
 
@@ -184,17 +204,32 @@ namespace CrystalTable.Controllers
         {
             if (g == null || form?.PictureBox == null) return;
 
-            string zoomText = $"Zoom: {zoomFactor:F1}x";
-            using (Font font = new Font("Segoe UI", 9f))
-            using (Brush brush = new SolidBrush(Color.Black))
-            using (Brush bg = new SolidBrush(Color.FromArgb(210, Color.White)))
-            using (Pen pen = new Pen(Color.Gray))
+            string zoomText = $"×{zoomFactor:F1}";
+            
+            using (Font font = new Font("Segoe UI Semibold", 10f))
+            using (Brush textBrush = new SolidBrush(Color.White))
+            using (Brush bgBrush = new SolidBrush(Color.FromArgb(180, 52, 73, 94)))
             {
                 SizeF sz = g.MeasureString(zoomText, font);
-                float x = 10, y = 10;
-                g.FillRectangle(bg, x, y, sz.Width + 10, sz.Height + 6);
-                g.DrawRectangle(pen, x, y, sz.Width + 10, sz.Height + 6);
-                g.DrawString(zoomText, font, brush, x + 5, y + 3);
+                float padding = 8;
+                float x = 12, y = 12;
+                float width = sz.Width + padding * 2;
+                float height = sz.Height + padding;
+                float radius = 6;
+                
+                // Рисуем скругленный прямоугольник
+                using (var path = new System.Drawing.Drawing2D.GraphicsPath())
+                {
+                    path.AddArc(x, y, radius * 2, radius * 2, 180, 90);
+                    path.AddArc(x + width - radius * 2, y, radius * 2, radius * 2, 270, 90);
+                    path.AddArc(x + width - radius * 2, y + height - radius * 2, radius * 2, radius * 2, 0, 90);
+                    path.AddArc(x, y + height - radius * 2, radius * 2, radius * 2, 90, 90);
+                    path.CloseFigure();
+                    
+                    g.FillPath(bgBrush, path);
+                }
+                
+                g.DrawString(zoomText, font, textBrush, x + padding, y + padding / 2);
             }
         }
     }

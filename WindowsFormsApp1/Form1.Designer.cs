@@ -25,6 +25,10 @@ namespace CrystalTable
         {
             this.components = new System.ComponentModel.Container();
             this.cameraPictureBox = new System.Windows.Forms.PictureBox();
+            this.rightTabControl = new System.Windows.Forms.TabControl();
+            this.tabPageControl = new System.Windows.Forms.TabPage();
+            this.tabPageMap = new System.Windows.Forms.TabPage();
+            this.tabPageCamera = new System.Windows.Forms.TabPage();
             this.groupBoxMainControl = new System.Windows.Forms.GroupBox();
             this.buttonLockToggle = new System.Windows.Forms.Button();
             this.resetButton = new System.Windows.Forms.Button();
@@ -119,6 +123,8 @@ namespace CrystalTable
             this.groupBoxManualControl.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             this.groupBoxConnection.SuspendLayout();
+            this.rightTabControl.SuspendLayout();
+            this.tabPageControl.SuspendLayout();
             this.SuspendLayout();
             // 
             // cameraPictureBox
@@ -138,53 +144,81 @@ namespace CrystalTable
             this.groupBoxMainControl.Controls.Add(this.startButton);
             this.groupBoxMainControl.Controls.Add(this.toOriginButton);
             this.groupBoxMainControl.Dock = System.Windows.Forms.DockStyle.Top;
-            this.groupBoxMainControl.Location = new System.Drawing.Point(10, 10);
+            this.groupBoxMainControl.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.groupBoxMainControl.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.groupBoxMainControl.Location = new System.Drawing.Point(8, 8);
             this.groupBoxMainControl.Name = "groupBoxMainControl";
-            this.groupBoxMainControl.Size = new System.Drawing.Size(290, 100);
+            this.groupBoxMainControl.Padding = new System.Windows.Forms.Padding(10);
+            this.groupBoxMainControl.Size = new System.Drawing.Size(316, 115);
             this.groupBoxMainControl.TabIndex = 4;
             this.groupBoxMainControl.TabStop = false;
-            this.groupBoxMainControl.Text = "Главное управление";
+            this.groupBoxMainControl.Text = "Основное управление";
             // 
             // buttonLockToggle
             // 
-            this.buttonLockToggle.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(200)))), ((int)(((byte)(255)))), ((int)(((byte)(200)))));
-            this.buttonLockToggle.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-            this.buttonLockToggle.Location = new System.Drawing.Point(9, 57);
+            this.buttonLockToggle.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(70)))), ((int)(((byte)(130)))), ((int)(((byte)(80)))));
+            this.buttonLockToggle.FlatAppearance.BorderSize = 0;
+            this.buttonLockToggle.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.buttonLockToggle.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
+            this.buttonLockToggle.ForeColor = System.Drawing.Color.White;
+            this.buttonLockToggle.Location = new System.Drawing.Point(13, 70);
             this.buttonLockToggle.Name = "buttonLockToggle";
-            this.buttonLockToggle.Size = new System.Drawing.Size(273, 35);
+            this.buttonLockToggle.Size = new System.Drawing.Size(250, 34);
             this.buttonLockToggle.TabIndex = 3;
-            this.buttonLockToggle.Text = "🔓 Фиксация";
+            this.buttonLockToggle.Text = "Фиксация";
             this.buttonLockToggle.UseVisualStyleBackColor = false;
+            this.buttonLockToggle.Cursor = System.Windows.Forms.Cursors.Hand;
             this.buttonLockToggle.Click += new System.EventHandler(this.buttonLockToggle_Click);
             // 
             // resetButton
             // 
-            this.resetButton.Location = new System.Drawing.Point(197, 23);
+            this.resetButton.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
+            this.resetButton.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
+            this.resetButton.FlatAppearance.BorderSize = 1;
+            this.resetButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.resetButton.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.resetButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.resetButton.Location = new System.Drawing.Point(176, 30);
             this.resetButton.Name = "resetButton";
-            this.resetButton.Size = new System.Drawing.Size(85, 28);
+            this.resetButton.Size = new System.Drawing.Size(87, 32);
             this.resetButton.TabIndex = 2;
             this.resetButton.Text = "Сброс";
-            this.resetButton.UseVisualStyleBackColor = true;
+            this.resetButton.UseVisualStyleBackColor = false;
+            this.resetButton.Cursor = System.Windows.Forms.Cursors.Hand;
             this.resetButton.Click += new System.EventHandler(this.resetButton_Click);
             // 
             // startButton
             // 
-            this.startButton.Location = new System.Drawing.Point(101, 23);
+            this.startButton.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
+            this.startButton.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
+            this.startButton.FlatAppearance.BorderSize = 1;
+            this.startButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.startButton.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.startButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.startButton.Location = new System.Drawing.Point(94, 30);
             this.startButton.Name = "startButton";
-            this.startButton.Size = new System.Drawing.Size(85, 28);
+            this.startButton.Size = new System.Drawing.Size(80, 32);
             this.startButton.TabIndex = 1;
-            this.startButton.Text = "Старт";
-            this.startButton.UseVisualStyleBackColor = true;
+            this.startButton.Text = "Запуск";
+            this.startButton.UseVisualStyleBackColor = false;
+            this.startButton.Cursor = System.Windows.Forms.Cursors.Hand;
             this.startButton.Click += new System.EventHandler(this.startButton_Click);
             // 
             // toOriginButton
             // 
-            this.toOriginButton.Location = new System.Drawing.Point(9, 23);
+            this.toOriginButton.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
+            this.toOriginButton.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
+            this.toOriginButton.FlatAppearance.BorderSize = 1;
+            this.toOriginButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.toOriginButton.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.toOriginButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.toOriginButton.Location = new System.Drawing.Point(13, 30);
             this.toOriginButton.Name = "toOriginButton";
-            this.toOriginButton.Size = new System.Drawing.Size(85, 28);
+            this.toOriginButton.Size = new System.Drawing.Size(80, 32);
             this.toOriginButton.TabIndex = 0;
-            this.toOriginButton.Text = "→ (0,0)";
-            this.toOriginButton.UseVisualStyleBackColor = true;
+            this.toOriginButton.Text = "В центр";
+            this.toOriginButton.UseVisualStyleBackColor = false;
+            this.toOriginButton.Cursor = System.Windows.Forms.Cursors.Hand;
             this.toOriginButton.Click += new System.EventHandler(this.toOriginButton_Click);
             // 
             // menuStrip1
@@ -711,16 +745,60 @@ namespace CrystalTable
             this.pictureBox1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseMove);
             this.pictureBox1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseUp);
             // 
+            // rightTabControl
+            // 
+            this.rightTabControl.Controls.Add(this.tabPageControl);
+            this.rightTabControl.Controls.Add(this.tabPageMap);
+            this.rightTabControl.Controls.Add(this.tabPageCamera);
+            this.rightTabControl.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.rightTabControl.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.rightTabControl.Location = new System.Drawing.Point(5, 5);
+            this.rightTabControl.Name = "rightTabControl";
+            this.rightTabControl.SelectedIndex = 0;
+            this.rightTabControl.Size = new System.Drawing.Size(340, 576);
+            this.rightTabControl.TabIndex = 0;
+            // 
+            // tabPageControl
+            // 
+            this.tabPageControl.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(249)))), ((int)(((byte)(250)))));
+            this.tabPageControl.Controls.Add(this.groupBoxManualControl);
+            this.tabPageControl.Controls.Add(this.groupBoxConnection);
+            this.tabPageControl.Controls.Add(this.groupBoxMainControl);
+            this.tabPageControl.Location = new System.Drawing.Point(4, 26);
+            this.tabPageControl.Name = "tabPageControl";
+            this.tabPageControl.Padding = new System.Windows.Forms.Padding(8);
+            this.tabPageControl.Size = new System.Drawing.Size(332, 546);
+            this.tabPageControl.TabIndex = 0;
+            this.tabPageControl.Text = "Управление";
+            // 
+            // tabPageMap
+            // 
+            this.tabPageMap.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(249)))), ((int)(((byte)(250)))));
+            this.tabPageMap.Location = new System.Drawing.Point(4, 26);
+            this.tabPageMap.Name = "tabPageMap";
+            this.tabPageMap.Padding = new System.Windows.Forms.Padding(8);
+            this.tabPageMap.Size = new System.Drawing.Size(332, 546);
+            this.tabPageMap.TabIndex = 1;
+            this.tabPageMap.Text = "Карта";
+            // 
+            // tabPageCamera
+            // 
+            this.tabPageCamera.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(249)))), ((int)(((byte)(250)))));
+            this.tabPageCamera.Location = new System.Drawing.Point(4, 26);
+            this.tabPageCamera.Name = "tabPageCamera";
+            this.tabPageCamera.Padding = new System.Windows.Forms.Padding(8);
+            this.tabPageCamera.Size = new System.Drawing.Size(332, 546);
+            this.tabPageCamera.TabIndex = 2;
+            this.tabPageCamera.Text = "Камера";
+            // 
             // rightPanel
             // 
-            this.rightPanel.Controls.Add(this.groupBoxManualControl);
-            this.rightPanel.Controls.Add(this.groupBoxConnection);
-            this.rightPanel.Controls.Add(this.groupBoxMainControl);
+            this.rightPanel.Controls.Add(this.rightTabControl);
             this.rightPanel.Dock = System.Windows.Forms.DockStyle.Right;
-            this.rightPanel.Location = new System.Drawing.Point(952, 61);
+            this.rightPanel.Location = new System.Drawing.Point(912, 61);
             this.rightPanel.Name = "rightPanel";
-            this.rightPanel.Padding = new System.Windows.Forms.Padding(10, 10, 10, 0);
-            this.rightPanel.Size = new System.Drawing.Size(310, 586);
+            this.rightPanel.Padding = new System.Windows.Forms.Padding(5);
+            this.rightPanel.Size = new System.Drawing.Size(350, 586);
             this.rightPanel.TabIndex = 3;
             // 
             // groupBoxManualControl
@@ -728,12 +806,15 @@ namespace CrystalTable
             this.groupBoxManualControl.Controls.Add(this.tableLayoutPanel2);
             this.groupBoxManualControl.Controls.Add(this.checkBoxDiscreteStep);
             this.groupBoxManualControl.Dock = System.Windows.Forms.DockStyle.Top;
-            this.groupBoxManualControl.Location = new System.Drawing.Point(10, 181);
+            this.groupBoxManualControl.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.groupBoxManualControl.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.groupBoxManualControl.Location = new System.Drawing.Point(8, 194);
             this.groupBoxManualControl.Name = "groupBoxManualControl";
-            this.groupBoxManualControl.Size = new System.Drawing.Size(290, 190);
+            this.groupBoxManualControl.Padding = new System.Windows.Forms.Padding(10);
+            this.groupBoxManualControl.Size = new System.Drawing.Size(316, 200);
             this.groupBoxManualControl.TabIndex = 2;
             this.groupBoxManualControl.TabStop = false;
-            this.groupBoxManualControl.Text = "Ручное управление";
+            this.groupBoxManualControl.Text = "Перемещение";
             // 
             // tableLayoutPanel2
             // 
@@ -746,96 +827,128 @@ namespace CrystalTable
             this.tableLayoutPanel2.Controls.Add(this.buttonMoveLeft, 0, 1);
             this.tableLayoutPanel2.Controls.Add(this.buttonMoveDown, 1, 2);
             this.tableLayoutPanel2.Controls.Add(this.scan, 1, 1);
-            this.tableLayoutPanel2.Controls.Add(this.buttonStart, 0, 3);
-            this.tableLayoutPanel2.Controls.Add(this.buttonCalibrateZero, 2, 3);
-            this.tableLayoutPanel2.Location = new System.Drawing.Point(9, 21);
+            this.tableLayoutPanel2.Controls.Add(this.buttonCalibrateZero, 0, 3);
+            this.tableLayoutPanel2.Location = new System.Drawing.Point(13, 26);
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
             this.tableLayoutPanel2.RowCount = 4;
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(193, 122);
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(250, 140);
             this.tableLayoutPanel2.TabIndex = 0;
             // 
             // buttonMoveRight
             // 
+            this.buttonMoveRight.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(250)))), ((int)(((byte)(250)))), ((int)(((byte)(250)))));
             this.buttonMoveRight.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.buttonMoveRight.Location = new System.Drawing.Point(131, 33);
+            this.buttonMoveRight.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(200)))), ((int)(((byte)(200)))), ((int)(((byte)(200)))));
+            this.buttonMoveRight.FlatAppearance.BorderSize = 1;
+            this.buttonMoveRight.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.buttonMoveRight.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold);
+            this.buttonMoveRight.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(50)))), ((int)(((byte)(50)))));
+            this.buttonMoveRight.Location = new System.Drawing.Point(169, 38);
             this.buttonMoveRight.Name = "buttonMoveRight";
-            this.buttonMoveRight.Size = new System.Drawing.Size(59, 24);
+            this.buttonMoveRight.Size = new System.Drawing.Size(78, 29);
             this.buttonMoveRight.TabIndex = 3;
-            this.buttonMoveRight.Text = ">";
-            this.buttonMoveRight.UseVisualStyleBackColor = true;
+            this.buttonMoveRight.Text = "►";
+            this.buttonMoveRight.UseVisualStyleBackColor = false;
+            this.buttonMoveRight.Cursor = System.Windows.Forms.Cursors.Hand;
             this.buttonMoveRight.Click += new System.EventHandler(this.buttonMoveRight_Click);
             // 
             // buttonMoveUp
             // 
+            this.buttonMoveUp.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(250)))), ((int)(((byte)(250)))), ((int)(((byte)(250)))));
             this.buttonMoveUp.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.buttonMoveUp.Location = new System.Drawing.Point(67, 3);
+            this.buttonMoveUp.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(200)))), ((int)(((byte)(200)))), ((int)(((byte)(200)))));
+            this.buttonMoveUp.FlatAppearance.BorderSize = 1;
+            this.buttonMoveUp.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.buttonMoveUp.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold);
+            this.buttonMoveUp.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(50)))), ((int)(((byte)(50)))));
+            this.buttonMoveUp.Location = new System.Drawing.Point(86, 3);
             this.buttonMoveUp.Name = "buttonMoveUp";
-            this.buttonMoveUp.Size = new System.Drawing.Size(58, 24);
+            this.buttonMoveUp.Size = new System.Drawing.Size(78, 29);
             this.buttonMoveUp.TabIndex = 0;
-            this.buttonMoveUp.Text = "^";
-            this.buttonMoveUp.UseVisualStyleBackColor = true;
+            this.buttonMoveUp.Text = "▲";
+            this.buttonMoveUp.UseVisualStyleBackColor = false;
+            this.buttonMoveUp.Cursor = System.Windows.Forms.Cursors.Hand;
             this.buttonMoveUp.Click += new System.EventHandler(this.buttonMoveUp_Click);
             // 
             // buttonMoveLeft
             // 
+            this.buttonMoveLeft.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(250)))), ((int)(((byte)(250)))), ((int)(((byte)(250)))));
             this.buttonMoveLeft.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.buttonMoveLeft.Location = new System.Drawing.Point(3, 33);
+            this.buttonMoveLeft.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(200)))), ((int)(((byte)(200)))), ((int)(((byte)(200)))));
+            this.buttonMoveLeft.FlatAppearance.BorderSize = 1;
+            this.buttonMoveLeft.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.buttonMoveLeft.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold);
+            this.buttonMoveLeft.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(50)))), ((int)(((byte)(50)))));
+            this.buttonMoveLeft.Location = new System.Drawing.Point(3, 38);
             this.buttonMoveLeft.Name = "buttonMoveLeft";
-            this.buttonMoveLeft.Size = new System.Drawing.Size(58, 24);
+            this.buttonMoveLeft.Size = new System.Drawing.Size(78, 29);
             this.buttonMoveLeft.TabIndex = 2;
-            this.buttonMoveLeft.Text = "<";
-            this.buttonMoveLeft.UseVisualStyleBackColor = true;
+            this.buttonMoveLeft.Text = "◄";
+            this.buttonMoveLeft.UseVisualStyleBackColor = false;
+            this.buttonMoveLeft.Cursor = System.Windows.Forms.Cursors.Hand;
             this.buttonMoveLeft.Click += new System.EventHandler(this.buttonMoveLeft_Click);
             // 
             // buttonMoveDown
             // 
+            this.buttonMoveDown.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(250)))), ((int)(((byte)(250)))), ((int)(((byte)(250)))));
             this.buttonMoveDown.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.buttonMoveDown.Location = new System.Drawing.Point(67, 63);
+            this.buttonMoveDown.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(200)))), ((int)(((byte)(200)))), ((int)(((byte)(200)))));
+            this.buttonMoveDown.FlatAppearance.BorderSize = 1;
+            this.buttonMoveDown.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.buttonMoveDown.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold);
+            this.buttonMoveDown.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(50)))), ((int)(((byte)(50)))));
+            this.buttonMoveDown.Location = new System.Drawing.Point(86, 73);
             this.buttonMoveDown.Name = "buttonMoveDown";
-            this.buttonMoveDown.Size = new System.Drawing.Size(58, 24);
+            this.buttonMoveDown.Size = new System.Drawing.Size(78, 29);
             this.buttonMoveDown.TabIndex = 1;
-            this.buttonMoveDown.Text = "v";
-            this.buttonMoveDown.UseVisualStyleBackColor = true;
+            this.buttonMoveDown.Text = "▼";
+            this.buttonMoveDown.UseVisualStyleBackColor = false;
+            this.buttonMoveDown.Cursor = System.Windows.Forms.Cursors.Hand;
             this.buttonMoveDown.Click += new System.EventHandler(this.buttonMoveDown_Click);
             // 
             // scan
             // 
+            this.scan.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(230)))), ((int)(((byte)(230)))));
             this.scan.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.scan.Location = new System.Drawing.Point(67, 33);
+            this.scan.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
+            this.scan.FlatAppearance.BorderSize = 1;
+            this.scan.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.scan.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.scan.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.scan.Location = new System.Drawing.Point(86, 38);
             this.scan.Name = "scan";
-            this.scan.Size = new System.Drawing.Size(58, 24);
+            this.scan.Size = new System.Drawing.Size(78, 29);
             this.scan.TabIndex = 4;
-            this.scan.Text = "SCAN";
-            this.scan.UseVisualStyleBackColor = true;
+            this.scan.Text = "●";
+            this.scan.UseVisualStyleBackColor = false;
+            this.scan.Cursor = System.Windows.Forms.Cursors.Hand;
             this.scan.Click += new System.EventHandler(this.scan_Click);
             // 
-            // buttonStart
-            // 
-            this.tableLayoutPanel2.SetColumnSpan(this.buttonStart, 2);
-            this.buttonStart.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.buttonStart.Location = new System.Drawing.Point(3, 96);
-            this.buttonStart.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
-            this.buttonStart.Name = "buttonStart";
-            this.buttonStart.Size = new System.Drawing.Size(122, 26);
-            this.buttonStart.TabIndex = 4;
-            this.buttonStart.Text = "Загрузка";
-            this.buttonStart.UseVisualStyleBackColor = true;
-            this.buttonStart.Click += new System.EventHandler(this.buttonStart_Click);
+            // buttonStart (удалена из таблицы - дубликат)
+            //
             // 
             // buttonCalibrateZero
             // 
+            this.tableLayoutPanel2.SetColumnSpan(this.buttonCalibrateZero, 3);
+            this.buttonCalibrateZero.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
             this.buttonCalibrateZero.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.buttonCalibrateZero.Location = new System.Drawing.Point(131, 96);
-            this.buttonCalibrateZero.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
+            this.buttonCalibrateZero.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
+            this.buttonCalibrateZero.FlatAppearance.BorderSize = 1;
+            this.buttonCalibrateZero.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.buttonCalibrateZero.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.buttonCalibrateZero.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonCalibrateZero.Location = new System.Drawing.Point(3, 108);
+            this.buttonCalibrateZero.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
             this.buttonCalibrateZero.Name = "buttonCalibrateZero";
-            this.buttonCalibrateZero.Size = new System.Drawing.Size(59, 26);
+            this.buttonCalibrateZero.Size = new System.Drawing.Size(244, 32);
             this.buttonCalibrateZero.TabIndex = 5;
-            this.buttonCalibrateZero.Text = "Калибр.";
-            this.buttonCalibrateZero.UseVisualStyleBackColor = true;
+            this.buttonCalibrateZero.Text = "Калибровка нуля";
+            this.buttonCalibrateZero.UseVisualStyleBackColor = false;
+            this.buttonCalibrateZero.Cursor = System.Windows.Forms.Cursors.Hand;
             this.buttonCalibrateZero.Click += new System.EventHandler(this.SetCalibrationZero_Click);
             // 
             // checkBoxDiscreteStep
@@ -843,11 +956,13 @@ namespace CrystalTable
             this.checkBoxDiscreteStep.AutoSize = true;
             this.checkBoxDiscreteStep.Checked = true;
             this.checkBoxDiscreteStep.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBoxDiscreteStep.Location = new System.Drawing.Point(208, 21);
+            this.checkBoxDiscreteStep.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.checkBoxDiscreteStep.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(80)))), ((int)(((byte)(80)))), ((int)(((byte)(80)))));
+            this.checkBoxDiscreteStep.Location = new System.Drawing.Point(13, 172);
             this.checkBoxDiscreteStep.Name = "checkBoxDiscreteStep";
-            this.checkBoxDiscreteStep.Size = new System.Drawing.Size(81, 20);
+            this.checkBoxDiscreteStep.Size = new System.Drawing.Size(145, 24);
             this.checkBoxDiscreteStep.TabIndex = 1;
-            this.checkBoxDiscreteStep.Text = "По шагу";
+            this.checkBoxDiscreteStep.Text = "Дискретный шаг";
             this.checkBoxDiscreteStep.UseVisualStyleBackColor = true;
             // 
             // groupBoxConnection
@@ -856,33 +971,50 @@ namespace CrystalTable
             this.groupBoxConnection.Controls.Add(this.buttonConnect);
             this.groupBoxConnection.Controls.Add(this.comboBoxPorts);
             this.groupBoxConnection.Dock = System.Windows.Forms.DockStyle.Top;
-            this.groupBoxConnection.Location = new System.Drawing.Point(10, 110);
+            this.groupBoxConnection.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.groupBoxConnection.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.groupBoxConnection.Location = new System.Drawing.Point(8, 123);
             this.groupBoxConnection.Name = "groupBoxConnection";
-            this.groupBoxConnection.Size = new System.Drawing.Size(290, 71);
+            this.groupBoxConnection.Padding = new System.Windows.Forms.Padding(10);
+            this.groupBoxConnection.Size = new System.Drawing.Size(316, 71);
             this.groupBoxConnection.TabIndex = 0;
             this.groupBoxConnection.TabStop = false;
-            this.groupBoxConnection.Text = "Подключение";
+            this.groupBoxConnection.Text = "COM-порт";
             // 
             // buttonUpdatePort
             // 
             this.buttonUpdatePort.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonUpdatePort.Location = new System.Drawing.Point(184, 25);
+            this.buttonUpdatePort.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
+            this.buttonUpdatePort.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
+            this.buttonUpdatePort.FlatAppearance.BorderSize = 1;
+            this.buttonUpdatePort.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.buttonUpdatePort.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.buttonUpdatePort.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonUpdatePort.Location = new System.Drawing.Point(155, 30);
             this.buttonUpdatePort.Name = "buttonUpdatePort";
-            this.buttonUpdatePort.Size = new System.Drawing.Size(35, 24);
+            this.buttonUpdatePort.Size = new System.Drawing.Size(36, 28);
             this.buttonUpdatePort.TabIndex = 1;
-            this.buttonUpdatePort.Text = "Обнов.";
-            this.buttonUpdatePort.UseVisualStyleBackColor = true;
+            this.buttonUpdatePort.Text = "↻";
+            this.buttonUpdatePort.UseVisualStyleBackColor = false;
+            this.buttonUpdatePort.Cursor = System.Windows.Forms.Cursors.Hand;
             this.buttonUpdatePort.Click += new System.EventHandler(this.buttonUpdatePort_Click);
             // 
             // buttonConnect
             // 
             this.buttonConnect.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonConnect.Location = new System.Drawing.Point(225, 25);
+            this.buttonConnect.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
+            this.buttonConnect.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
+            this.buttonConnect.FlatAppearance.BorderSize = 1;
+            this.buttonConnect.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.buttonConnect.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.buttonConnect.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonConnect.Location = new System.Drawing.Point(192, 30);
             this.buttonConnect.Name = "buttonConnect";
-            this.buttonConnect.Size = new System.Drawing.Size(59, 24);
+            this.buttonConnect.Size = new System.Drawing.Size(71, 28);
             this.buttonConnect.TabIndex = 2;
-            this.buttonConnect.Text = "Подкл.";
-            this.buttonConnect.UseVisualStyleBackColor = true;
+            this.buttonConnect.Text = "Соединить";
+            this.buttonConnect.UseVisualStyleBackColor = false;
+            this.buttonConnect.Cursor = System.Windows.Forms.Cursors.Hand;
             this.buttonConnect.Click += new System.EventHandler(this.buttonConnect_Click);
             // 
             // comboBoxPorts
@@ -890,10 +1022,11 @@ namespace CrystalTable
             this.comboBoxPorts.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.comboBoxPorts.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxPorts.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.comboBoxPorts.FormattingEnabled = true;
-            this.comboBoxPorts.Location = new System.Drawing.Point(9, 25);
+            this.comboBoxPorts.Location = new System.Drawing.Point(13, 30);
             this.comboBoxPorts.Name = "comboBoxPorts";
-            this.comboBoxPorts.Size = new System.Drawing.Size(169, 24);
+            this.comboBoxPorts.Size = new System.Drawing.Size(140, 28);
             this.comboBoxPorts.TabIndex = 0;
             // 
             // Form1
@@ -929,6 +1062,8 @@ namespace CrystalTable
             this.groupBoxManualControl.PerformLayout();
             this.tableLayoutPanel2.ResumeLayout(false);
             this.groupBoxConnection.ResumeLayout(false);
+            this.rightTabControl.ResumeLayout(false);
+            this.tabPageControl.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1019,6 +1154,10 @@ namespace CrystalTable
         private System.Windows.Forms.ComboBox comboBoxPorts;
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
         private System.Windows.Forms.PictureBox cameraPictureBox;
+        private System.Windows.Forms.TabControl rightTabControl;
+        private System.Windows.Forms.TabPage tabPageControl;
+        private System.Windows.Forms.TabPage tabPageMap;
+        private System.Windows.Forms.TabPage tabPageCamera;
     }
 }
 

@@ -46,19 +46,19 @@ namespace CrystalTable
         {
             mapBuilderPanel = new Panel
             {
-                Dock = DockStyle.Top,
-                Height = 350,  // ← Уменьшено для компактности
-                Padding = new Padding(10),
-                BackColor = Color.FromArgb(246, 250, 246),
+                Dock = DockStyle.Fill,
+                Padding = new Padding(5),
+                BackColor = Color.Transparent,
                 AutoScroll = true
             };
 
             var titleLabel = new Label
             {
-                Text = "Конструктор карты",
-                Font = new Font("Segoe UI", 9f, FontStyle.Bold),
+                Text = "🗺️ Конструктор карты кристаллов",
+                Font = new Font("Segoe UI", 10f, FontStyle.Bold),
+                ForeColor = Color.FromArgb(51, 51, 51),
                 Dock = DockStyle.Top,
-                Height = 26
+                Height = 30
             };
 
             mapBuilderStatusLabel = new Label
@@ -88,7 +88,7 @@ namespace CrystalTable
 
             loadDataComboBox = new ComboBox
             {
-                Width = 150,
+                Width = 180,
                 DropDownStyle = ComboBoxStyle.DropDownList,
                 Margin = new Padding(0, 3, 6, 3)
             };
@@ -192,7 +192,7 @@ namespace CrystalTable
 
             mapStartButton = CreatePrimaryButton("Создать карту", MapStartButton_Click);
             mapApplyButton = CreatePrimaryButton("Применить", MapApplyButton_Click);
-            mapCancelButton = CreateSecondaryButton("Отмена", MapCancelButton_Click);
+            mapCancelButton = CreateSecondaryButton("Отменить", MapCancelButton_Click);
             mapEditButton = CreateSecondaryButton("Редактировать", MapEditButton_Click);
 
             buttonsPanel.Controls.Add(mapStartButton);
@@ -216,8 +216,8 @@ namespace CrystalTable
             mapMirrorXCheckBox.CheckedChanged += MapMirrorCheckBox_CheckedChanged;
             mapMirrorYCheckBox.CheckedChanged += MapMirrorCheckBox_CheckedChanged;
 
-            rightPanel.Controls.Add(mapBuilderPanel);
-            rightPanel.Controls.SetChildIndex(mapBuilderPanel, 0);
+            // ✅ ИЗМЕНЕНО: Добавляем в tabPageMap
+            tabPageMap.Controls.Add(mapBuilderPanel);
         }
 
         private void CreateMapBuilderToolbarButtons()
