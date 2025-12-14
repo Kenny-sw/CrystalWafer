@@ -13,6 +13,9 @@ namespace CrystalTable
         // ✅ Контроллер автообхода
         private ScanController scanController;
         
+        // ✅ Вкладка автообхода
+        private TabPage tabPageScan;
+        
         // ✅ UI элементы панели автообхода
         private Panel scanPanel;
         private ComboBox cmbScanPattern;
@@ -45,13 +48,34 @@ namespace CrystalTable
             scanController.ScanCompleted += ScanController_ScanCompleted;
             scanController.StateChanged += ScanController_StateChanged;
 
-            // Создаём панель на вкладке "Управление"
-            CreateScanPanel();
+            // Создаём отдельную вкладку для автообхода
+            CreateScanTab();
             
             // Добавляем прогресс-бар в StatusStrip
             CreateStatusProgressBar();
             
             UpdateScanUI();
+        }
+
+        /// <summary>
+        /// Создание вкладки автообхода
+        /// </summary>
+        private void CreateScanTab()
+        {
+            // Создаём новую вкладку
+            tabPageScan = new TabPage
+            {
+                Text = "Автообход",
+                BackColor = Color.FromArgb(248, 249, 250),
+                Padding = new Padding(8)
+            };
+
+            // Вставляем после вкладки "Карта"
+            int insertIndex = rightTabControl.TabPages.IndexOf(tabPageMap) + 1;
+            rightTabControl.TabPages.Insert(insertIndex, tabPageScan);
+
+            // Создаём панель на этой вкладке
+            CreateScanPanel();
         }
 
         /// <summary>
@@ -61,11 +85,10 @@ namespace CrystalTable
         {
             scanPanel = new Panel
             {
-                Dock = DockStyle.Bottom,
-                Height = 220,
-                Padding = new Padding(10),
-                BackColor = Color.FromArgb(248, 248, 248),
-                BorderStyle = BorderStyle.FixedSingle
+                Dock = DockStyle.Fill,
+                Padding = new Padding(5),
+                BackColor = Color.Transparent,
+                AutoScroll = true
             };
 
             // Заголовок
@@ -75,7 +98,7 @@ namespace CrystalTable
                 Font = new Font("Segoe UI", 10f, FontStyle.Bold),
                 ForeColor = Color.FromArgb(51, 51, 51),
                 Dock = DockStyle.Top,
-                Height = 25
+                Height = 30
             };
 
             // Панель настроек
@@ -209,8 +232,8 @@ namespace CrystalTable
             scanPanel.Controls.Add(settingsPanel);
             scanPanel.Controls.Add(titleLabel);
 
-            // Добавляем на вкладку "Управление"
-            tabPageControl.Controls.Add(scanPanel);
+            // Добавляем на вкладку "Автообход"
+            tabPageScan.Controls.Add(scanPanel);
         }
 
         private Button CreateScanButton(string text, Color backColor, EventHandler handler)
