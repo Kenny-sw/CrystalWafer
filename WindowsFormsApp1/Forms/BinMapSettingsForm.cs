@@ -21,7 +21,6 @@ namespace CrystalTable.Forms
         private TrackBar trackOpacity;
         private Label lblOpacity;
         private Button btnResetBins;
-        private Button btnOk;
         private Button btnCancel;
 
         public BinMapSettingsForm(BinMapRenderer renderer, Action onSettingsChanged)
