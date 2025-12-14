@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using CrystalTable.Data;
 using CrystalTable.Controllers;
 using CrystalTable.Controls;
+using CrystalTable.Logic;
 
 namespace CrystalTable
 {
