@@ -98,35 +98,18 @@ namespace CrystalTable
                 Name = "tabPageScan"
             };
 
-            // Вставляем перед вкладкой "Камера" или после "Карта"
-            bool inserted = false;
+            // Просто добавляем в конец - это надежнее чем Insert
+            rightTabControl.TabPages.Add(tabPageScan);
             
-            if (tabPageCamera != null && rightTabControl.TabPages.Contains(tabPageCamera))
-            {
-                int insertIndex = rightTabControl.TabPages.IndexOf(tabPageCamera);
-                rightTabControl.TabPages.Insert(insertIndex, tabPageScan);
-                AppLogger.Debug($"Вкладка Автообход вставлена перед Камера на позицию {insertIndex}");
-                inserted = true;
-            }
-            else if (tabPageMap != null && rightTabControl.TabPages.Contains(tabPageMap))
-            {
-                int insertIndex = rightTabControl.TabPages.IndexOf(tabPageMap) + 1;
-                rightTabControl.TabPages.Insert(insertIndex, tabPageScan);
-                AppLogger.Debug($"Вкладка Автообход вставлена после Карта на позицию {insertIndex}");
-                inserted = true;
-            }
-            
-            if (!inserted)
-            {
-                // Если ничего не найдено - добавляем в конец
-                rightTabControl.TabPages.Add(tabPageScan);
-                AppLogger.Debug("Вкладка Автообход добавлена в конец");
-            }
+            AppLogger.Debug($"Вкладка Автообход добавлена. Contains={rightTabControl.TabPages.Contains(tabPageScan)}, Count={rightTabControl.TabPages.Count}");
 
             // Проверяем добавление
             if (!rightTabControl.TabPages.Contains(tabPageScan))
             {
                 AppLogger.Error("ОШИБКА: Вкладка Автообход НЕ добавлена в TabControl!");
+                // Пробуем альтернативный способ
+                rightTabControl.Controls.Add(tabPageScan);
+                AppLogger.Debug($"Альтернативное добавление через Controls. Contains={rightTabControl.TabPages.Contains(tabPageScan)}");
             }
             else
             {
