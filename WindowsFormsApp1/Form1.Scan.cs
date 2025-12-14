@@ -473,11 +473,8 @@ namespace CrystalTable
         {
             if (!showScanRoutePreview || scanController == null)
             {
-                // Скрыть превью
-                if (routePreview != null)
-                {
-                    routePreview.Clear();
-                }
+                // Скрыть превью - устанавливаем пустой маршрут
+                routePreview.SetRoute(null);
                 UpdateUI();
                 return;
             }
@@ -494,14 +491,14 @@ namespace CrystalTable
             
             var route = scanController.BuildRoute(selected);
             
-            // Обновляем RoutePreview
+            // Устанавливаем маршрут в RoutePreview
             if (route.Count > 0)
             {
-                routePreview.Clear();
-                foreach (var crystal in route)
-                {
-                    routePreview.AddPoint(crystal.RealX, crystal.RealY);
-                }
+                routePreview.SetRoute(route);
+            }
+            else
+            {
+                routePreview.SetRoute(null);
             }
             
             UpdateUI();
