@@ -95,6 +95,7 @@ debugOverlay = new DebugOverlayRenderer
             
             LoadDefaultConfiguration();
             LoadCameraCalibration();  // ← Загружаем сохраненную калибровку камеры
+            InitializeScanUI();  // ✅ Инициализация UI автообхода
    UpdateUI();
         }
 
