@@ -20,6 +20,14 @@ namespace CrystalTable
         private ToolStripButton btnCameraSnapshot;
         private ToolStripButton btnCameraFreeze;
         private ToolStripButton btnCameraCalibrate;
+        
+        // Элементы управления камерой во вкладке
+        private PictureBox cameraPictureBoxInTab;
+        private Button btnToggleTab;
+        private Button btnSettingsTab;
+        private Button btnCalibrateTab;
+        private Button btnSnapshotTab;
+        private Label cameraStatusLabelInTab;
 
         /// <summary>
         /// Инициализация камеры и UI
@@ -91,7 +99,8 @@ namespace CrystalTable
                 Padding = new Padding(8)
             };
 
-            var cameraPictureBoxInTab = new PictureBox
+            // ✅ Сохраняем ссылку на PictureBox во вкладке
+            cameraPictureBoxInTab = new PictureBox
             {
                 Name = "cameraPictureBoxInTab",
                 Dock = DockStyle.Fill,
@@ -126,21 +135,22 @@ namespace CrystalTable
             buttonTable.RowStyles.Add(new RowStyle(SizeType.Percent, 25F));
             buttonTable.RowStyles.Add(new RowStyle(SizeType.Percent, 25F));
 
-            var btnToggleTab = CreateCameraButtonNeutral("Включить камеру");
+            // ✅ Сохраняем ссылки на кнопки
+            btnToggleTab = CreateCameraButtonNeutral("Включить камеру");
             btnToggleTab.Dock = DockStyle.Fill;
             btnToggleTab.Click += (s, e) => BtnCameraToggle_Click(s, e);
 
-            var btnSettingsTab = CreateCameraButtonNeutral("Настройки");
+            btnSettingsTab = CreateCameraButtonNeutral("Настройки");
             btnSettingsTab.Dock = DockStyle.Fill;
             btnSettingsTab.Click += (s, e) => BtnCameraSettings_Click(s, e);
             btnSettingsTab.Enabled = false;
 
-            var btnCalibrateTab = CreateCameraButtonNeutral("Калибровка");
+            btnCalibrateTab = CreateCameraButtonNeutral("Калибровка");
             btnCalibrateTab.Dock = DockStyle.Fill;
             btnCalibrateTab.Click += (s, e) => BtnCameraCalibrate_Click(s, e);
             btnCalibrateTab.Enabled = false;
 
-            var btnSnapshotTab = CreateCameraButtonNeutral("Сохранить снимок");
+            btnSnapshotTab = CreateCameraButtonNeutral("Сохранить снимок");
             btnSnapshotTab.Dock = DockStyle.Fill;
             btnSnapshotTab.Click += (s, e) => BtnCameraSnapshot_Click(s, e);
             btnSnapshotTab.Enabled = false;
@@ -163,7 +173,8 @@ namespace CrystalTable
                 Padding = new Padding(8)
             };
 
-            var statusLabel = new Label
+            // ✅ Сохраняем ссылку на статус
+            cameraStatusLabelInTab = new Label
             {
                 Name = "cameraStatusLabel",
                 Text = "Камера: не подключена",
@@ -171,7 +182,7 @@ namespace CrystalTable
                 Font = new Font("Segoe UI", 9f),
                 ForeColor = Color.FromArgb(100, 100, 100)
             };
-            statusGroup.Controls.Add(statusLabel);
+            statusGroup.Controls.Add(cameraStatusLabelInTab);
 
             // Собираем панель (порядок важен - снизу вверх)
             cameraPanel.Controls.Add(statusGroup);
@@ -407,7 +418,7 @@ namespace CrystalTable
                     return;
                 }
 
-                // Если camer несколько - даем выбрать
+                // Если камер несколько - даем выбрать
                 int selectedCamera = 0;
                 if (cameras.Count > 1)
                 {
@@ -430,11 +441,7 @@ namespace CrystalTable
                     if (cameraController.Start())
                     {
                         cameraPictureBox.Visible = true;
-                        btnCameraToggle.Text = "🔴 Остановить";
-                        btnCameraSettings.Enabled = true;
-                        btnCameraCalibrate.Enabled = true;  // Активируем калибровку
-                        btnCameraSnapshot.Enabled = true;
-                        btnCameraFreeze.Enabled = true;
+                        UpdateCameraUIState(true);
                     }
                 }
             }
@@ -444,12 +451,45 @@ namespace CrystalTable
                 cameraController.Stop();
                 cameraPictureBox.Visible = false;
                 cameraPictureBox.Image = null;
-                btnCameraToggle.Text = "📷 Камера";
-                btnCameraSettings.Enabled = false;
-                btnCameraCalibrate.Enabled = false;
-                btnCameraSnapshot.Enabled = false;
-                btnCameraFreeze.Enabled = false;
-                btnCameraFreeze.Checked = false;
+                
+                // Очищаем превью во вкладке
+                if (cameraPictureBoxInTab != null)
+                {
+                    cameraPictureBoxInTab.Image = null;
+                }
+                
+                UpdateCameraUIState(false);
+            }
+        }
+        
+        /// <summary>
+        /// Обновляет состояние всех элементов управления камерой
+        /// </summary>
+        private void UpdateCameraUIState(bool isRunning)
+        {
+            // Тулбар
+            btnCameraToggle.Text = isRunning ? "🔴 Остановить" : "📷 Камера";
+            btnCameraSettings.Enabled = isRunning;
+            btnCameraCalibrate.Enabled = isRunning;
+            btnCameraSnapshot.Enabled = isRunning;
+            btnCameraFreeze.Enabled = isRunning;
+            if (!isRunning) btnCameraFreeze.Checked = false;
+            
+            // Вкладка "Камера"
+            if (btnToggleTab != null)
+            {
+                btnToggleTab.Text = isRunning ? "Остановить камеру" : "Включить камеру";
+                btnToggleTab.BackColor = isRunning ? Color.FromArgb(255, 200, 200) : Color.FromArgb(245, 245, 245);
+            }
+            if (btnSettingsTab != null) btnSettingsTab.Enabled = isRunning;
+            if (btnCalibrateTab != null) btnCalibrateTab.Enabled = isRunning;
+            if (btnSnapshotTab != null) btnSnapshotTab.Enabled = isRunning;
+            
+            // Статус во вкладке
+            if (cameraStatusLabelInTab != null)
+            {
+                cameraStatusLabelInTab.Text = isRunning ? "Камера: работает" : "Камера: не подключена";
+                cameraStatusLabelInTab.ForeColor = isRunning ? Color.Green : Color.FromArgb(100, 100, 100);
             }
         }
 
@@ -615,9 +655,18 @@ namespace CrystalTable
         {
             try
             {
+                // Обновляем основной PictureBox (в углу)
                 var oldImage = cameraPictureBox.Image;
                 cameraPictureBox.Image = (Bitmap)frame.Clone();
                 oldImage?.Dispose();
+                
+                // ✅ Обновляем PictureBox во вкладке "Камера"
+                if (cameraPictureBoxInTab != null)
+                {
+                    var oldImageTab = cameraPictureBoxInTab.Image;
+                    cameraPictureBoxInTab.Image = (Bitmap)frame.Clone();
+                    oldImageTab?.Dispose();
+                }
             }
             catch (Exception ex)
             {
@@ -637,12 +686,25 @@ namespace CrystalTable
                     StatusLabel.Owner.BeginInvoke(new Action(() =>
                     {
                         StatusLabel.Text = $"Камера: {message}";
+                        UpdateCameraStatusLabel(message);
                     }));
                 }
                 else
                 {
                     StatusLabel.Text = $"Камера: {message}";
+                    UpdateCameraStatusLabel(message);
                 }
+            }
+        }
+        
+        /// <summary>
+        /// Обновляет статус камеры во вкладке
+        /// </summary>
+        private void UpdateCameraStatusLabel(string message)
+        {
+            if (cameraStatusLabelInTab != null)
+            {
+                cameraStatusLabelInTab.Text = $"Камера: {message}";
             }
         }
 
