@@ -50,6 +50,12 @@ namespace CrystalTable
                     return;
                 }
 
+                AppLogger.Debug($"InitializeScanUI: TabControl найден, вкладок до создания: {rightTabControl.TabPages.Count}");
+                foreach (TabPage tab in rightTabControl.TabPages)
+                {
+                    AppLogger.Debug($"  - Вкладка: '{tab.Text}'");
+                }
+
                 // Создаём контроллер
                 scanController = new ScanController(this);
                 scanController.ProgressChanged += ScanController_ProgressChanged;
@@ -66,6 +72,10 @@ namespace CrystalTable
                 UpdateScanUI();
                 
                 AppLogger.Info($"InitializeScanUI: вкладка Автообход создана. Всего вкладок: {rightTabControl.TabPages.Count}");
+                foreach (TabPage tab in rightTabControl.TabPages)
+                {
+                    AppLogger.Debug($"  - Вкладка: '{tab.Text}'");
+                }
             }
             catch (Exception ex)
             {
@@ -84,19 +94,43 @@ namespace CrystalTable
             {
                 Text = "Автообход",
                 BackColor = Color.FromArgb(248, 249, 250),
-                Padding = new Padding(8)
+                Padding = new Padding(8),
+                Name = "tabPageScan"
             };
 
-            // Вставляем после вкладки "Карта" или в конец
-            if (tabPageMap != null && rightTabControl.TabPages.Contains(tabPageMap))
+            // Вставляем перед вкладкой "Камера" или после "Карта"
+            bool inserted = false;
+            
+            if (tabPageCamera != null && rightTabControl.TabPages.Contains(tabPageCamera))
+            {
+                int insertIndex = rightTabControl.TabPages.IndexOf(tabPageCamera);
+                rightTabControl.TabPages.Insert(insertIndex, tabPageScan);
+                AppLogger.Debug($"Вкладка Автообход вставлена перед Камера на позицию {insertIndex}");
+                inserted = true;
+            }
+            else if (tabPageMap != null && rightTabControl.TabPages.Contains(tabPageMap))
             {
                 int insertIndex = rightTabControl.TabPages.IndexOf(tabPageMap) + 1;
                 rightTabControl.TabPages.Insert(insertIndex, tabPageScan);
+                AppLogger.Debug($"Вкладка Автообход вставлена после Карта на позицию {insertIndex}");
+                inserted = true;
+            }
+            
+            if (!inserted)
+            {
+                // Если ничего не найдено - добавляем в конец
+                rightTabControl.TabPages.Add(tabPageScan);
+                AppLogger.Debug("Вкладка Автообход добавлена в конец");
+            }
+
+            // Проверяем добавление
+            if (!rightTabControl.TabPages.Contains(tabPageScan))
+            {
+                AppLogger.Error("ОШИБКА: Вкладка Автообход НЕ добавлена в TabControl!");
             }
             else
             {
-                // Если tabPageMap не найден - добавляем в конец
-                rightTabControl.TabPages.Add(tabPageScan);
+                AppLogger.Debug($"Вкладка Автообход успешно в TabControl, индекс: {rightTabControl.TabPages.IndexOf(tabPageScan)}");
             }
 
             // Создаём панель на этой вкладке
