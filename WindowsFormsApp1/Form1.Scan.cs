@@ -41,20 +41,37 @@ namespace CrystalTable
         /// </summary>
         private void InitializeScanUI()
         {
-            // Создаём контроллер
-            scanController = new ScanController(this);
-            scanController.ProgressChanged += ScanController_ProgressChanged;
-            scanController.CrystalReached += ScanController_CrystalReached;
-            scanController.ScanCompleted += ScanController_ScanCompleted;
-            scanController.StateChanged += ScanController_StateChanged;
+            try
+            {
+                // Проверяем наличие TabControl
+                if (rightTabControl == null)
+                {
+                    AppLogger.Warning("InitializeScanUI: rightTabControl не найден!");
+                    return;
+                }
 
-            // Создаём отдельную вкладку для автообхода
-            CreateScanTab();
-            
-            // Добавляем прогресс-бар в StatusStrip
-            CreateStatusProgressBar();
-            
-            UpdateScanUI();
+                // Создаём контроллер
+                scanController = new ScanController(this);
+                scanController.ProgressChanged += ScanController_ProgressChanged;
+                scanController.CrystalReached += ScanController_CrystalReached;
+                scanController.ScanCompleted += ScanController_ScanCompleted;
+                scanController.StateChanged += ScanController_StateChanged;
+
+                // Создаём отдельную вкладку для автообхода
+                CreateScanTab();
+                
+                // Добавляем прогресс-бар в StatusStrip
+                CreateStatusProgressBar();
+                
+                UpdateScanUI();
+                
+                AppLogger.Info($"InitializeScanUI: вкладка Автообход создана. Всего вкладок: {rightTabControl.TabPages.Count}");
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error("Ошибка InitializeScanUI", ex);
+                System.Diagnostics.Debug.WriteLine($"InitializeScanUI ERROR: {ex}");
+            }
         }
 
         /// <summary>
