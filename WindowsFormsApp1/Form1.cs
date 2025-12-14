@@ -27,6 +27,10 @@ namespace CrystalTable
         // ✅ ДОБАВЛЕНО: Рендерер отладочных оверлеев
         private readonly DebugOverlayRenderer debugOverlay;
 
+        // ✅ ДОБАВЛЕНО: Рендерер Bin Map (карта годности)
+        private readonly BinMapRenderer binMapRenderer;
+        private bool showBinMap = true;
+
         // История операций
         private readonly CommandHistory commandHistory = new CommandHistory();
 
@@ -70,6 +74,12 @@ debugOverlay = new DebugOverlayRenderer
           ShowCalibrationPoints = false
             };
             
+            // ✅ ДОБАВЛЕНО: Инициализация Bin Map рендерера
+            binMapRenderer = new BinMapRenderer();
+            
+            // ✅ ДОБАВЛЕНО: Добавление пунктов меню Bin Map в меню "Вид"
+            InitializeBinMapMenu();
+            
       InitializeMapBuilderUi();
             InitializeCamera();  // ← Инициализация камеры
 
@@ -111,6 +121,55 @@ debugOverlay = new DebugOverlayRenderer
         {
             mouseController.HandleKeyDown(e);
 
+            // ===== Горячие клавиши для Bin Map (категории годности) =====
+            // Работают только если есть выделенные кристаллы
+            if (mouseController.SelectedCrystals.Count > 0)
+            {
+                BinCategory? newBin = null;
+                
+                switch (e.KeyCode)
+                {
+                    case Keys.F1:
+                        newBin = BinCategory.Good;
+                        break;
+                    case Keys.F2:
+                        newBin = BinCategory.Defective;
+                        break;
+                    case Keys.F3:
+                        newBin = BinCategory.NeedsReview;
+                        break;
+                    case Keys.F4:
+                        newBin = BinCategory.Rework;
+                        break;
+                    case Keys.F5:
+                        newBin = BinCategory.Edge;
+                        break;
+                    case Keys.Delete:
+                    case Keys.Back:
+                        // Сброс категории
+                        newBin = BinCategory.NotInspected;
+                        break;
+                }
+
+                if (newBin.HasValue)
+                {
+                    SetBinForSelectedCrystals(newBin.Value);
+                    e.Handled = true;
+                    e.SuppressKeyPress = true;
+                    return;
+                }
+            }
+
+            // ===== Переключение отображения Bin Map =====
+            if (e.KeyCode == Keys.B && !e.Control && !e.Alt)
+            {
+                showBinMap = !showBinMap;
+                binMapRenderer.Settings.Enabled = showBinMap;
+                UpdateUI();
+                e.Handled = true;
+                return;
+            }
+
             if (e.Control)
             {
                 if (e.KeyCode == Keys.Z && commandHistory.CanUndo())
@@ -124,6 +183,37 @@ debugOverlay = new DebugOverlayRenderer
                     UpdateUI();
                 }
             }
+        }
+
+        /// <summary>
+        /// Установить категорию годности для выделенных кристаллов
+        /// </summary>
+        private void SetBinForSelectedCrystals(BinCategory bin)
+        {
+            var crystals = CrystalManager.Instance.Crystals;
+            var selected = mouseController.SelectedCrystals;
+            
+            if (crystals == null || selected.Count == 0)
+                return;
+
+            int count = 0;
+            foreach (var crystal in crystals)
+            {
+                if (selected.Contains(crystal.Index))
+                {
+                    crystal.SetBin(bin);
+                    count++;
+                }
+            }
+
+            if (count > 0)
+            {
+                string binName = BinMapSettings.GetBinName(bin);
+                statusLabel.Text = $"{count} кристалл(ов) → {binName}";
+                AppLogger.Info($"Bin Map: {count} кристаллов помечены как '{binName}'");
+            }
+
+            UpdateUI();
         }
 
         public void UpdateUI()
@@ -391,6 +481,71 @@ debugOverlay = new DebugOverlayRenderer
         private void zoomOutToolStripMenuItem_Click(object sender, EventArgs e) => Zoom(-0.2f);
         private void resetZoomToolStripMenuItem_Click(object sender, EventArgs e) => ResetZoom();
 
+        /// <summary>
+        /// Открыть настройки Bin Map
+        /// </summary>
+        private void ShowBinMapSettings()
+        {
+            try
+            {
+                var settingsForm = new Forms.BinMapSettingsForm(binMapRenderer, () =>
+                {
+                    showBinMap = binMapRenderer.Settings.Enabled;
+                    UpdateUI();
+                });
+                settingsForm.ShowDialog(this);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error("Ошибка открытия настроек Bin Map", ex);
+                MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// Переключить отображение Bin Map
+        /// </summary>
+        private void ToggleBinMap()
+        {
+            showBinMap = !showBinMap;
+            binMapRenderer.Settings.Enabled = showBinMap;
+            UpdateUI();
+        }
+
+        /// <summary>
+        /// Инициализация меню Bin Map
+        /// </summary>
+        private void InitializeBinMapMenu()
+        {
+            // Создаём разделитель и пункты меню для Bin Map
+            var separator = new ToolStripSeparator();
+            
+            var showBinMapMenuItem = new ToolStripMenuItem
+            {
+                Text = "Показать Bin Map (B)",
+                CheckOnClick = true,
+                Checked = showBinMap
+            };
+            showBinMapMenuItem.Click += (s, e) =>
+            {
+                showBinMap = showBinMapMenuItem.Checked;
+                binMapRenderer.Settings.Enabled = showBinMap;
+                UpdateUI();
+            };
+
+            var binMapSettingsMenuItem = new ToolStripMenuItem
+            {
+                Text = "Настройки Bin Map..."
+            };
+            binMapSettingsMenuItem.Click += (s, e) => ShowBinMapSettings();
+
+            // Вставляем после "Показать статистику"
+            int insertIndex = viewToolStripMenuItem.DropDownItems.IndexOf(showStatisticsToolStripMenuItem) + 1;
+            viewToolStripMenuItem.DropDownItems.Insert(insertIndex, separator);
+            viewToolStripMenuItem.DropDownItems.Insert(insertIndex + 1, showBinMapMenuItem);
+            viewToolStripMenuItem.DropDownItems.Insert(insertIndex + 2, binMapSettingsMenuItem);
+        }
+
         // ===== COM-порт =====
         private void buttonConnect_Click(object sender, EventArgs e)
         {
@@ -577,6 +732,7 @@ debugOverlay = new DebugOverlayRenderer
         {
             serialPortController?.Dispose();
             debugOverlay?.Dispose();  // ✅ Освобождение ресурсов оверлеев
+            binMapRenderer?.Dispose(); // ✅ Освобождение ресурсов Bin Map
             DisposeCameraResources();  // ← Освобождение ресурсов камеры
         }
 
@@ -603,6 +759,10 @@ debugOverlay = new DebugOverlayRenderer
         public SerialPortController SerialPortController => serialPortController;
         public ToolStripButton BtnUndo => btnUndo;
         public ToolStripButton BtnRedo => btnRedo;
+        
+        // ✅ ДОБАВЛЕНО: Свойства для Bin Map
+        public BinMapRenderer BinMapRenderer => binMapRenderer;
+        public bool ShowBinMap => showBinMap;
 
         // ====== RX > статус-бар ======
         private void SerialPort_UnsolicitedEventReceived(string message)

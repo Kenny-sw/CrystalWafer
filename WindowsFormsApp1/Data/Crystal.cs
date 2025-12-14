@@ -45,6 +45,67 @@ namespace CrystalTable.Data
             }
         }
 
+        // ========== Bin Map (карта годности) ==========
+        
+        /// <summary>
+        /// Категория годности кристалла
+        /// </summary>
+        [XmlIgnore]
+        public BinCategory Bin { get; set; } = BinCategory.NotInspected;
+
+        /// <summary>
+        /// Сериализация категории годности
+        /// </summary>
+        [XmlElement("Bin")]
+        public string BinString
+        {
+            get => Bin.ToString();
+            set
+            {
+                if (Enum.TryParse(value, true, out BinCategory parsed))
+                {
+                    Bin = parsed;
+                }
+                else
+                {
+                    Bin = BinCategory.NotInspected;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Время проверки кристалла
+        /// </summary>
+        [XmlIgnore]
+        public DateTime? InspectionTime { get; set; }
+
+        /// <summary>
+        /// Сериализация времени проверки
+        /// </summary>
+        [XmlElement("InspectionTime")]
+        public string InspectionTimeString
+        {
+            get => InspectionTime?.ToString("o") ?? string.Empty;
+            set
+            {
+                if (DateTime.TryParse(value, out DateTime parsed))
+                {
+                    InspectionTime = parsed;
+                }
+                else
+                {
+                    InspectionTime = null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Заметки оператора по кристаллу
+        /// </summary>
+        public string InspectionNotes { get; set; }
+
+        // ========== Координаты отображения ==========
+
         [XmlIgnore]
         public float DisplayX { get; set; }
         [XmlIgnore]
@@ -58,5 +119,32 @@ namespace CrystalTable.Data
         public float DisplayTop { get; set; }
         [XmlIgnore]
         public float DisplayBottom { get; set; }
+
+        // ========== Вспомогательные методы ==========
+
+        /// <summary>
+        /// Установить категорию годности с фиксацией времени
+        /// </summary>
+        public void SetBin(BinCategory category)
+        {
+            Bin = category;
+            InspectionTime = DateTime.Now;
+        }
+
+        /// <summary>
+        /// Сбросить результаты проверки
+        /// </summary>
+        public void ResetInspection()
+        {
+            Bin = BinCategory.NotInspected;
+            InspectionTime = null;
+            InspectionNotes = null;
+        }
+
+        /// <summary>
+        /// Проверен ли кристалл
+        /// </summary>
+        [XmlIgnore]
+        public bool IsInspected => Bin != BinCategory.NotInspected;
     }
 }

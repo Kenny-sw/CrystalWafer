@@ -30,6 +30,13 @@ namespace CrystalTable
             // карта теперь НЕ строится в Paint — только рисуем
             DrawCrystals(g);
 
+            // ✅ ДОБАВЛЕНО: Отрисовка Bin Map поверх кристаллов
+            if (showBinMap && binMapRenderer != null)
+            {
+                var viewBounds = new RectangleF(0, 0, pictureBox1.Width, pictureBox1.Height);
+                binMapRenderer.Draw(g, CrystalManager.Instance.Crystals, viewBounds);
+            }
+
             // Подсветка First/Last (до BuildMap)
             DrawReferenceMarkers(g);
 
@@ -47,6 +54,13 @@ namespace CrystalTable
 
             DrawUIElements(g);
             uiController.DrawZoomInfo(g, zoomPanController.ZoomFactor);
+
+            // ✅ Легенда Bin Map (фиксированная позиция на экране)
+            if (showBinMap && binMapRenderer != null)
+            {
+                var screenBounds = new RectangleF(0, 0, pictureBox1.Width, pictureBox1.Height);
+                binMapRenderer.DrawLegend(g, CrystalManager.Instance.Crystals, screenBounds);
+            }
 
             // ✅ ДОБАВЛЕНО: Отрисовка отладочных оверлеев (поверх всего)
             debugOverlay?.Draw(g, this);
