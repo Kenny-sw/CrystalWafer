@@ -80,17 +80,22 @@ namespace CrystalTable.Controllers
             {
                 form.StatusLabel.Text = form.DebugModeWithoutComPort ? "🔧 Debug" : "✓ Готово";
                 form.StatusLabel.ForeColor = form.DebugModeWithoutComPort ? Color.OrangeRed : Color.ForestGreen;
+                form.StatusLabel.ToolTipText = form.DebugModeWithoutComPort 
+                    ? "Режим отладки без COM-порта" 
+                    : "Система готова к работе";
             }
 
             if (form.ZoomLabel != null && zoom != null)
             {
-                form.ZoomLabel.Text = $"🔍 ×{zoom.ZoomFactor:F1}";
+                form.ZoomLabel.Text = $"×{zoom.ZoomFactor:F1}";
+                form.ZoomLabel.ToolTipText = $"Масштаб: {zoom.ZoomFactor:F1}x\nCtrl+колесо — изменить";
             }
 
             int count = CrystalManager.Instance.Crystals.Count;
             if (form.TotalCrystalsStatusLabel != null)
             {
-                form.TotalCrystalsStatusLabel.Text = $"💎 {count}";
+                form.TotalCrystalsStatusLabel.Text = $"◈ {count}";
+                form.TotalCrystalsStatusLabel.ToolTipText = $"Всего кристаллов на карте: {count}";
             }
 
             if (form.FillPercentageLabel != null && wafer != null)
@@ -98,8 +103,12 @@ namespace CrystalTable.Controllers
                 float cw = wafer.CrystalWidthRaw / 1000f;
                 float ch = wafer.CrystalHeightRaw / 1000f;
                 float waferArea = (float)(Math.PI * Math.Pow(wafer.WaferDiameter / 2f, 2));
-                float fill = waferArea > 0 ? Math.Min(100f, Math.Max(0f, (count * cw * ch) / waferArea * 100f)) : 0f;
-                form.FillPercentageLabel.Text = $"📊 {fill:F0}%";
+                float crystalsArea = count * cw * ch;
+                float fill = waferArea > 0 ? Math.Min(100f, Math.Max(0f, crystalsArea / waferArea * 100f)) : 0f;
+                form.FillPercentageLabel.Text = $"▣ {fill:F0}%";
+                form.FillPercentageLabel.ToolTipText = $"Заполнение пластины: {fill:F1}%\n" +
+                    $"Площадь кристаллов: {crystalsArea:F1} мм²\n" +
+                    $"Площадь пластины: {waferArea:F1} мм²";
                 
                 // Цветовая индикация заполнения
                 if (fill > 75)
@@ -113,20 +122,25 @@ namespace CrystalTable.Controllers
             var pointer = form.GetPointerMm();
             if (form.CoordinatesLabel != null)
             {
-                form.CoordinatesLabel.Text = $"📍 ({pointer.X:F2}, {pointer.Y:F2})";
+                form.CoordinatesLabel.Text = $"⌖ ({pointer.X:F2}, {pointer.Y:F2})";
+                form.CoordinatesLabel.ToolTipText = $"Позиция указателя (мм):\nX: {pointer.X:F3}\nY: {pointer.Y:F3}";
             }
 
             if (form.CalibrationStatusLabel != null && wafer != null)
             {
                 if (wafer.IsCalibrated)
                 {
-                    form.CalibrationStatusLabel.Text = $"⚙️ #{wafer.CalibrationCrystalIndex}";
+                    form.CalibrationStatusLabel.Text = $"◎ #{wafer.CalibrationCrystalIndex}";
                     form.CalibrationStatusLabel.ForeColor = Color.DarkGreen;
+                    form.CalibrationStatusLabel.ToolTipText = $"Калибровка выполнена\n" +
+                        $"Опорный кристалл: #{wafer.CalibrationCrystalIndex}\n" +
+                        $"Смещение: ({wafer.CalibrationOffsetX:F3}, {wafer.CalibrationOffsetY:F3}) мм";
                 }
                 else
                 {
-                    form.CalibrationStatusLabel.Text = "⚙️ —";
+                    form.CalibrationStatusLabel.Text = "◎ —";
                     form.CalibrationStatusLabel.ForeColor = Color.Gray;
+                    form.CalibrationStatusLabel.ToolTipText = "Калибровка не выполнена\nВыберите опорный кристалл";
                 }
             }
         }
@@ -137,19 +151,28 @@ namespace CrystalTable.Controllers
 
             if (selected == null || selected.Count == 0)
             {
-                form.SelectedCrystalStatusLabel.Text = "✓ 0";
+                form.SelectedCrystalStatusLabel.Text = "☑ 0";
                 form.SelectedCrystalStatusLabel.ForeColor = Color.Gray;
+                form.SelectedCrystalStatusLabel.ToolTipText = "Выбрано кристаллов: 0\nКликните для выбора";
             }
             else if (selected.Count == 1)
             {
                 int idx = selected.First();
-                form.SelectedCrystalStatusLabel.Text = $"✓ #{idx + 1}";
+                var crystal = CrystalManager.Instance.Crystals.FirstOrDefault(c => c.Index == idx);
+                form.SelectedCrystalStatusLabel.Text = $"☑ #{idx + 1}";
                 form.SelectedCrystalStatusLabel.ForeColor = Color.RoyalBlue;
+                if (crystal != null)
+                {
+                    form.SelectedCrystalStatusLabel.ToolTipText = $"Выбран кристалл #{idx + 1}\n" +
+                        $"Позиция: ({crystal.RealX:F2}, {crystal.RealY:F2}) мм";
+                }
             }
             else
             {
-                form.SelectedCrystalStatusLabel.Text = $"✓ {selected.Count}";
+                form.SelectedCrystalStatusLabel.Text = $"☑ {selected.Count}";
                 form.SelectedCrystalStatusLabel.ForeColor = Color.RoyalBlue;
+                form.SelectedCrystalStatusLabel.ToolTipText = $"Выбрано кристаллов: {selected.Count}\n" +
+                    $"Ctrl+A — выбрать все\nCtrl+D — снять выбор";
             }
         }
 

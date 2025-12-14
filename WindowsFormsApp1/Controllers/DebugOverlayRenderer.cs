@@ -17,8 +17,8 @@ namespace CrystalTable.Controllers
         public bool ShowCalibrationPoints { get; set; }
 
         // ===== НАСТРОЙКИ ВИЗУАЛИЗАЦИИ =====
-        private readonly Font inspectorFont = new Font("Consolas", 9f, FontStyle.Regular);
-        private readonly Font inspectorBoldFont = new Font("Consolas", 9f, FontStyle.Bold);
+    private readonly Font inspectorFont = new Font("Segoe UI", 9f, FontStyle.Regular);
+        private readonly Font inspectorBoldFont = new Font("Segoe UI", 9f, FontStyle.Bold);
         
         private bool _disposed = false;
      
@@ -92,27 +92,24 @@ catch (Exception ex)
         }
 
  // Формирование текста
-string[] lines = new[]
+            string[] lines = new[]
             {
                 "📍 ДИАГНОСТИКА ПОЗИЦИИ",
-   "─────────────────────────",
-       "Координаты ЛШД (карта):",
-      $"  X: {pointerVirtual.X:F3} мм",
-      $"  Y: {pointerVirtual.Y:F3} мм",
- "─────────────────────────",
-     "Машинные координаты:",
-     $"  X: {pointerPhysical.X:F3} мм",
-           $"  Y: {pointerPhysical.Y:F3} мм",
-    "─────────────────────────",
-       nearestCrystal != null ? "Ближайший кристалл:" : "Нет кристаллов",
-           nearestCrystal != null ? $"  Индекс: #{nearestCrystal.Index}" : "",
+                "",
+                "Координаты ЛШД (карта):",
+                $"  X: {pointerVirtual.X,8:F3} мм",
+                $"  Y: {pointerVirtual.Y,8:F3} мм",
+                "",
+                "Машинные координаты:",
+                $"  X: {pointerPhysical.X,8:F3} мм",
+                $"  Y: {pointerPhysical.Y,8:F3} мм",
+                "",
+                nearestCrystal != null ? "Ближайший кристалл:" : "Нет кристаллов",
+                nearestCrystal != null ? $"  Индекс: #{nearestCrystal.Index}" : "",
                 nearestCrystal != null ? $"  Расстояние: {minDistance:F3} мм" : "",
-       "─────────────────────────",
-  waferController.IsCalibrated ? "Калибровка: ✅ Активна" : "Калибровка: ❌ Нет",
-          waferController.IsCalibrated 
-       ? $"  Смещение: ({waferController.CalibrationOffsetX:+0.00;-0.00;0}, {waferController.CalibrationOffsetY:+0.00;-0.00;0}) мм"
-          : ""
-         };
+                "",
+                waferController.IsCalibrated ? "Калибровка:  ✅ Активна" : "Калибровка:  ❌ Нет",
+            };
 
     // Вычисление размеров панели
         float lineHeight = inspectorFont.Height + 2;
