@@ -119,6 +119,9 @@
     <Compile Include="Forms\BinMapSettingsForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Forms\HotKeysForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Forms\LogViewerForm.cs">
       <SubType>Form</SubType>
     </Compile>

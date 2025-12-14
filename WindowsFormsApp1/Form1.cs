@@ -80,6 +80,9 @@ debugOverlay = new DebugOverlayRenderer
             // ✅ ДОБАВЛЕНО: Добавление пунктов меню Bin Map в меню "Вид"
             InitializeBinMapMenu();
             
+            // ✅ ДОБАВЛЕНО: Пункт "Горячие клавиши" в меню "Помощь"
+            InitializeHelpMenu();
+            
       InitializeMapBuilderUi();
             InitializeCamera();  // ← Инициализация камеры
 
@@ -132,25 +135,26 @@ debugOverlay = new DebugOverlayRenderer
 
             // ===== Горячие клавиши для Bin Map (категории годности) =====
             // Работают только если есть выделенные кристаллы
+            // F1 зарезервирован для справки по горячим клавишам
             if (mouseController.SelectedCrystals.Count > 0)
             {
                 BinCategory? newBin = null;
                 
                 switch (e.KeyCode)
                 {
-                    case Keys.F1:
+                    case Keys.D1:  // Цифра 1
                         newBin = BinCategory.Good;
                         break;
-                    case Keys.F2:
+                    case Keys.D2:  // Цифра 2
                         newBin = BinCategory.Defective;
                         break;
-                    case Keys.F3:
+                    case Keys.D3:  // Цифра 3
                         newBin = BinCategory.NeedsReview;
                         break;
-                    case Keys.F4:
+                    case Keys.D4:  // Цифра 4
                         newBin = BinCategory.Rework;
                         break;
-                    case Keys.F5:
+                    case Keys.D5:  // Цифра 5
                         newBin = BinCategory.Edge;
                         break;
                     case Keys.Delete:
@@ -554,6 +558,42 @@ debugOverlay = new DebugOverlayRenderer
             viewToolStripMenuItem.DropDownItems.Insert(insertIndex, separator);
             viewToolStripMenuItem.DropDownItems.Insert(insertIndex + 1, showBinMapMenuItem);
             viewToolStripMenuItem.DropDownItems.Insert(insertIndex + 2, binMapSettingsMenuItem);
+        }
+
+        /// <summary>
+        /// Инициализация меню Помощь (добавление пункта "Горячие клавиши")
+        /// </summary>
+        private void InitializeHelpMenu()
+        {
+            var hotKeysMenuItem = new ToolStripMenuItem
+            {
+                Text = "Горячие клавиши...",
+                ShortcutKeys = Keys.F1
+            };
+            hotKeysMenuItem.Click += (s, e) => ShowHotKeysForm();
+
+            var separatorHelp = new ToolStripSeparator();
+
+            // Вставляем в начало меню "Помощь"
+            helpToolStripMenuItem.DropDownItems.Insert(0, hotKeysMenuItem);
+            helpToolStripMenuItem.DropDownItems.Insert(1, separatorHelp);
+        }
+
+        /// <summary>
+        /// Показать окно справки по горячим клавишам
+        /// </summary>
+        private void ShowHotKeysForm()
+        {
+            try
+            {
+                var hotKeysForm = new Forms.HotKeysForm();
+                hotKeysForm.ShowDialog(this);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error("Ошибка открытия окна горячих клавиш", ex);
+                MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         // ===== COM-порт =====
