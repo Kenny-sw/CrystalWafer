@@ -45,6 +45,9 @@ namespace CrystalTable.Forms
       private Button closeButton;
     
         private Label testResultLabel;
+        
+        // ✅ ДОБАВЛЕНО: Чекбокс режима работы без профиля
+        private CheckBox useProfileCheckBox;
 
         public MotionProfileEditorForm(Form1 form)
         {
@@ -282,6 +285,42 @@ cruiseInput = CreateNumericInput(0, 80, 40);
      TextAlign = ContentAlignment.MiddleLeft
         };
 
+        // ✅ ДОБАВЛЕНО: Панель режима работы (с/без профиля)
+        Panel modePanel = new Panel
+        {
+            Dock = DockStyle.Top,
+            Height = 60,
+            Padding = new Padding(3),
+            BackColor = Color.FromArgb(245, 245, 250)
+        };
+
+        useProfileCheckBox = new CheckBox
+        {
+            Text = "✅ Использовать профили",
+            AutoSize = false,
+            Width = 220,
+            Height = 22,
+            Checked = manager.UseProfile,
+            Location = new Point(5, 5)
+        };
+        useProfileCheckBox.CheckedChanged += UseProfileCheckBox_CheckedChanged;
+
+        Label modeHintLabel = new Label
+        {
+            Text = manager.UseProfile 
+                ? "Профили отправляются в Arduino" 
+                : "⚡ Штатный режим 30/40/30",
+            AutoSize = false,
+            Width = 220,
+            Height = 30,
+            Location = new Point(5, 28),
+            ForeColor = Color.Gray,
+            Font = new Font("Segoe UI", 8f)
+        };
+
+        modePanel.Controls.Add(useProfileCheckBox);
+        modePanel.Controls.Add(modeHintLabel);
+
   // Список профилей
        profilesList = new ListBox
  {
@@ -316,6 +355,7 @@ cruiseInput = CreateNumericInput(0, 80, 40);
       // При Dock порядок Controls.Add обратный: последний Top будет сверху
       panel.Controls.Add(buttonsPanel);   // Bottom - добавляется первым
       panel.Controls.Add(profilesList);   // Fill - занимает оставшееся место
+      panel.Controls.Add(modePanel);      // Top - панель режима (ниже заголовка)
       panel.Controls.Add(titleLabel);     // Top - добавляется последним, будет сверху
 
        return panel;
@@ -1128,6 +1168,46 @@ dialog.Filter = "Профиль движения (*.profile)|*.profile|XML (*.xm
       MessageBox.Show("Профили сброшены к умолчаниям!", "Успех", 
      MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
+        }
+
+        // ✅ ДОБАВЛЕНО: Обработчик переключения режима работы с профилями
+        private void UseProfileCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            manager.UseProfile = useProfileCheckBox.Checked;
+            
+            // Обновляем подсказку
+            var modePanel = useProfileCheckBox.Parent;
+            if (modePanel != null)
+            {
+                var hintLabel = modePanel.Controls.OfType<Label>().FirstOrDefault();
+                if (hintLabel != null)
+                {
+                    hintLabel.Text = manager.UseProfile 
+                        ? "Профили отправляются в Arduino" 
+                        : "⚡ Штатный режим 30/40/30";
+                }
+            }
+
+            // Включаем/отключаем редактирование
+            profilesList.Enabled = manager.UseProfile;
+            saveButton.Enabled = manager.UseProfile && currentProfile != null;
+            deleteButton.Enabled = manager.UseProfile && currentProfile != null && !currentProfile.IsDefault;
+
+            string mode = manager.UseProfile 
+                ? "Профили ВКЛЮЧЕНЫ - настройки отправляются в Arduino" 
+                : "Профили ОТКЛЮЧЕНЫ - Arduino использует штатные настройки 30/40/30";
+            
+            MessageBox.Show(
+                $"{mode}\n\n" +
+                (manager.UseProfile 
+                    ? "Выберите профиль и нажмите 'Применить' для отправки в Arduino."
+                    : "Arduino будет использовать встроенный профиль движения:\n" +
+                      "• minDelay = 200 мкс\n" +
+                      "• maxDelay = 800 мкс\n" +
+                      "• Разгон 30% / Крейсер 40% / Торможение 30%"),
+                "Режим работы",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
         }
     }
 

@@ -142,7 +142,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="Arduino\Archive\README.md" />
     <None Include="Arduino\FIRMWARE_REFACTORING_REPORT.md" />
+    <None Include="Arduino\README.md" />
     <None Include="Arduino\README_CHOOSE_FIRMWARE.md" />
     <None Include="Arduino\StepperDriver_DirectWiring.ino" />
     <None Include="Arduino\StepperDriver_OptocouplerWiring.ino" />
@@ -183,6 +185,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="docs\placeholder.txt" />
     <Content Include="Resources\export.png" />
     <Content Include="Resources\import.png" />
     <Content Include="Resources\redo.png" />

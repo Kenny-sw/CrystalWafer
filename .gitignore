@@ -361,3 +361,26 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# =========================
+# Project-specific ignores
+# =========================
+
+# Build logs
+build.log
+msbuild.log
+
+# Temporary files
+Временный.txt
+
+# BenchmarkSuite (not in solution)
+BenchmarkSuite1/
+
+# Legacy/unused code (can be removed from repo)
+WindowsFormsApp1/UnusedLegacy/
+
+# Python scripts
+*.py
+
+# Duplicate solution file
+WaferZond.sln

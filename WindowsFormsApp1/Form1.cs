@@ -691,39 +691,39 @@ debugOverlay = new DebugOverlayRenderer
         // ====== ОБРАБОТЧИКИ ОВЕРЛЕЕВ ОТЛАДКИ ======
         
         /// <summary>
-   /// Переключение диагностики позиции
-   /// </summary>
-      private void inspectorCoordinatesToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        /// Переключение диагностики позиции
+        /// </summary>
+        private void inspectorCoordinatesToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-      debugOverlay.ShowPositionDiagnostics = inspectorCoordinatesToolStripMenuItem.Checked;
-   pictureBox1.Invalidate();
-   AppLogger.Debug($"Диагностика позиции: {(debugOverlay.ShowPositionDiagnostics ? "ВКЛ" : "ВЫКЛ")}");
-}
-        
+            debugOverlay.ShowPositionDiagnostics = inspectorCoordinatesToolStripMenuItem.Checked;
+            pictureBox1.Invalidate();
+            AppLogger.Debug($"Диагностика позиции: {(debugOverlay.ShowPositionDiagnostics ? "ВКЛ" : "ВЫКЛ")}");
+        }
+
         /// <summary>
         /// Переключение точек калибровки
         /// </summary>
- private void inspectorCalibrationToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
-   {
-  debugOverlay.ShowCalibrationPoints = inspectorCalibrationToolStripMenuItem.Checked;
-   pictureBox1.Invalidate();
-AppLogger.Debug($"Точки калибровки: {(debugOverlay.ShowCalibrationPoints ? "ВКЛ" : "ВЫКЛ")}");
-   }
+        private void inspectorCalibrationToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            debugOverlay.ShowCalibrationPoints = inspectorCalibrationToolStripMenuItem.Checked;
+            pictureBox1.Invalidate();
+            AppLogger.Debug($"Точки калибровки: {(debugOverlay.ShowCalibrationPoints ? "ВКЛ" : "ВЫКЛ")}");
+        }
 
         /// <summary>
         /// ✅ НОВОЕ: Открытие редактора профилей движения
         /// </summary>
         private void motionProfilesToolStripMenuItem_Click(object sender, EventArgs e)
- {
+        {
             try
-         {
-            var editorForm = new Forms.MotionProfileEditorForm(this);
-       editorForm.ShowDialog(this);
- }
-      catch (Exception ex)
-     {
-   AppLogger.Error("Ошибка открытия редактора профилей", ex);
-    MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            {
+                var editorForm = new Forms.MotionProfileEditorForm(this);
+                editorForm.ShowDialog(this);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error("Ошибка открытия редактора профилей", ex);
+                MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -733,124 +733,124 @@ AppLogger.Debug($"Точки калибровки: {(debugOverlay.ShowCalibratio
         private void quickSelectProfileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
-         {
-  var manager = MotionProfileManager.Instance;
-   var profiles = manager.Profiles;
-
-      if (profiles.Count == 0)
-{
-             MessageBox.Show("Нет доступных профилей.", "Быстрый выбор", 
-           MessageBoxButtons.OK, MessageBoxIcon.Information);
-              return;
-    }
-
-      // Создаём простой диалог выбора
-                using (var selectForm = new Form())
-          {
-            selectForm.Text = "Быстрый выбор профиля";
- selectForm.Size = new Size(400, 300);
-    selectForm.StartPosition = FormStartPosition.CenterParent;
-          selectForm.FormBorderStyle = FormBorderStyle.FixedDialog;
- selectForm.MaximizeBox = false;
-             selectForm.MinimizeBox = false;
-
-  var listBox = new ListBox
-          {
-             Dock = DockStyle.Fill,
-             Font = new Font("Segoe UI", 10f),
-  DisplayMember = "Name"
-               };
-
-        foreach (var profile in profiles)
-                {
-     listBox.Items.Add(profile);
-     }
-
-             // Выделяем активный профиль
-         if (manager.ActiveProfile != null)
             {
-          int index = listBox.Items.IndexOf(manager.ActiveProfile);
-          if (index >= 0)
-             {
-  listBox.SelectedIndex = index;
-      }
+                var manager = MotionProfileManager.Instance;
+                var profiles = manager.Profiles;
+
+                if (profiles.Count == 0)
+                {
+                    MessageBox.Show("Нет доступных профилей.", "Быстрый выбор",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                // Создаём простой диалог выбора
+                using (var selectForm = new Form())
+                {
+                    selectForm.Text = "Быстрый выбор профиля";
+                    selectForm.Size = new Size(400, 300);
+                    selectForm.StartPosition = FormStartPosition.CenterParent;
+                    selectForm.FormBorderStyle = FormBorderStyle.FixedDialog;
+                    selectForm.MaximizeBox = false;
+                    selectForm.MinimizeBox = false;
+
+                    var listBox = new ListBox
+                    {
+                        Dock = DockStyle.Fill,
+                        Font = new Font("Segoe UI", 10f),
+                        DisplayMember = "Name"
+                    };
+
+                    foreach (var profile in profiles)
+                    {
+                        listBox.Items.Add(profile);
+                    }
+
+                    // Выделяем активный профиль
+                    if (manager.ActiveProfile != null)
+                    {
+                        int index = listBox.Items.IndexOf(manager.ActiveProfile);
+                        if (index >= 0)
+                        {
+                            listBox.SelectedIndex = index;
+                        }
+                    }
+
+                    var buttonPanel = new FlowLayoutPanel
+                    {
+                        Dock = DockStyle.Bottom,
+                        Height = 50,
+                        FlowDirection = FlowDirection.RightToLeft,
+                        Padding = new Padding(5)
+                    };
+
+                    var btnCancel = new Button
+                    {
+                        Text = "Отмена",
+                        Width = 100,
+                        DialogResult = DialogResult.Cancel
+                    };
+
+                    var btnOk = new Button
+                    {
+                        Text = "Применить",
+                        Width = 100,
+                        DialogResult = DialogResult.OK
+                    };
+
+                    buttonPanel.Controls.Add(btnCancel);
+                    buttonPanel.Controls.Add(btnOk);
+
+                    selectForm.Controls.Add(listBox);
+                    selectForm.Controls.Add(buttonPanel);
+                    selectForm.AcceptButton = btnOk;
+                    selectForm.CancelButton = btnCancel;
+
+                    // Двойной клик = выбор
+                    listBox.DoubleClick += (s, args) =>
+                    {
+                        if (listBox.SelectedItem != null)
+                        {
+                            selectForm.DialogResult = DialogResult.OK;
+                            selectForm.Close();
+                        }
+                    };
+
+                    if (selectForm.ShowDialog(this) == DialogResult.OK && listBox.SelectedItem is MotionProfile selected)
+                    {
+                        manager.SetActiveProfile(selected);
+
+                        // Применяем профиль к Arduino
+                        var applyTask = manager.ApplyProfileToArduino(serialPortController, selected);
+                        applyTask.ContinueWith(t =>
+                        {
+                            if (IsHandleCreated && !IsDisposed)
+                            {
+                                BeginInvoke(new Action(() =>
+                                {
+                                    if (t.Result)
+                                    {
+                                        MessageBox.Show($"Профиль '{selected.Name}' применён!", "Успех",
+                                            MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                    }
+                                    else
+                                    {
+                                        MessageBox.Show($"Профиль '{selected.Name}' активирован, но не удалось отправить в Arduino.\n" +
+                                            "Проверьте подключение COM-порта.", "Частичный успех",
+                                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                    }
+                                }));
+                            }
+                        });
+                    }
+                }
             }
-
-          var buttonPanel = new FlowLayoutPanel
-          {
-         Dock = DockStyle.Bottom,
-        Height = 50,
-  FlowDirection = FlowDirection.RightToLeft,
-        Padding = new Padding(5)
-    };
-
-         var btnCancel = new Button
-        {
-              Text = "Отмена",
-          Width = 100,
-     DialogResult = DialogResult.Cancel
-  };
-
-          var btnOk = new Button
-    {
-Text = "Применить",
-       Width = 100,
-             DialogResult = DialogResult.OK
-   };
-
-      buttonPanel.Controls.Add(btnCancel);
-        buttonPanel.Controls.Add(btnOk);
-
-           selectForm.Controls.Add(listBox);
-   selectForm.Controls.Add(buttonPanel);
-             selectForm.AcceptButton = btnOk;
-      selectForm.CancelButton = btnCancel;
-
-   // Двойной клик = выбор
-      listBox.DoubleClick += (s, args) =>
-    {
-        if (listBox.SelectedItem != null)
-   {
-       selectForm.DialogResult = DialogResult.OK;
-           selectForm.Close();
- }
-        };
-
-      if (selectForm.ShowDialog(this) == DialogResult.OK && listBox.SelectedItem is MotionProfile selected)
-       {
-          manager.SetActiveProfile(selected);
-   
-      // Применяем профиль к Arduino
-               var applyTask = manager.ApplyProfileToArduino(serialPortController, selected);
-       applyTask.ContinueWith(t =>
-         {
-   if (IsHandleCreated && !IsDisposed)
-         {
-   BeginInvoke(new Action(() =>
-       {
-                if (t.Result)
-             {
- MessageBox.Show($"Профиль '{selected.Name}' применён!", "Успех",
-       MessageBoxButtons.OK, MessageBoxIcon.Information);
+            catch (Exception ex)
+            {
+                AppLogger.Error("Ошибка быстрого выбора профиля", ex);
+                MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-   else
-      {
-       MessageBox.Show($"Профиль '{selected.Name}' активирован, но не удалось отправить в Arduino.\n" +
-    "Проверьте подключение COM-порта.", "Частичный успех",
-      MessageBoxButtons.OK, MessageBoxIcon.Warning);
-       }
-     }));
-       }
-             });
         }
-       }
-  }
-       catch (Exception ex)
-        {
-         AppLogger.Error("Ошибка быстрого выбора профиля", ex);
-  MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-          }
-   }
 
         // ====== ОБРАБОТЧИКИ ======
     }

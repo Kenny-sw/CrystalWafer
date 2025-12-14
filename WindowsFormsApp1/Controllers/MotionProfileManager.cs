@@ -22,12 +22,19 @@ namespace CrystalTable.Controllers
         private readonly string _profilesDirectory;
         private readonly string _profilesFilePath;
         private readonly string _activeProfilePath;
+        private readonly string _useProfileSettingPath;
 
         private List<MotionProfile> _profiles;
         private MotionProfile _activeProfile;
+        
+        /// <summary>
+        /// Флаг использования профиля. Если false - Arduino работает со штатными настройками 30/40/30
+        /// </summary>
+        private bool _useProfile = true;
 
         public event EventHandler<MotionProfile> ActiveProfileChanged;
         public event EventHandler ProfilesListChanged;
+        public event EventHandler<bool> UseProfileChanged;
 
         private MotionProfileManager()
         {
@@ -38,14 +45,34 @@ namespace CrystalTable.Controllers
       _profilesDirectory = Path.Combine(appDataPath, "Profiles");
           _profilesFilePath = Path.Combine(_profilesDirectory, "profiles.xml");
  _activeProfilePath = Path.Combine(appDataPath, "Config", "active_profile.txt");
+            _useProfileSettingPath = Path.Combine(appDataPath, "Config", "use_profile.txt");
 
       Directory.CreateDirectory(_profilesDirectory);
     Directory.CreateDirectory(Path.GetDirectoryName(_activeProfilePath));
 
     LoadProfiles();
+            LoadUseProfileSetting();
     }
 
         // ===== Свойства =====
+
+        /// <summary>
+        /// Использовать профиль движения. Если false - Arduino работает со штатными настройками 30/40/30
+        /// </summary>
+        public bool UseProfile
+        {
+            get => _useProfile;
+            set
+            {
+                if (_useProfile != value)
+                {
+                    _useProfile = value;
+                    SaveUseProfileSetting();
+                    UseProfileChanged?.Invoke(this, _useProfile);
+                    AppLogger.Info($"Режим профилей: {(_useProfile ? "ВКЛЮЧЁН" : "ВЫКЛЮЧЁН (штатный 30/40/30)")}");
+                }
+            }
+        }
 
         public MotionProfile ActiveProfile
         {
@@ -153,6 +180,65 @@ namespace CrystalTable.Controllers
     {
        AppLogger.Warning("Ошибка сохранения ID активного профиля", ex);
    }
+        }
+
+        private void LoadUseProfileSetting()
+        {
+            try
+            {
+                if (File.Exists(_useProfileSettingPath))
+                {
+                    var value = File.ReadAllText(_useProfileSettingPath).Trim();
+                    _useProfile = !value.Equals("false", StringComparison.OrdinalIgnoreCase) 
+                               && !value.Equals("0", StringComparison.OrdinalIgnoreCase);
+                }
+                else
+                {
+                    _useProfile = true; // По умолчанию используем профили
+                }
+                AppLogger.Info($"Режим профилей: {(_useProfile ? "ВКЛЮЧЁН" : "ВЫКЛЮЧЁН (штатный 30/40/30)")}");
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Warning("Ошибка загрузки настройки UseProfile", ex);
+                _useProfile = true;
+            }
+        }
+
+        private void SaveUseProfileSetting()
+        {
+            try
+            {
+                File.WriteAllText(_useProfileSettingPath, _useProfile ? "true" : "false");
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Warning("Ошибка сохранения настройки UseProfile", ex);
+            }
+        }
+
+        /// <summary>
+        /// Получить профиль для отправки в Arduino.
+        /// Если UseProfile=false, возвращает штатный профиль 30/40/30
+        /// </summary>
+        public MotionProfile GetEffectiveProfile()
+        {
+            if (!UseProfile)
+            {
+                // Штатный профиль 30/40/30 как в старой прошивке StepByStep1.5.ino
+                return new MotionProfile
+                {
+                    Name = "Штатный (30/40/30)",
+                    Description = "Штатный профиль из прошивки Arduino",
+                    MinDelayUs = 200,
+                    MaxDelayUs = 800,
+                    AccelPercent = 30,
+                    CruisePercent = 40,
+                    DecelPercent = 30,
+                    Type = ProfileType.Trapezoid
+                };
+            }
+            return ActiveProfile;
         }
 
         // ===== Управление профилями =====
@@ -343,7 +429,14 @@ using (var reader = new StreamReader(filePath, Encoding.UTF8))
    SerialPortController serialController, 
             MotionProfile profile = null)
         {
-    profile ??= ActiveProfile;
+            // Если профили отключены - не отправляем ничего в Arduino
+            if (!UseProfile && profile == null)
+            {
+                AppLogger.Info("Профили отключены - Arduino использует штатные настройки 30/40/30");
+                return true;
+            }
+
+            profile ??= GetEffectiveProfile();
    
             if (profile == null)
             {

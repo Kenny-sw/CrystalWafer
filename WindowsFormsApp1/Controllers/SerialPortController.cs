@@ -10,25 +10,41 @@ using CrystalTable.Logic;
 
 namespace CrystalTable.Controllers
 {
+    /// <summary>
+    /// Упрощённый и надёжный контроллер последовательного порта.
+    /// Особенности:
+    /// - Polling вместо async для надёжности
+    /// - Автоматический retry при сбоях
+    /// - Защита от переполнения буфера
+    /// - Синхронизация после сбоев
+    /// </summary>
     public class SerialPortController : IDisposable
     {
         private readonly SerialPort _port;
         private readonly SemaphoreSlim _sendLock = new SemaphoreSlim(1, 1);
-        private readonly TimeSpan _commandTimeout = Protocol.Timeouts.Command;
+        
+        // ✅ Настраиваемые параметры
+        private const int COMMAND_TIMEOUT_MS = 10000;      // 10 секунд на команду (длинные перемещения)
+        private const int READ_POLL_INTERVAL_MS = 5;       // Интервал опроса буфера
+        private const int MAX_RETRIES = 2;                 // Количество повторов при сбое
+        private const int RETRY_DELAY_MS = 100;            // Задержка между повторами
+        private const int STARTUP_DELAY_MS = 2000;         // Время на старт Arduino
+        private const int MAX_LINE_BUFFER_SIZE = 1024;     // Макс. размер буфера строки
 
         private TaskCompletionSource<CommandResult> _pendingCommand;
         private readonly object _pendingLock = new object();
 
         private CancellationTokenSource _listenerCts;
         private Task _listenerTask;
+        private volatile bool _isListenerRunning;
 
         public event Action<string> UnsolicitedEventReceived;
         public event Action<bool, string> ConnectionStateChanged;
-        public event Action<string> ProfileDataReceived; // ✅ НОВОЕ: Событие получения данных профиля
-        
-        // ✅ НОВОЕ: Событие готовности Arduino
-        private TaskCompletionSource<bool> _readyTcs;
-        private readonly object _readyLock = new object();
+        public event Action<string> ProfileDataReceived;
+
+        // ✅ Состояние подключения
+        public bool IsConnected => _port?.IsOpen == true && _isListenerRunning;
+        public string PortName => _port?.PortName;
 
         public SerialPortController(SerialPort serialPort)
         {
@@ -41,171 +57,195 @@ namespace CrystalTable.Controllers
             {
                 if (_port.IsOpen)
                 {
-                    AppLogger.Info($"Closing COM port {_port.PortName}.");
-                    StopListener();
-
-                    _port.Close();
-                    if (btnConnect != null)
-                    {
-                        btnConnect.Text = "Connect";
-                    }
-
+                    Disconnect();
+                    if (btnConnect != null) btnConnect.Text = "Connect";
                     ConnectionStateChanged?.Invoke(false, null);
                     return;
                 }
 
                 if (string.IsNullOrWhiteSpace(portName))
                 {
-                    AppLogger.Warning("COM port name is empty.");
-                    MessageBox.Show("Select a COM port.", "COM", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("Выберите COM порт.", "COM", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
 
-                ConfigurePort(portName.Trim());
+                if (Connect(portName.Trim()))
+                {
+                    if (btnConnect != null) btnConnect.Text = "Disconnect";
+                    ConnectionStateChanged?.Invoke(true, _port.PortName);
+                }
+                else
+                {
+                    MessageBox.Show("Не удалось подключиться к COM порту.", "COM", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    ConnectionStateChanged?.Invoke(false, null);
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error("Ошибка переключения COM порта", ex);
+                Disconnect();
+                MessageBox.Show($"Ошибка: {ex.Message}", "COM", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ConnectionStateChanged?.Invoke(false, null);
+            }
+        }
+
+        /// <summary>
+        /// Подключение к порту с ожиданием готовности Arduino
+        /// </summary>
+        private bool Connect(string portName)
+        {
+            try
+            {
+                AppLogger.Info($"Подключение к {portName}...");
+
+                // ✅ 1. Конфигурируем порт
+                _port.PortName = portName;
+                _port.BaudRate = 115200;
+                _port.Parity = Parity.None;
+                _port.DataBits = 8;
+                _port.StopBits = StopBits.One;
+                _port.Handshake = Handshake.None;
+                _port.NewLine = "\n";
+                _port.ReadTimeout = 1000;
+                _port.WriteTimeout = 1000;
                 
-                // ✅ ИСПРАВЛЕНО: Открываем порт и даем время на инициализацию
+                // ✅ 2. DTR=false ПЕРЕД открытием - предотвращает reset Arduino
+                _port.DtrEnable = false;
+                _port.RtsEnable = false;
+
+                // ✅ 3. Открываем порт
                 _port.Open();
-                AppLogger.Info($"COM port opened: {_port.PortName}");
-                
-                // ✅ Устанавливаем DTR после открытия для стабильной работы
+                AppLogger.Info($"Порт {portName} открыт");
+
+                // ✅ 4. Включаем DTR/RTS для стабильной работы
+                Thread.Sleep(50);
                 _port.DtrEnable = true;
                 _port.RtsEnable = true;
+
+                // ✅ 5. Очищаем буферы
+                Thread.Sleep(50);
+                _port.DiscardInBuffer();
+                _port.DiscardOutBuffer();
+
+                // ✅ 6. Ждём READY от Arduino
+                AppLogger.Info($"Ожидание готовности Arduino ({STARTUP_DELAY_MS}мс)...");
+                bool gotReady = WaitForReady(STARTUP_DELAY_MS);
                 
-                // ✅ Очищаем буферы перед запуском listener
-                if (_port.BytesToRead > 0)
+                if (!gotReady)
                 {
-                    AppLogger.Debug($"Очистка входного буфера: {_port.BytesToRead} байт");
-                    _port.DiscardInBuffer();
+                    AppLogger.Warning("Arduino не отправил READY, но продолжаем работу");
                 }
-                if (_port.BytesToWrite > 0)
-                {
-                    AppLogger.Debug($"Очистка выходного буфера: {_port.BytesToWrite} байт");
-                    _port.DiscardOutBuffer();
-                }
-                
-                // ✅ ИСПРАВЛЕНО: Ожидаем готовности Arduino после reset'а
-                // Arduino перезагружается при открытии порта (из-за DTR), bootloader работает ~1-2 секунды
-                // После загрузки Arduino отправит "READY"
-                
-                // Создаём TaskCompletionSource для ожидания READY
-                lock (_readyLock)
-                {
-                    _readyTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-                }
-                
+
+                // ✅ 7. Запускаем Listener
                 StartListener();
-                
-                // ✅ НОВОЕ: Ожидаем сообщение READY от Arduino (до 3 секунд)
-                AppLogger.Info("Ожидание готовности Arduino (READY)...");
-                bool isReady = false;
+
+                AppLogger.Info($"Подключение к {portName} успешно");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error($"Ошибка подключения к {portName}", ex);
+                Disconnect();
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Ожидание сообщения READY от Arduino
+        /// </summary>
+        private bool WaitForReady(int timeoutMs)
+        {
+            var deadline = DateTime.Now.AddMilliseconds(timeoutMs);
+            StringBuilder buffer = new StringBuilder();
+
+            while (DateTime.Now < deadline)
+            {
                 try
                 {
-                    TaskCompletionSource<bool> readyTcs;
-                    lock (_readyLock)
+                    if (_port.BytesToRead > 0)
                     {
-                        readyTcs = _readyTcs;
+                        string chunk = _port.ReadExisting();
+                        buffer.Append(chunk);
+                        
+                        string content = buffer.ToString();
+                        
+                        // Ищем READY
+                        if (content.Contains("READY"))
+                        {
+                            AppLogger.Info("Arduino готов (READY получен)");
+                            
+                            // Обрабатываем все строки до READY
+                            foreach (var line in content.Split('\n'))
+                            {
+                                var trimmed = line.Trim('\r', ' ');
+                                if (!string.IsNullOrEmpty(trimmed) && !trimmed.Equals("READY", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    AppLogger.Debug($"Startup: {trimmed}");
+                                }
+                            }
+                            
+                            return true;
+                        }
                     }
                     
-                    if (readyTcs != null)
-                    {
-                        var completedTask = Task.WhenAny(readyTcs.Task, Task.Delay(3000)).GetAwaiter().GetResult();
-                        isReady = completedTask == readyTcs.Task && readyTcs.Task.Result;
-                    }
+                    Thread.Sleep(50);
                 }
                 catch (Exception ex)
                 {
                     AppLogger.Warning($"Ошибка при ожидании READY: {ex.Message}");
                 }
-                
-                if (!isReady)
-                {
-                    AppLogger.Warning("Arduino не отправил READY в течение 3 секунд. Попробуйте переподключиться.");
-                }
-                else
-                {
-                    AppLogger.Info("Arduino готов к работе!");
-                }
-
-                if (btnConnect != null)
-                {
-                    btnConnect.Text = "Disconnect";
-                }
-
-                ConnectionStateChanged?.Invoke(true, _port.PortName);
             }
-            catch (Exception ex)
+
+            return false;
+        }
+
+        /// <summary>
+        /// Отключение от порта
+        /// </summary>
+        private void Disconnect()
+        {
+            try
             {
-                AppLogger.Error("Failed to toggle serial port connection.", ex);
                 StopListener();
 
                 if (_port.IsOpen)
                 {
-                    try { _port.Close(); }
-                    catch { }
+                    _port.DiscardInBuffer();
+                    _port.DiscardOutBuffer();
+                    _port.Close();
+                    AppLogger.Info($"Порт {_port.PortName} закрыт");
                 }
-
-                MessageBox.Show("Failed to communicate with the COM port: " + ex.Message, "COM", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                ConnectionStateChanged?.Invoke(false, null);
             }
-        }
-
-        private void ConfigurePort(string portName)
-        {
-            _port.BaudRate = 115200;
-            _port.Parity = Parity.None;
-            _port.DataBits = 8;
-            _port.StopBits = StopBits.One;
-            _port.Handshake = Handshake.None;
-            _port.PortName = portName;
-            
-            // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Arduino использует \n, не \r\n!
-            _port.NewLine = "\n";  // Было: "\r\n"
-            
-            // ✅ ИСПРАВЛЕНО: Управление DTR и RTS
-            // DTR = false предотвращает автоматический reset Arduino при подключении
-            // Установим в true после открытия порта для стабильной работы
-            _port.DtrEnable = false;
-            _port.RtsEnable = false;
-            
-            // ✅ Таймауты для операций чтения/записи
-            _port.ReadTimeout = 5000;  // 5 секунд
-            _port.WriteTimeout = 1000; // 1 секунда
+            catch (Exception ex)
+            {
+                AppLogger.Warning($"Ошибка при отключении: {ex.Message}");
+            }
         }
 
         public void UpdatePortList(ComboBox combo)
         {
-            if (combo == null)
-            {
-                return;
-            }
+            if (combo == null) return;
 
             var ports = SerialPort.GetPortNames()
                 .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
 
-            AppLogger.Info($"Available COM ports: {string.Join(", ", ports)}");
+            AppLogger.Info($"Доступные COM порты: {string.Join(", ", ports)}");
 
             combo.Items.Clear();
             combo.Items.AddRange(ports);
-            if (ports.Length > 0)
-            {
-                combo.SelectedIndex = 0;
-            }
+            if (ports.Length > 0) combo.SelectedIndex = 0;
         }
 
+        /// <summary>
+        /// Отправка команды с автоматическим retry
+        /// </summary>
         public async Task<bool> SendCommandAsync(byte command, uint data)
         {
-            if (_port == null || !_port.IsOpen)
+            // ✅ Проверка состояния
+            if (!IsConnected)
             {
-                AppLogger.Warning($"Attempt to send 0x{command:X2} while port is closed.");
-                return false;
-            }
-
-            // ✅ ИСПРАВЛЕНО: Проверяем listener, но НЕ перезапускаем автоматически
-            if (_listenerTask == null || _listenerTask.IsCompleted)
-            {
-                AppLogger.Error($"Listener не запущен или завершился!");
-                AppLogger.Error($"Необходимо переподключить COM-порт (Disconnect → Connect)");
+                AppLogger.Warning($"Команда 0x{command:X2}: порт не подключён");
                 return false;
             }
 
@@ -213,50 +253,121 @@ namespace CrystalTable.Controllers
 
             try
             {
-                var pending = new TaskCompletionSource<CommandResult>(TaskCreationOptions.RunContinuationsAsynchronously);
-
-                lock (_pendingLock)
+                // ✅ Retry loop
+                for (int attempt = 1; attempt <= MAX_RETRIES; attempt++)
                 {
-                    if (_pendingCommand != null)
+                    if (attempt > 1)
                     {
-                        AppLogger.Warning($"Command 0x{command:X2} rejected: previous command still pending.");
-                        return false;
+                        AppLogger.Info($"Повтор команды 0x{command:X2}, попытка {attempt}/{MAX_RETRIES}");
+                        await Task.Delay(RETRY_DELAY_MS).ConfigureAwait(false);
+                        
+                        // Синхронизация - очистка буферов
+                        SyncBuffers();
                     }
 
-                    _pendingCommand = pending;
-                }
+                    var result = await SendCommandInternalAsync(command, data).ConfigureAwait(false);
+                    
+                    if (result.Success)
+                    {
+                        return true;
+                    }
 
-                var packet = BuildPacket(command, data);
-                AppLogger.Debug($"TX -> cmd=0x{command:X2}, data={data}, packet=[{BitConverter.ToString(packet)}]");
+                    // Если ошибка контрольной суммы или таймаут - повторяем
+                    if (result.Message.Contains("CS") || result.Message.Contains("Timeout"))
+                    {
+                        AppLogger.Warning($"Команда 0x{command:X2} - ошибка: {result.Message}, повтор...");
+                        continue;
+                    }
 
-                try
-                {
-                    await _port.BaseStream.WriteAsync(packet, 0, packet.Length).ConfigureAwait(false);
-                    await _port.BaseStream.FlushAsync().ConfigureAwait(false);
-                    AppLogger.Debug($"Пакет команды 0x{command:X2} отправлен, ожидание ответа...");
-                }
-                catch (Exception writeError)
-                {
-                    AppLogger.Error("Failed to write to serial port.", writeError);
-                    ClearPending(pending, "Write failure");
+                    // Другие ошибки - не повторяем
+                    AppLogger.Warning($"Команда 0x{command:X2} - ошибка: {result.Message}");
                     return false;
                 }
 
-                var completedTask = await Task.WhenAny(pending.Task, Task.Delay(_commandTimeout)).ConfigureAwait(false);
-                if (completedTask != pending.Task)
-                {
-                    AppLogger.Warning($"Serial command 0x{command:X2} timed out after {_commandTimeout.TotalSeconds} seconds.");
-                    ClearPending(pending, "Timeout");
-                    return false;
-                }
-
-                var result = await pending.Task.ConfigureAwait(false);
-                AppLogger.Debug($"RX <- {(result.Success ? Protocol.Responses.Ok : Protocol.Responses.ErrorPrefix)}: {result.Message}");
-                return result.Success;
+                AppLogger.Error($"Команда 0x{command:X2} не выполнена после {MAX_RETRIES} попыток");
+                return false;
             }
             finally
             {
                 _sendLock.Release();
+            }
+        }
+
+        /// <summary>
+        /// Синхронизация буферов после сбоя
+        /// </summary>
+        private void SyncBuffers()
+        {
+            try
+            {
+                if (_port.IsOpen)
+                {
+                    if (_port.BytesToRead > 0)
+                    {
+                        AppLogger.Debug($"Синхронизация: очистка {_port.BytesToRead} байт");
+                        _port.DiscardInBuffer();
+                    }
+                    if (_port.BytesToWrite > 0)
+                    {
+                        _port.DiscardOutBuffer();
+                    }
+                }
+
+                // Сбрасываем pending command
+                lock (_pendingLock)
+                {
+                    _pendingCommand = null;
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Warning($"Ошибка синхронизации: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Внутренняя отправка команды (одна попытка)
+        /// </summary>
+        private async Task<CommandResult> SendCommandInternalAsync(byte command, uint data)
+        {
+            var pending = new TaskCompletionSource<CommandResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            lock (_pendingLock)
+            {
+                if (_pendingCommand != null)
+                {
+                    return new CommandResult(false, "Previous command pending");
+                }
+                _pendingCommand = pending;
+            }
+
+            try
+            {
+                // ✅ Формируем и отправляем пакет
+                var packet = BuildPacket(command, data);
+                AppLogger.Debug($"TX -> cmd=0x{command:X2}, data={data}, packet=[{BitConverter.ToString(packet)}]");
+
+                await _port.BaseStream.WriteAsync(packet, 0, packet.Length).ConfigureAwait(false);
+                await _port.BaseStream.FlushAsync().ConfigureAwait(false);
+
+                // ✅ Ожидание ответа с таймаутом
+                var completedTask = await Task.WhenAny(
+                    pending.Task, 
+                    Task.Delay(COMMAND_TIMEOUT_MS)
+                ).ConfigureAwait(false);
+
+                if (completedTask != pending.Task)
+                {
+                    ClearPending(pending);
+                    return new CommandResult(false, "Timeout");
+                }
+
+                return await pending.Task.ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                ClearPending(pending);
+                return new CommandResult(false, ex.Message);
             }
         }
 
@@ -268,63 +379,37 @@ namespace CrystalTable.Controllers
             packet[2] = (byte)((data >> 8) & 0xFF);
             packet[3] = (byte)((data >> 16) & 0xFF);
             packet[4] = (byte)((data >> 24) & 0xFF);
-            packet[5] = CalculateChecksum(packet, 5);
+            packet[5] = (byte)(packet[0] ^ packet[1] ^ packet[2] ^ packet[3] ^ packet[4]);
             return packet;
-        }
-
-        private static byte CalculateChecksum(byte[] buffer, int length)
-        {
-            byte checksum = 0;
-            for (int i = 0; i < length; i++)
-            {
-                checksum ^= buffer[i];  // XOR вместо суммы
-            }
-
-            return checksum;
         }
 
         private void StartListener()
         {
             StopListener();
 
-            // ✅ ИСПРАВЛЕНО: Проверка состояния порта перед запуском
             if (!_port.IsOpen)
             {
-                AppLogger.Warning("Cannot start listener: port is not open");
+                AppLogger.Warning("Listener: порт не открыт");
                 return;
             }
 
             _listenerCts = new CancellationTokenSource();
-            var token = _listenerCts.Token;
-            _listenerTask = Task.Run(() => ListenAsync(token), token);
-            AppLogger.Debug("Serial listener started.");
+            _listenerTask = Task.Run(() => ListenerLoop(_listenerCts.Token));
+            AppLogger.Debug("Listener запущен");
         }
 
         private void StopListener()
         {
-            if (_listenerCts == null)
-            {
-                return;
-            }
+            _isListenerRunning = false;
+
+            if (_listenerCts == null) return;
 
             try
             {
                 _listenerCts.Cancel();
-                
-                // ✅ ИСПРАВЛЕНО: Даем больше времени на остановку
-                if (_listenerTask != null && !_listenerTask.Wait(1000))
-                {
-                    AppLogger.Warning("Listener did not stop within timeout");
-                }
+                _listenerTask?.Wait(1000);
             }
-            catch (AggregateException ex)
-            {
-                AppLogger.Debug($"Serial listener stop aggregate exception: {ex.Flatten().Message}");
-            }
-            catch (OperationCanceledException)
-            {
-                // Expected when cancellation triggers while awaiting.
-            }
+            catch { }
             finally
             {
                 _listenerCts?.Dispose();
@@ -332,179 +417,201 @@ namespace CrystalTable.Controllers
                 _listenerTask = null;
             }
 
-            FailPendingCommand("Listener stopped");
-            AppLogger.Debug("Serial listener stopped.");
+            // Сбрасываем pending
+            lock (_pendingLock)
+            {
+                _pendingCommand?.TrySetResult(new CommandResult(false, "Listener stopped"));
+                _pendingCommand = null;
+            }
+
+            AppLogger.Debug("Listener остановлен");
         }
 
-        private async Task ListenAsync(CancellationToken token)
+        /// <summary>
+        /// Главный цикл чтения данных от Arduino
+        /// </summary>
+        private void ListenerLoop(CancellationToken token)
         {
-            StreamReader reader = null;
+            StringBuilder lineBuffer = new StringBuilder();
+            _isListenerRunning = true;
+            
+            AppLogger.Debug("Listener: цикл чтения запущен");
+
             try
             {
-                // ✅ ИСПРАВЛЕНО: Очистка буферов перед стартом
-                if (_port.IsOpen && _port.BytesToRead > 0)
-                {
-                    AppLogger.Debug($"Очистка буфера приема: {_port.BytesToRead} байт");
-                    _port.DiscardInBuffer();
-                }
-                
-                var encoding = _port.Encoding ?? Encoding.ASCII;
-                reader = new StreamReader(_port.BaseStream, encoding, false, 1024, leaveOpen: true);
-                
-                int nullLineCount = 0;
-                const int maxNullLinesBeforeExit = 5; // Допускаем несколько null-строк (bootloader)
-                
                 while (!token.IsCancellationRequested && _port.IsOpen)
                 {
-                    string line;
-
                     try
                     {
-                        // ✅ ИСПРАВЛЕНО: Используем token для отмены
-                        line = await reader.ReadLineAsync().ConfigureAwait(false);
+                        // ✅ Проверяем наличие данных
+                        int available = _port.BytesToRead;
+                        
+                        if (available == 0)
+                        {
+                            Thread.Sleep(READ_POLL_INTERVAL_MS);
+                            continue;
+                        }
+
+                        // ✅ Читаем все доступные данные
+                        string chunk = _port.ReadExisting();
+                        
+                        if (string.IsNullOrEmpty(chunk))
+                            continue;
+
+                        lineBuffer.Append(chunk);
+
+                        // ✅ Защита от переполнения буфера
+                        if (lineBuffer.Length > MAX_LINE_BUFFER_SIZE)
+                        {
+                            AppLogger.Warning($"Listener: буфер переполнен ({lineBuffer.Length} байт), очистка");
+                            lineBuffer.Clear();
+                            continue;
+                        }
+
+                        // ✅ Обрабатываем полные строки
+                        string content = lineBuffer.ToString();
+                        int lastNewline = content.LastIndexOf('\n');
+                        
+                        if (lastNewline >= 0)
+                        {
+                            // Извлекаем все полные строки
+                            string completedLines = content.Substring(0, lastNewline + 1);
+                            string remaining = content.Substring(lastNewline + 1);
+                            
+                            lineBuffer.Clear();
+                            lineBuffer.Append(remaining);
+
+                            // Обрабатываем каждую строку
+                            foreach (string rawLine in completedLines.Split('\n'))
+                            {
+                                string line = rawLine.Trim('\r', ' ');
+                                if (!string.IsNullOrEmpty(line))
+                                {
+                                    ProcessReceivedLine(line);
+                                }
+                            }
+                        }
                     }
-                    catch (OperationCanceledException)
+                    catch (TimeoutException)
                     {
-                        AppLogger.Debug("Listener: operation cancelled");
-                        return;
+                        // Нормально - нет данных
                     }
                     catch (IOException ioEx)
                     {
-                        // ✅ Проверяем, не закрыт ли порт
-                        if (!_port.IsOpen)
+                        if (_port.IsOpen)
                         {
-                            AppLogger.Debug("Listener: port closed");
-                            return;
+                            AppLogger.Warning($"Listener IO ошибка: {ioEx.Message}");
+                            Thread.Sleep(100);
                         }
-                        
-                        AppLogger.Warning("Serial port read error.", ioEx);
-                        
-                        // ✅ Пытаемся переподключиться через короткую задержку
-                        await Task.Delay(100, token).ConfigureAwait(false);
-                        continue;
-                    }
-                    catch (InvalidOperationException invalidEx)
-                    {
-                        AppLogger.Warning("Serial port became unavailable.", invalidEx);
-                        break;
-                    }
-
-                    if (line == null)
-                    {
-                        // ✅ ИСПРАВЛЕНО: Не завершаемся сразу при null - Arduino может быть в bootloader
-                        nullLineCount++;
-                        if (nullLineCount >= maxNullLinesBeforeExit)
+                        else
                         {
-                            AppLogger.Debug($"Listener: слишком много null-строк ({nullLineCount}), завершаемся");
                             break;
                         }
-                        
-                        // Ждём немного и пробуем снова (Arduino bootloader занимает ~1-2 сек)
-                        AppLogger.Debug($"Listener: null line #{nullLineCount}, ждём...");
-                        await Task.Delay(300, token).ConfigureAwait(false);
-                        
-                        // Пересоздаём reader если поток стал доступен
-                        if (_port.IsOpen && _port.BytesToRead > 0)
-                        {
-                            AppLogger.Debug("Listener: данные появились, пересоздаём reader");
-                            reader?.Dispose();
-                            reader = new StreamReader(_port.BaseStream, encoding, false, 1024, leaveOpen: true);
-                        }
-                        continue;
                     }
-                    
-                    // Сброс счётчика при успешном чтении
-                    nullLineCount = 0;
-
-                    line = line.Trim();
-                    if (line.Length == 0)
+                    catch (InvalidOperationException)
                     {
-                        continue;
+                        AppLogger.Debug("Listener: порт стал недоступен");
+                        break;
                     }
-
-                    AppLogger.Trace($"RX raw: {line}");
-                    
-                    // ✅ НОВОЕ: Обработка сообщения READY от Arduino
-                    if (line.Equals("READY", StringComparison.OrdinalIgnoreCase))
-                    {
-                        AppLogger.Info("Arduino: READY");
-                        lock (_readyLock)
-                        {
-                            _readyTcs?.TrySetResult(true);
-                        }
-                        UnsolicitedEventReceived?.Invoke(line);
-                        continue;
-                    }
-
-                    if (Protocol.Events.TryParseSensorEvent(line, out bool isSensorOn))
-                    {
-                        AppLogger.Info($"Sensor event: {(isSensorOn ? "ON" : "OFF")}");
-                        UnsolicitedEventReceived?.Invoke(line);
-                        continue;
-                    }
-
-                    if (Protocol.Events.IsEvent(line))
-                    {
-                        AppLogger.Debug($"Unsolicited event: {line}");
-                        UnsolicitedEventReceived?.Invoke(line);
-                        continue;
-                    }
-
-                    if (Protocol.Responses.IsOk(line))
-                    {
-                        CompletePendingCommand(true, line);
-                        continue;
-                    }
-
-                    if (Protocol.Responses.IsError(line))
-                    {
-                        CompletePendingCommand(false, line);
-                        continue;
-                    }
-          
-                    // ✅ НОВОЕ: Обработка ответа "PSET" (профиль установлен)
-                    if (Protocol.Responses.IsProfileSet(line))
-                    {
-                        AppLogger.Info("Arduino подтвердил установку профиля");
-                        CompletePendingCommand(true, line);
-                        continue;
-                    }
-
-                    // ✅ НОВОЕ: Обработка ответа "PROFILE:..." (данные профиля)
-                    if (Protocol.Responses.IsProfileData(line))
-                    {
-                        AppLogger.Debug($"Получены данные профиля от Arduino: {line}");
-                        // Уведомляем подписчиков о получении данных профиля
-                        ProfileDataReceived?.Invoke(line);
-                        CompletePendingCommand(true, line);
-                        continue;
-                    }
-
-                    AppLogger.Warning($"Unknown serial response: {line}");
                 }
             }
             catch (Exception ex)
             {
-                AppLogger.Error("Listener crashed", ex);
+                if (!token.IsCancellationRequested)
+                {
+                    AppLogger.Error("Listener crashed", ex);
+                }
             }
             finally
             {
-                // ✅ ИСПРАВЛЕНО: Корректное закрытие reader
-                try
-                {
-                    reader?.Dispose();
-                }
-                catch (Exception disposeEx)
-                {
-                    AppLogger.Debug($"Error disposing reader: {disposeEx.Message}");
-                }
+                _isListenerRunning = false;
                 
-                FailPendingCommand("Listener stopped");
-                AppLogger.Debug("Listener finished");
+                lock (_pendingLock)
+                {
+                    _pendingCommand?.TrySetResult(new CommandResult(false, "Listener finished"));
+                    _pendingCommand = null;
+                }
+
+                AppLogger.Debug("Listener: цикл завершён");
             }
         }
 
-        private void CompletePendingCommand(bool success, string message)
+        /// <summary>
+        /// Обработка полученной строки от Arduino
+        /// </summary>
+        private void ProcessReceivedLine(string line)
+        {
+            AppLogger.Trace($"RX: {line}");
+
+            // ✅ Ответы на команды (имеют приоритет)
+            if (line.Equals("OK", StringComparison.OrdinalIgnoreCase))
+            {
+                CompletePending(true, line);
+                return;
+            }
+
+            if (line.StartsWith("ERR", StringComparison.OrdinalIgnoreCase))
+            {
+                CompletePending(false, line);
+                return;
+            }
+
+            if (line.StartsWith("PSET", StringComparison.OrdinalIgnoreCase))
+            {
+                AppLogger.Info($"Профиль установлен: {line}");
+                CompletePending(true, line);
+                return;
+            }
+
+            if (line.StartsWith("PROFILE:", StringComparison.OrdinalIgnoreCase))
+            {
+                AppLogger.Debug($"Данные профиля: {line}");
+                ProfileDataReceived?.Invoke(line);
+                CompletePending(true, line);
+                return;
+            }
+
+            if (line.Equals("NA", StringComparison.OrdinalIgnoreCase))
+            {
+                AppLogger.Warning("Arduino: команда не реализована");
+                CompletePending(false, line);
+                return;
+            }
+
+            // ✅ События (не влияют на pending command)
+            if (line.Equals("READY", StringComparison.OrdinalIgnoreCase))
+            {
+                AppLogger.Info("Arduino: READY");
+                UnsolicitedEventReceived?.Invoke(line);
+                return;
+            }
+
+            if (Protocol.Events.TryParseSensorEvent(line, out bool sensorOn))
+            {
+                AppLogger.Info($"Датчик: {(sensorOn ? "ВКЛ" : "ВЫКЛ")}");
+                UnsolicitedEventReceived?.Invoke(line);
+                return;
+            }
+
+            if (Protocol.Events.IsEvent(line))
+            {
+                AppLogger.Debug($"Событие: {line}");
+                UnsolicitedEventReceived?.Invoke(line);
+                return;
+            }
+
+            // Ответ на запрос датчика
+            if (line.StartsWith("S:", StringComparison.OrdinalIgnoreCase))
+            {
+                AppLogger.Debug($"Состояние датчика: {line}");
+                CompletePending(true, line);
+                return;
+            }
+
+            AppLogger.Warning($"Неизвестный ответ: {line}");
+        }
+
+        private void CompletePending(bool success, string message)
         {
             TaskCompletionSource<CommandResult> pending;
             lock (_pendingLock)
@@ -516,70 +623,42 @@ namespace CrystalTable.Controllers
             pending?.TrySetResult(new CommandResult(success, message));
         }
 
-        private void FailPendingCommand(string reason)
+        private void ClearPending(TaskCompletionSource<CommandResult> expected)
         {
-            TaskCompletionSource<CommandResult> pending;
-            lock (_pendingLock)
-            {
-                pending = _pendingCommand;
-                _pendingCommand = null;
-            }
-
-            if (pending != null)
-            {
-                AppLogger.Warning($"Pending command failed: {reason}");
-                pending.TrySetResult(new CommandResult(false, reason));
-            }
-        }
-
-        private void ClearPending(TaskCompletionSource<CommandResult> expected, string reason)
-        {
-            TaskCompletionSource<CommandResult> pending = null;
             lock (_pendingLock)
             {
                 if (_pendingCommand == expected)
                 {
-                    pending = _pendingCommand;
                     _pendingCommand = null;
                 }
             }
-
-            if (pending != null)
-            {
-                AppLogger.Warning($"Pending command cleared: {reason}");
-                pending.TrySetResult(new CommandResult(false, reason));
-            }
+            
+            expected.TrySetResult(new CommandResult(false, "Cleared"));
         }
 
         public void Dispose()
         {
-            StopListener();
-
+            Disconnect();
+            
             try
             {
-                if (_port.IsOpen)
-                {
-                    _port.Close();
-                }
+                _port?.Dispose();
+            }
+            catch { }
 
-                _port.Dispose();
-            }
-            catch (Exception disposingError)
-            {
-                AppLogger.Warning("Error while disposing serial port controller.", disposingError);
-            }
+            _sendLock?.Dispose();
         }
 
         private class CommandResult
         {
+            public bool Success { get; }
+            public string Message { get; }
+
             public CommandResult(bool success, string message)
             {
                 Success = success;
                 Message = message;
             }
-
-            public bool Success { get; }
-            public string Message { get; }
         }
     }
 }
