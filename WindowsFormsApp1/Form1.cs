@@ -122,6 +122,14 @@ debugOverlay = new DebugOverlayRenderer
         {
             mouseController.HandleKeyDown(e);
 
+            // ===== Горячие клавиши автообхода =====
+            if (HandleScanHotKeys(e))
+            {
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+                return;
+            }
+
             // ===== Горячие клавиши для Bin Map (категории годности) =====
             // Работают только если есть выделенные кристаллы
             if (mouseController.SelectedCrystals.Count > 0)

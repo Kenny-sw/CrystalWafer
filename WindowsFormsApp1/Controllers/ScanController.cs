@@ -61,8 +61,11 @@ namespace CrystalTable.Controllers
         /// <summary>Пропускать уже проверенные кристаллы</summary>
         public bool SkipInspected { get; set; } = false;
 
-        /// <summary>Автоматически помечать как "Годен" после паузы</summary>
-        public bool AutoMarkGood { get; set; } = false;
+        /// <summary>Автоматически помечать после паузы</summary>
+        public bool AutoMark { get; set; } = false;
+        
+        /// <summary>Категория для авто-пометки</summary>
+        public BinCategory AutoMarkBin { get; set; } = BinCategory.Good;
     }
 
     /// <summary>
@@ -338,9 +341,9 @@ namespace CrystalTable.Controllers
                 }
 
                 // Автоматическая пометка
-                if (Settings.AutoMarkGood && crystal.Bin == BinCategory.NotInspected)
+                if (Settings.AutoMark && crystal.Bin == BinCategory.NotInspected)
                 {
-                    crystal.SetBin(BinCategory.Good);
+                    crystal.SetBin(Settings.AutoMarkBin);
                 }
 
                 currentIndex++;

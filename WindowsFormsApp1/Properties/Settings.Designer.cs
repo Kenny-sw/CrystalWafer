@@ -58,5 +58,79 @@ namespace CrystalTable.Properties {
                 this["CameraCalibrationResolution"] = value;
             }
         }
+        
+        // ===== Настройки автообхода =====
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int ScanPattern {
+            get {
+                return ((int)(this["ScanPattern"]));
+            }
+            set {
+                this["ScanPattern"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int ScanStartCorner {
+            get {
+                return ((int)(this["ScanStartCorner"]));
+            }
+            set {
+                this["ScanStartCorner"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("500")]
+        public int ScanDwellTime {
+            get {
+                return ((int)(this["ScanDwellTime"]));
+            }
+            set {
+                this["ScanDwellTime"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ScanSkipInspected {
+            get {
+                return ((bool)(this["ScanSkipInspected"]));
+            }
+            set {
+                this["ScanSkipInspected"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ScanAutoMark {
+            get {
+                return ((bool)(this["ScanAutoMark"]));
+            }
+            set {
+                this["ScanAutoMark"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int ScanAutoMarkBin {
+            get {
+                return ((int)(this["ScanAutoMarkBin"]));
+            }
+            set {
+                this["ScanAutoMarkBin"] = value;
+            }
+        }
     }
 }
